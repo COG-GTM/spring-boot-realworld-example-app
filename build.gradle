@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.6.3'
+    id 'org.springframework.boot' version '3.5.0'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
@@ -7,8 +7,8 @@ plugins {
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-targetCompatibility = '11'
+sourceCompatibility = '17'
+targetCompatibility = '17'
 
 spotless {
     java {
@@ -35,7 +35,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
