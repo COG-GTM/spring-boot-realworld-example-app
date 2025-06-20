@@ -8,18 +8,18 @@ import graphql.execution.DataFetcherExceptionHandler;
 import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
 import io.spring.api.exception.FieldErrorResource;
-import java.util.concurrent.CompletableFuture;
 import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,7 +38,8 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .message(handlerParameters.getException().getMessage())
               .path(handlerParameters.getPath())
               .build();
-      return CompletableFuture.completedFuture(DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
+      return CompletableFuture.completedFuture(
+          DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
     } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
       List<FieldErrorResource> errors = new ArrayList<>();
       for (ConstraintViolation<?> violation :
@@ -62,7 +63,8 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .path(handlerParameters.getPath())
               .extensions(errorsToMap(errors))
               .build();
-      return CompletableFuture.completedFuture(DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
+      return CompletableFuture.completedFuture(
+          DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
     } else {
       return defaultHandler.handleException(handlerParameters);
     }
