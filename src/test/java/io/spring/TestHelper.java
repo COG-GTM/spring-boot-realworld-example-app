@@ -6,11 +6,11 @@ import io.spring.core.article.Article;
 import io.spring.core.user.User;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.joda.time.DateTime;
+import java.time.Instant;
 
 public class TestHelper {
   public static ArticleData articleDataFixture(String seed, User user) {
-    DateTime now = new DateTime();
+    Instant now = Instant.now();
     return new ArticleData(
         seed + "id",
         "title-" + seed,
