@@ -19,8 +19,8 @@ import io.spring.infrastructure.DbTestBase;
 import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
-import java.util.Arrays;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +52,12 @@ public class ArticleQueryServiceTest extends DbTestBase {
     userRepository.save(user);
     article =
         new Article(
-            "test", "desc", "body", Arrays.asList("java", "spring"), user.getId(), ZonedDateTime.now());
+            "test",
+            "desc",
+            "body",
+            Arrays.asList("java", "spring"),
+            user.getId(),
+            ZonedDateTime.now());
     articleRepository.save(article);
   }
 

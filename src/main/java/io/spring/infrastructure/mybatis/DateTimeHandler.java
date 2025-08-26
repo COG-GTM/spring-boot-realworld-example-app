@@ -28,13 +28,17 @@ public class DateTimeHandler implements TypeHandler<ZonedDateTime> {
   @Override
   public ZonedDateTime getResult(ResultSet rs, String columnName) throws SQLException {
     Timestamp timestamp = rs.getTimestamp(columnName, UTC_CALENDAR);
-    return timestamp != null ? ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneOffset.UTC) : null;
+    return timestamp != null
+        ? ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneOffset.UTC)
+        : null;
   }
 
   @Override
   public ZonedDateTime getResult(ResultSet rs, int columnIndex) throws SQLException {
     Timestamp timestamp = rs.getTimestamp(columnIndex, UTC_CALENDAR);
-    return timestamp != null ? ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneOffset.UTC) : null;
+    return timestamp != null
+        ? ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneOffset.UTC)
+        : null;
   }
 
   @Override
