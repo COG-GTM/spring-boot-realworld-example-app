@@ -8,7 +8,7 @@ import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import java.util.Date;
 import java.util.Optional;
-import jakarta.crypto.SecretKey;
+import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
