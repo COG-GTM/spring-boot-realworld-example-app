@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.joda.time.format.ISODateTimeFormat;
+import java.time.format.DateTimeFormatter;
 
 @DgsComponent
 @AllArgsConstructor
@@ -81,7 +81,12 @@ public class CommentDatafetcher {
     graphql.relay.PageInfo pageInfo = buildCommentPageInfo(comments);
     CommentsConnection result =
         CommentsConnection.newBuilder()
-            .pageInfo(pageInfo)
+            .pageInfo(io.spring.graphql.types.PageInfo.newBuilder()
+                .hasNextPage(pageInfo.isHasNextPage())
+                .hasPreviousPage(pageInfo.isHasPreviousPage())
+                .startCursor(pageInfo.getStartCursor() != null ? pageInfo.getStartCursor().getValue() : null)
+                .endCursor(pageInfo.getEndCursor() != null ? pageInfo.getEndCursor().getValue() : null)
+                .build())
             .edges(
                 comments.getData().stream()
                     .map(
@@ -115,8 +120,8 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
-        .createdAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
+        .updatedAt(DateTimeFormatter.ISO_INSTANT.format(comment.getCreatedAt()))
+        .createdAt(DateTimeFormatter.ISO_INSTANT.format(comment.getCreatedAt()))
         .build();
   }
 }
