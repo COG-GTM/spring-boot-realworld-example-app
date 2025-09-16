@@ -51,6 +51,7 @@ public class MyBatisUserRepositoryTest extends DbTestBase {
 
   @Test
   public void should_create_new_user_follow_success() {
+    userRepository.save(user);
     User other = new User("other@example.com", "other", "123", "", "");
     userRepository.save(other);
 
@@ -61,6 +62,7 @@ public class MyBatisUserRepositoryTest extends DbTestBase {
 
   @Test
   public void should_unfollow_user_success() {
+    userRepository.save(user);
     User other = new User("other@example.com", "other", "123", "", "");
     userRepository.save(other);
 
