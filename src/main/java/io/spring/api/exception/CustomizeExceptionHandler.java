@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -59,10 +60,11 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
             });
   }
 
+  @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
       MethodArgumentNotValidException e,
       HttpHeaders headers,
-      HttpStatus status,
+      HttpStatusCode status,
       WebRequest request) {
     List<FieldErrorResource> errorResources =
         e.getBindingResult().getFieldErrors().stream()
