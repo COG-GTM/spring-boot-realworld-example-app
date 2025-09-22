@@ -42,6 +42,32 @@ The secret key is stored in `application.properties`.
 
 It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
 
+# Java 11 to 17 Migration Progress
+
+✅ **Migration Status: COMPLETED** (Jira ticket: AT-74)
+
+This project has been successfully upgraded from Java 11 to Java 17. The following changes were implemented:
+
+## Migration Changes Completed:
+- ✅ **Build Configuration**: Updated `build.gradle` with Java 17 compatibility (`sourceCompatibility` and `targetCompatibility`)
+- ✅ **CI Pipeline**: Updated GitHub Actions workflow (`.github/workflows/gradle.yml`) to use JDK 17
+- ✅ **Documentation**: Updated README requirements to specify Java 17
+- ✅ **Code Formatting**: Updated Spotless plugin to version 6.25.0 and Google Java Format to 1.17.0 for Java 17 compatibility
+- ✅ **Testing**: All 68 tests pass successfully with Java 17
+- ✅ **Runtime Verification**: Application starts and runs correctly with Java 17
+
+## Compatibility Notes:
+- The Spotless code formatting plugin required updates for Java 17 module system compatibility
+- GitHub Actions cache action was updated from v2 to v4 to resolve deprecation warnings
+- No breaking changes to application functionality or APIs
+
+## Verification Results:
+- ✅ Compilation: `./gradlew clean build` successful
+- ✅ Tests: All 68 unit tests passing
+- ✅ Runtime: Application starts without errors
+- ✅ Endpoints: Basic API endpoints responding correctly
+- ✅ CI/CD: GitHub Actions pipeline passing
+
 # Getting started
 
 You'll need Java 17 installed.
