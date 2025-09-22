@@ -33,16 +33,15 @@ public class DefaultJwtService implements JwtService {
     return Jwts.builder()
         .setSubject(user.getId())
         .setExpiration(expireTimeFromNow())
-        .signWith(signingKey)
+        .signWith(signingKey, signatureAlgorithm)
         .compact();
   }
 
   @Override
   public Optional<String> getSubFromToken(String token) {
     try {
-      Jws<Claims> claimsJws =
-          Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
-      return Optional.ofNullable(claimsJws.getBody().getSubject());
+      Jws<Claims> claimsJws = Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token);
+      return Optional.ofNullable(claimsJws.getPayload().getSubject());
     } catch (Exception e) {
       return Optional.empty();
     }
