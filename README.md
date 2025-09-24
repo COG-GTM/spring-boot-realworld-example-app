@@ -44,7 +44,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 17 installed.
 
     ./gradlew bootRun
 
@@ -75,6 +75,16 @@ The repository contains a lot of test cases to cover both api test and repositor
 Use spotless for code format.
 
     ./gradlew spotlessJavaApply
+
+# Java Version
+
+This project has been upgraded from Java 11 to Java 17. The upgrade includes:
+- Updated Gradle configuration (sourceCompatibility and targetCompatibility)
+- Updated Spotless plugin to version 6.25.0 for Java 17 compatibility
+- Updated CI pipeline to use Java 17
+- All deprecated APIs have been addressed
+
+If you encounter any issues related to the Java 17 migration, please report them.
 
 # Help
 

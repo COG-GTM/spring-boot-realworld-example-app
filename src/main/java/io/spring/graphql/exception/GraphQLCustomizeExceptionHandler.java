@@ -30,19 +30,17 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
   @Override
   public DataFetcherExceptionHandlerResult onException(
       DataFetcherExceptionHandlerParameters handlerParameters) {
-    if (handlerParameters.getException() instanceof InvalidAuthenticationException) {
+    if (handlerParameters.getException() instanceof InvalidAuthenticationException authException) {
       GraphQLError graphqlError =
           TypedGraphQLError.newBuilder()
               .errorType(ErrorType.UNAUTHENTICATED)
-              .message(handlerParameters.getException().getMessage())
+              .message(authException.getMessage())
               .path(handlerParameters.getPath())
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
-    } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
+    } else if (handlerParameters.getException() instanceof ConstraintViolationException cve) {
       List<FieldErrorResource> errors = new ArrayList<>();
-      for (ConstraintViolation<?> violation :
-          ((ConstraintViolationException) handlerParameters.getException())
-              .getConstraintViolations()) {
+      for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
         FieldErrorResource fieldErrorResource =
             new FieldErrorResource(
                 violation.getRootBeanClass().getName(),
