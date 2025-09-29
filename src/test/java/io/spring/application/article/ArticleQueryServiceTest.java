@@ -19,9 +19,9 @@ import io.spring.infrastructure.DbTestBase;
 import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,12 @@ public class ArticleQueryServiceTest extends DbTestBase {
     userRepository.save(user);
     article =
         new Article(
-            "test", "desc", "body", Arrays.asList("java", "spring"), user.getId(), LocalDateTime.now());
+            "test",
+            "desc",
+            "body",
+            Arrays.asList("java", "spring"),
+            user.getId(),
+            LocalDateTime.now());
     articleRepository.save(article);
   }
 
@@ -131,7 +136,11 @@ public class ArticleQueryServiceTest extends DbTestBase {
             null,
             null,
             new CursorPageParameter<>(
-                DateTimeCursor.parse(recentArticles.getEndCursor().toString()), 20, Direction.NEXT),
+                DateTimeCursor.parse(recentArticles.getEndCursor().toString())
+                    .atZone(java.time.ZoneOffset.UTC)
+                    .toLocalDateTime(),
+                20,
+                Direction.NEXT),
             user);
     Assertions.assertEquals(nodata.getData().size(), 0);
     Assertions.assertEquals(nodata.getStartCursor(), null);
