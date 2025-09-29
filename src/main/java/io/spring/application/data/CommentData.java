@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.spring.application.DateTimeCursor;
 import io.spring.application.Node;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -24,6 +24,6 @@ public class CommentData implements Node {
 
   @Override
   public DateTimeCursor getCursor() {
-    return new DateTimeCursor(createdAt);
+    return new DateTimeCursor(createdAt.atZone(java.time.ZoneOffset.UTC).toInstant());
   }
 }

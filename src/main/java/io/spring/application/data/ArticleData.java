@@ -2,11 +2,11 @@ package io.spring.application.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.spring.application.DateTimeCursor;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -28,6 +28,6 @@ public class ArticleData implements io.spring.application.Node {
 
   @Override
   public DateTimeCursor getCursor() {
-    return new DateTimeCursor(updatedAt);
+    return new DateTimeCursor(updatedAt.atZone(java.time.ZoneOffset.UTC).toInstant());
   }
 }

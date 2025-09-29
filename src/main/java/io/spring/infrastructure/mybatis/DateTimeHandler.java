@@ -5,12 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.TimeZone;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeHandler;
-import java.time.LocalDateTime;
 
 @MappedTypes(LocalDateTime.class)
 public class DateTimeHandler implements TypeHandler<LocalDateTime> {
@@ -20,8 +20,7 @@ public class DateTimeHandler implements TypeHandler<LocalDateTime> {
   @Override
   public void setParameter(PreparedStatement ps, int i, LocalDateTime parameter, JdbcType jdbcType)
       throws SQLException {
-    ps.setTimestamp(
-        i, parameter != null ? Timestamp.valueOf(parameter) : null, UTC_CALENDAR);
+    ps.setTimestamp(i, parameter != null ? Timestamp.valueOf(parameter) : null, UTC_CALENDAR);
   }
 
   @Override

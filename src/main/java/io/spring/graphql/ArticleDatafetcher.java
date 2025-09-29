@@ -6,8 +6,6 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.DgsQuery;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
-import graphql.relay.DefaultConnectionCursor;
-import graphql.relay.DefaultPageInfo;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
@@ -26,11 +24,12 @@ import io.spring.graphql.DgsConstants.QUERY;
 import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
+import io.spring.graphql.types.PageInfo;
 import io.spring.graphql.types.Profile;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.joda.time.format.ISODateTimeFormat;
 
 @DgsComponent
 @AllArgsConstructor
@@ -57,14 +56,20 @@ public class ArticleDatafetcher {
       articles =
           articleQueryService.findUserFeedWithCursor(
               current,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT));
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(after).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  first,
+                  Direction.NEXT));
     } else {
       articles =
           articleQueryService.findUserFeedWithCursor(
               current,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(before).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  last,
+                  Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -107,14 +112,20 @@ public class ArticleDatafetcher {
       articles =
           articleQueryService.findUserFeedWithCursor(
               target,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT));
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(after).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  first,
+                  Direction.NEXT));
     } else {
       articles =
           articleQueryService.findUserFeedWithCursor(
               target,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(before).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  last,
+                  Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -156,7 +167,10 @@ public class ArticleDatafetcher {
               null,
               null,
               profile.getUsername(),
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT),
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(after).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  first,
+                  Direction.NEXT),
               current);
     } else {
       articles =
@@ -164,10 +178,13 @@ public class ArticleDatafetcher {
               null,
               null,
               profile.getUsername(),
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(before).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  last,
+                  Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = buildArticlePageInfo(articles);
 
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
@@ -210,7 +227,10 @@ public class ArticleDatafetcher {
               null,
               profile.getUsername(),
               null,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT),
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(after).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  first,
+                  Direction.NEXT),
               current);
     } else {
       articles =
@@ -218,10 +238,13 @@ public class ArticleDatafetcher {
               null,
               profile.getUsername(),
               null,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(before).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  last,
+                  Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -265,7 +288,10 @@ public class ArticleDatafetcher {
               withTag,
               authoredBy,
               favoritedBy,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT),
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(after).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  first,
+                  Direction.NEXT),
               current);
     } else {
       articles =
@@ -273,10 +299,13 @@ public class ArticleDatafetcher {
               withTag,
               authoredBy,
               favoritedBy,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
+              new CursorPageParameter<>(
+                  DateTimeCursor.parse(before).atZone(java.time.ZoneOffset.UTC).toLocalDateTime(),
+                  last,
+                  Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -356,29 +385,27 @@ public class ArticleDatafetcher {
         .build();
   }
 
-  private DefaultPageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
-    return new DefaultPageInfo(
-        articles.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getStartCursor().toString()),
-        articles.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getEndCursor().toString()),
-        articles.hasPrevious(),
-        articles.hasNext());
+  private PageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
+    return PageInfo.newBuilder()
+        .startCursor(
+            articles.getStartCursor() == null ? null : articles.getStartCursor().toString())
+        .endCursor(articles.getEndCursor() == null ? null : articles.getEndCursor().toString())
+        .hasPreviousPage(articles.hasPrevious())
+        .hasNextPage(articles.hasNext())
+        .build();
   }
 
   private Article buildArticleResult(ArticleData articleData) {
     return Article.newBuilder()
         .body(articleData.getBody())
-        .createdAt(ISODateTimeFormat.dateTime().withZoneUTC().print(articleData.getCreatedAt()))
+        .createdAt(articleData.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
         .description(articleData.getDescription())
         .favorited(articleData.isFavorited())
         .favoritesCount(articleData.getFavoritesCount())
         .slug(articleData.getSlug())
         .tagList(articleData.getTagList())
         .title(articleData.getTitle())
-        .updatedAt(ISODateTimeFormat.dateTime().withZoneUTC().print(articleData.getUpdatedAt()))
+        .updatedAt(articleData.getUpdatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
         .build();
   }
 }
