@@ -19,9 +19,9 @@ import io.spring.infrastructure.DbTestBase;
 import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,12 @@ public class ArticleQueryServiceTest extends DbTestBase {
     userRepository.save(user);
     article =
         new Article(
-            "test", "desc", "body", Arrays.asList("java", "spring"), user.getId(), new DateTime());
+            "test",
+            "desc",
+            "body",
+            Arrays.asList("java", "spring"),
+            user.getId(),
+            LocalDateTime.now());
     articleRepository.save(article);
   }
 
@@ -92,7 +97,7 @@ public class ArticleQueryServiceTest extends DbTestBase {
             "body",
             Arrays.asList("test"),
             user.getId(),
-            new DateTime().minusHours(1));
+            LocalDateTime.now().minusHours(1));
     articleRepository.save(anotherArticle);
 
     ArticleDataList recentArticles =
@@ -116,7 +121,7 @@ public class ArticleQueryServiceTest extends DbTestBase {
             "body",
             Arrays.asList("test"),
             user.getId(),
-            new DateTime().minusHours(1));
+            LocalDateTime.now().minusHours(1));
     articleRepository.save(anotherArticle);
 
     CursorPager<ArticleData> recentArticles =
@@ -130,8 +135,12 @@ public class ArticleQueryServiceTest extends DbTestBase {
             null,
             null,
             null,
-            new CursorPageParameter<DateTime>(
-                DateTimeCursor.parse(recentArticles.getEndCursor().toString()), 20, Direction.NEXT),
+            new CursorPageParameter<>(
+                DateTimeCursor.parse(recentArticles.getEndCursor().toString())
+                    .atZone(java.time.ZoneOffset.UTC)
+                    .toLocalDateTime(),
+                20,
+                Direction.NEXT),
             user);
     Assertions.assertEquals(nodata.getData().size(), 0);
     Assertions.assertEquals(nodata.getStartCursor(), null);
