@@ -11,14 +11,12 @@ import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +42,7 @@ public class CommentsApi {
       @Valid @RequestBody NewCommentParam newCommentParam) {
     Article article =
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
-    Comment comment = new Comment(newCommentParam.getBody(), user.getId(), article.getId());
+    Comment comment = new Comment(newCommentParam.body(), user.getId(), article.getId());
     commentRepository.save(comment);
     return ResponseEntity.status(201)
         .body(commentResponse(commentQueryService.findById(comment.getId(), user).get()));
@@ -93,10 +91,5 @@ public class CommentsApi {
   }
 }
 
-@Getter
-@NoArgsConstructor
 @JsonRootName("comment")
-class NewCommentParam {
-  @NotBlank(message = "can't be empty")
-  private String body;
-}
+record NewCommentParam(@NotBlank(message = "can't be empty") String body) {}
