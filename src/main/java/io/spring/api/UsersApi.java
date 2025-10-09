@@ -12,15 +12,13 @@ import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,9 +44,9 @@ public class UsersApi {
 
   @RequestMapping(path = "/users/login", method = POST)
   public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
-    Optional<User> optional = userRepository.findByEmail(loginParam.getEmail());
+    Optional<User> optional = userRepository.findByEmail(loginParam.email());
     if (optional.isPresent()
-        && passwordEncoder.matches(loginParam.getPassword(), optional.get().getPassword())) {
+        && passwordEncoder.matches(loginParam.password(), optional.get().getPassword())) {
       UserData userData = userQueryService.findById(optional.get().getId()).get();
       return ResponseEntity.ok(
           userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
@@ -66,14 +64,7 @@ public class UsersApi {
   }
 }
 
-@Getter
 @JsonRootName("user")
-@NoArgsConstructor
-class LoginParam {
-  @NotBlank(message = "can't be empty")
-  @Email(message = "should be an email")
-  private String email;
-
-  @NotBlank(message = "can't be empty")
-  private String password;
-}
+record LoginParam(
+    @NotBlank(message = "can't be empty") @Email(message = "should be an email") String email,
+    @NotBlank(message = "can't be empty") String password) {}
