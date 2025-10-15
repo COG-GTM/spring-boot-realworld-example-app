@@ -21,11 +21,12 @@ import io.spring.graphql.types.Article;
 import io.spring.graphql.types.Comment;
 import io.spring.graphql.types.CommentEdge;
 import io.spring.graphql.types.CommentsConnection;
+import io.spring.graphql.types.PageInfo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.joda.time.format.ISODateTimeFormat;
+import java.time.format.DateTimeFormatter;
 
 @DgsComponent
 @AllArgsConstructor
@@ -78,7 +79,8 @@ public class CommentDatafetcher {
               current,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildCommentPageInfo(comments);
+    DefaultPageInfo relayPageInfo = buildCommentPageInfo(comments);
+    PageInfo pageInfo = convertPageInfo(relayPageInfo);
     CommentsConnection result =
         CommentsConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -115,8 +117,21 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
-        .createdAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
+        .updatedAt(DateTimeFormatter.ISO_INSTANT.format(comment.getCreatedAt()))
+        .createdAt(DateTimeFormatter.ISO_INSTANT.format(comment.getCreatedAt()))
+        .build();
+  }
+
+  private PageInfo convertPageInfo(DefaultPageInfo relayPageInfo) {
+    return PageInfo.newBuilder()
+        .hasPreviousPage(relayPageInfo.isHasPreviousPage())
+        .hasNextPage(relayPageInfo.isHasNextPage())
+        .startCursor(
+            relayPageInfo.getStartCursor() != null
+                ? relayPageInfo.getStartCursor().getValue()
+                : null)
+        .endCursor(
+            relayPageInfo.getEndCursor() != null ? relayPageInfo.getEndCursor().getValue() : null)
         .build();
   }
 }
