@@ -1,6 +1,7 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -53,7 +54,7 @@ public class ProfileApiTest extends TestWithCurrentUser {
   public void should_get_user_profile_success() throws Exception {
     when(profileQueryService.findByUsername(eq(profileData.getUsername()), eq(null)))
         .thenReturn(Optional.of(profileData));
-    RestAssuredMockMvc.when()
+    when()
         .get("/profiles/{username}", profileData.getUsername())
         .prettyPeek()
         .then()

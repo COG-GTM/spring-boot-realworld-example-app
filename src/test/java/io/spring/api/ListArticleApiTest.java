@@ -1,6 +1,7 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
 import static io.spring.TestHelper.articleDataFixture;
 import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,12 +49,12 @@ public class ListArticleApiTest extends TestWithCurrentUser {
     when(articleQueryService.findRecentArticles(
             eq(null), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
         .thenReturn(articleDataList);
-    RestAssuredMockMvc.when().get("/articles").prettyPeek().then().statusCode(200);
+    when().get("/articles").prettyPeek().then().statusCode(200);
   }
 
   @Test
   public void should_get_feeds_401_without_login() throws Exception {
-    RestAssuredMockMvc.when().get("/articles/feed").prettyPeek().then().statusCode(401);
+    when().get("/articles/feed").prettyPeek().then().statusCode(401);
   }
 
   @Test
