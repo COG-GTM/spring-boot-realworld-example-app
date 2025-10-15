@@ -1,6 +1,7 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -120,7 +121,7 @@ public class CommentsApiTest extends TestWithCurrentUser {
   public void should_get_comments_of_article_success() throws Exception {
     when(commentQueryService.findByArticleId(anyString(), eq(null)))
         .thenReturn(Arrays.asList(commentData));
-    RestAssuredMockMvc.when()
+    when()
         .get("/articles/{slug}/comments", article.getSlug())
         .prettyPeek()
         .then()
