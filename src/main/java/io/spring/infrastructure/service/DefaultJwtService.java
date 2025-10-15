@@ -19,11 +19,18 @@ public class DefaultJwtService implements JwtService {
   private final SecretKey signingKey;
   private final SignatureAlgorithm signatureAlgorithm;
   private int sessionTime;
+  private int accessTokenExpiration;
+  private int refreshTokenExpiration;
 
   @Autowired
   public DefaultJwtService(
-      @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
+      @Value("${jwt.secret}") String secret,
+      @Value("${jwt.sessionTime}") int sessionTime,
+      @Value("${jwt.access-token.expiration}") int accessTokenExpiration,
+      @Value("${jwt.refresh-token.expiration}") int refreshTokenExpiration) {
     this.sessionTime = sessionTime;
+    this.accessTokenExpiration = accessTokenExpiration;
+    this.refreshTokenExpiration = refreshTokenExpiration;
     signatureAlgorithm = SignatureAlgorithm.HS512;
     this.signingKey = new SecretKeySpec(secret.getBytes(), signatureAlgorithm.getJcaName());
   }
@@ -38,6 +45,26 @@ public class DefaultJwtService implements JwtService {
   }
 
   @Override
+  public String generateAccessToken(User user) {
+    return Jwts.builder()
+        .setSubject(user.getId())
+        .claim("type", "access")
+        .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration * 1000L))
+        .signWith(signingKey)
+        .compact();
+  }
+
+  @Override
+  public String generateRefreshToken(User user) {
+    return Jwts.builder()
+        .setSubject(user.getId())
+        .claim("type", "refresh")
+        .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration * 1000L))
+        .signWith(signingKey)
+        .compact();
+  }
+
+  @Override
   public Optional<String> getSubFromToken(String token) {
     try {
       Jws<Claims> claimsJws =
@@ -46,6 +73,28 @@ public class DefaultJwtService implements JwtService {
     } catch (Exception e) {
       return Optional.empty();
     }
+  }
+
+  @Override
+  public Optional<String> validateRefreshToken(String token) {
+    try {
+      Jws<Claims> claimsJws =
+          Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
+      Claims claims = claimsJws.getBody();
+
+      if (!"refresh".equals(claims.get("type", String.class))) {
+        return Optional.empty();
+      }
+
+      return Optional.ofNullable(claims.getSubject());
+    } catch (Exception e) {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public SecretKey getSigningKey() {
+    return signingKey;
   }
 
   private Date expireTimeFromNow() {

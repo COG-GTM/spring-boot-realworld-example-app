@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.RefreshTokenMapper">
+    <insert id="insert">
+        insert into refresh_tokens (id, user_id, token, created_at, expires_at, revoked) values(
+          #{refreshToken.id},
+          #{refreshToken.userId},
+          #{refreshToken.token},
+          #{refreshToken.createdAt},
+          #{refreshToken.expiresAt},
+          #{refreshToken.revoked}
+        )
+    </insert>
+
+    <update id="update">
+        update refresh_tokens
+        set revoked = #{refreshToken.revoked}
+        where id = #{refreshToken.id}
+    </update>
+
+    <update id="revokeByToken">
+        update refresh_tokens
+        set revoked = true
+        where token = #{token}
+    </update>
+
+    <update id="revokeByUserId">
+        update refresh_tokens
+        set revoked = true
+        where user_id = #{userId}
+    </update>
+
+    <select id="findById" resultMap="refreshToken">
+        select * from refresh_tokens where id = #{id}
+    </select>
+
+    <select id="findByToken" resultMap="refreshToken">
+        select * from refresh_tokens where token = #{token} and revoked = false
+    </select>
+
+    <select id="findByUserId" resultMap="refreshToken">
+        select * from refresh_tokens where user_id = #{userId} and revoked = false
+        order by created_at desc
+        limit 1
+    </select>
+
+    <resultMap id="refreshToken" type="io.spring.core.user.RefreshToken">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="token" property="token"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="expires_at" property="expiresAt"/>
+        <result column="revoked" property="revoked"/>
+    </resultMap>
+</mapper>

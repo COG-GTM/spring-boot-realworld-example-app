@@ -9,12 +9,18 @@ public class UserWithToken {
   private String bio;
   private String image;
   private String token;
+  private String refreshToken;
 
   public UserWithToken(UserData userData, String token) {
+    this(userData, token, null);
+  }
+
+  public UserWithToken(UserData userData, String token, String refreshToken) {
     this.email = userData.getEmail();
     this.username = userData.getUsername();
     this.bio = userData.getBio();
     this.image = userData.getImage();
     this.token = token;
+    this.refreshToken = refreshToken;
   }
 }
