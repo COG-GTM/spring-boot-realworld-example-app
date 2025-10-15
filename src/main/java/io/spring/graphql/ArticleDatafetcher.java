@@ -26,6 +26,7 @@ import io.spring.graphql.DgsConstants.QUERY;
 import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
+import io.spring.graphql.types.PageInfo;
 import io.spring.graphql.types.Profile;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -64,7 +65,8 @@ public class ArticleDatafetcher {
               current,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    DefaultPageInfo relayPageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = convertPageInfo(relayPageInfo);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -114,7 +116,8 @@ public class ArticleDatafetcher {
               target,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    DefaultPageInfo relayPageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = convertPageInfo(relayPageInfo);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -167,7 +170,8 @@ public class ArticleDatafetcher {
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    DefaultPageInfo relayPageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = convertPageInfo(relayPageInfo);
 
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
@@ -221,7 +225,8 @@ public class ArticleDatafetcher {
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    DefaultPageInfo relayPageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = convertPageInfo(relayPageInfo);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -276,7 +281,8 @@ public class ArticleDatafetcher {
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    DefaultPageInfo relayPageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo = convertPageInfo(relayPageInfo);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -379,6 +385,19 @@ public class ArticleDatafetcher {
         .tagList(articleData.getTagList())
         .title(articleData.getTitle())
         .updatedAt(DateTimeFormatter.ISO_INSTANT.format(articleData.getUpdatedAt()))
+        .build();
+  }
+
+  private PageInfo convertPageInfo(DefaultPageInfo relayPageInfo) {
+    return PageInfo.newBuilder()
+        .hasPreviousPage(relayPageInfo.isHasPreviousPage())
+        .hasNextPage(relayPageInfo.isHasNextPage())
+        .startCursor(
+            relayPageInfo.getStartCursor() != null
+                ? relayPageInfo.getStartCursor().getValue()
+                : null)
+        .endCursor(
+            relayPageInfo.getEndCursor() != null ? relayPageInfo.getEndCursor().getValue() : null)
         .build();
   }
 }
