@@ -14,7 +14,7 @@ import io.spring.application.ArticleQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
-import io.spring.application.DateTimeCursor;
+import io.spring.application.InstantCursor;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.CommentData;
 import io.spring.core.user.User;
@@ -27,10 +27,10 @@ import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
 import io.spring.graphql.types.Profile;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.joda.time.format.ISODateTimeFormat;
 
 @DgsComponent
 @AllArgsConstructor
@@ -57,12 +57,12 @@ public class ArticleDatafetcher {
       articles =
           articleQueryService.findUserFeedWithCursor(
               current,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT));
+              new CursorPageParameter<>(InstantCursor.parse(after), first, Direction.NEXT));
     } else {
       articles =
           articleQueryService.findUserFeedWithCursor(
               current,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
+              new CursorPageParameter<>(InstantCursor.parse(before), last, Direction.PREV));
     }
     graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
@@ -107,12 +107,12 @@ public class ArticleDatafetcher {
       articles =
           articleQueryService.findUserFeedWithCursor(
               target,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT));
+              new CursorPageParameter<>(InstantCursor.parse(after), first, Direction.NEXT));
     } else {
       articles =
           articleQueryService.findUserFeedWithCursor(
               target,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
+              new CursorPageParameter<>(InstantCursor.parse(before), last, Direction.PREV));
     }
     graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
@@ -156,7 +156,7 @@ public class ArticleDatafetcher {
               null,
               null,
               profile.getUsername(),
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT),
+              new CursorPageParameter<>(InstantCursor.parse(after), first, Direction.NEXT),
               current);
     } else {
       articles =
@@ -164,7 +164,7 @@ public class ArticleDatafetcher {
               null,
               null,
               profile.getUsername(),
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
+              new CursorPageParameter<>(InstantCursor.parse(before), last, Direction.PREV),
               current);
     }
     graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
@@ -210,7 +210,7 @@ public class ArticleDatafetcher {
               null,
               profile.getUsername(),
               null,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT),
+              new CursorPageParameter<>(InstantCursor.parse(after), first, Direction.NEXT),
               current);
     } else {
       articles =
@@ -218,7 +218,7 @@ public class ArticleDatafetcher {
               null,
               profile.getUsername(),
               null,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
+              new CursorPageParameter<>(InstantCursor.parse(before), last, Direction.PREV),
               current);
     }
     graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
@@ -265,7 +265,7 @@ public class ArticleDatafetcher {
               withTag,
               authoredBy,
               favoritedBy,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT),
+              new CursorPageParameter<>(InstantCursor.parse(after), first, Direction.NEXT),
               current);
     } else {
       articles =
@@ -273,7 +273,7 @@ public class ArticleDatafetcher {
               withTag,
               authoredBy,
               favoritedBy,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
+              new CursorPageParameter<>(InstantCursor.parse(before), last, Direction.PREV),
               current);
     }
     graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
@@ -371,14 +371,14 @@ public class ArticleDatafetcher {
   private Article buildArticleResult(ArticleData articleData) {
     return Article.newBuilder()
         .body(articleData.getBody())
-        .createdAt(ISODateTimeFormat.dateTime().withZoneUTC().print(articleData.getCreatedAt()))
+        .createdAt(DateTimeFormatter.ISO_INSTANT.format(articleData.getCreatedAt()))
         .description(articleData.getDescription())
         .favorited(articleData.isFavorited())
         .favoritesCount(articleData.getFavoritesCount())
         .slug(articleData.getSlug())
         .tagList(articleData.getTagList())
         .title(articleData.getTitle())
-        .updatedAt(ISODateTimeFormat.dateTime().withZoneUTC().print(articleData.getUpdatedAt()))
+        .updatedAt(DateTimeFormatter.ISO_INSTANT.format(articleData.getUpdatedAt()))
         .build();
   }
 }

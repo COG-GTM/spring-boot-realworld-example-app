@@ -11,7 +11,7 @@ import io.spring.application.CommentQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
-import io.spring.application.DateTimeCursor;
+import io.spring.application.InstantCursor;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.CommentData;
 import io.spring.core.user.User;
@@ -22,10 +22,10 @@ import io.spring.graphql.types.Comment;
 import io.spring.graphql.types.CommentEdge;
 import io.spring.graphql.types.CommentsConnection;
 import java.util.HashMap;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.joda.time.format.ISODateTimeFormat;
 
 @DgsComponent
 @AllArgsConstructor
@@ -70,13 +70,13 @@ public class CommentDatafetcher {
           commentQueryService.findByArticleIdWithCursor(
               articleData.getId(),
               current,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT));
+              new CursorPageParameter<>(InstantCursor.parse(after), first, Direction.NEXT));
     } else {
       comments =
           commentQueryService.findByArticleIdWithCursor(
               articleData.getId(),
               current,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
+              new CursorPageParameter<>(InstantCursor.parse(before), last, Direction.PREV));
     }
     graphql.relay.PageInfo pageInfo = buildCommentPageInfo(comments);
     CommentsConnection result =
@@ -115,8 +115,8 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
-        .createdAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
+        .updatedAt(DateTimeFormatter.ISO_INSTANT.format(comment.getCreatedAt()))
+        .createdAt(DateTimeFormatter.ISO_INSTANT.format(comment.getCreatedAt()))
         .build();
   }
 }
