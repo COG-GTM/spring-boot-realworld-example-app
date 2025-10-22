@@ -36,7 +36,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
 
     http.csrf()
-        .disable()
+        .ignoringAntMatchers("/api/**", "/users/**", "/user", "/articles/**", "/profiles/**", "/tags", "/graphql", "/graphiql")
+        // CSRF protection is enabled but API endpoints are exempt
+        .and()
         .cors()
         .and()
         .exceptionHandling()
