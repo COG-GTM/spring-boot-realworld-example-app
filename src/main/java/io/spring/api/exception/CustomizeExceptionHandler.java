@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,10 +19,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
 @RestControllerAdvice
-public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
+public class CustomizeExceptionHandler {
 
   @ExceptionHandler({InvalidRequestException.class})
   public ResponseEntity<Object> handleInvalidRequest(RuntimeException e, WebRequest request) {
@@ -41,10 +39,7 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
 
     ErrorResource error = new ErrorResource(errorResources);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-
-    return handleExceptionInternal(e, error, headers, UNPROCESSABLE_ENTITY, request);
+    return ResponseEntity.status(UNPROCESSABLE_ENTITY).body(error);
   }
 
   @ExceptionHandler(InvalidAuthenticationException.class)
@@ -59,12 +54,9 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
             });
   }
 
-  @Override
+  @ExceptionHandler(MethodArgumentNotValidException.class)
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
-      MethodArgumentNotValidException e,
-      HttpHeaders headers,
-      HttpStatus status,
-      WebRequest request) {
+      MethodArgumentNotValidException e, WebRequest request) {
     List<FieldErrorResource> errorResources =
         e.getBindingResult().getFieldErrors().stream()
             .map(
