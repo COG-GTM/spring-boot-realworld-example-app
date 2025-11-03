@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: collateral-service
+  datasource:
+    url: jdbc:h2:mem:collateral;DB_CLOSE_DELAY=-1;MODE=Oracle
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+    properties:
+      hibernate.format_sql: false
+    show-sql: false
+  h2:
+    console:
+      enabled: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /collateral
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+collateral:
+  seed:
+    enabled: true
+    file: classpath:seed/agreements.yml
+  margin:
+    rounding-unit: 1000
+    call-cutoff: "16:30"
+    timezone: America/New_York
+  auth:
+    desk-token:
+      header: X-Desk-Token
+      shared-secret: ${DESK_TOKEN_SECRET:local-dev-only-secret}
+      max-skew-seconds: 300
+      desks:
+        COLL-OPS: OPS
+        RISK: RISK,OPS
+        TREASURY: TREASURY
