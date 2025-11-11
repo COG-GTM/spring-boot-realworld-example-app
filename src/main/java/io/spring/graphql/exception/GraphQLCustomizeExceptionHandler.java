@@ -9,6 +9,7 @@ import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
 import io.spring.api.exception.FieldErrorResource;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.api.exception.NoAuthorizationException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
 import java.util.ArrayList;
@@ -35,6 +36,14 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
           TypedGraphQLError.newBuilder()
               .errorType(ErrorType.UNAUTHENTICATED)
               .message(handlerParameters.getException().getMessage())
+              .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (handlerParameters.getException() instanceof NoAuthorizationException) {
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBuilder()
+              .errorType(ErrorType.PERMISSION_DENIED)
+              .message("Forbidden")
               .path(handlerParameters.getPath())
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
