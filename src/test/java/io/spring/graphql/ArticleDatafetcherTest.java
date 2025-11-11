@@ -122,7 +122,7 @@ public class ArticleDatafetcherTest {
             tagList,
             profileData);
 
-    CursorPager<ArticleData> pager = CursorPager.fromList(Arrays.asList(articleData), 10);
+    CursorPager<ArticleData> pager = new CursorPager<>(Arrays.asList(articleData), CursorPager.Direction.NEXT, false);
 
     when(articleQueryService.findRecentArticlesWithCursor(any(), any(), any(), any(), any()))
         .thenReturn(pager);
@@ -166,7 +166,7 @@ public class ArticleDatafetcherTest {
             tagList,
             profileData);
 
-    CursorPager<ArticleData> pager = CursorPager.fromList(Arrays.asList(articleData), 10);
+    CursorPager<ArticleData> pager = new CursorPager<>(Arrays.asList(articleData), CursorPager.Direction.NEXT, false);
 
     when(articleQueryService.findRecentArticlesWithCursor(eq(filterTag), any(), any(), any(), any()))
         .thenReturn(pager);
@@ -210,7 +210,7 @@ public class ArticleDatafetcherTest {
             tagList,
             profileData);
 
-    CursorPager<ArticleData> pager = CursorPager.fromList(Arrays.asList(articleData), 10);
+    CursorPager<ArticleData> pager = new CursorPager<>(Arrays.asList(articleData), CursorPager.Direction.NEXT, false);
 
     when(articleQueryService.findRecentArticlesWithCursor(any(), eq(authorUsername), any(), any(), any()))
         .thenReturn(pager);
@@ -250,7 +250,7 @@ public class ArticleDatafetcherTest {
             tagList,
             profileData);
 
-    CursorPager<ArticleData> pager = CursorPager.fromList(Arrays.asList(articleData), 10);
+    CursorPager<ArticleData> pager = new CursorPager<>(Arrays.asList(articleData), CursorPager.Direction.NEXT, false);
 
     when(articleQueryService.findRecentArticlesWithCursor(any(), any(), eq(favoritedBy), any(), any()))
         .thenReturn(pager);
