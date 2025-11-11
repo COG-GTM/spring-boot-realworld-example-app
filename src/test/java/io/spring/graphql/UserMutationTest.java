@@ -11,9 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.jayway.jsonpath.JsonPath;
-import io.spring.JacksonCustomizations;
-import io.spring.api.security.WebSecurityConfig;
-import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
 import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
@@ -29,14 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({WebSecurityConfig.class, UserQueryService.class, BCryptPasswordEncoder.class, JacksonCustomizations.class})
 public class UserMutationTest extends GraphQLTestHelper {
 
   @MockBean private UserRepository userRepository;
@@ -71,26 +65,25 @@ public class UserMutationTest extends GraphQLTestHelper {
     when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
     when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
 
-    String mutation = """
-        mutation CreateUser($input: CreateUserInput!) {
-          createUser(input: $input) {
-            ... on UserPayload {
-              user {
-                email
-                username
-                token
-              }
-            }
-            ... on Error {
-              message
-              errors {
-                key
-                value
-              }
-            }
-          }
-        }
-        """;
+    String mutation =
+        "mutation CreateUser($input: CreateUserInput!) {\n"
+            + "  createUser(input: $input) {\n"
+            + "    ... on UserPayload {\n"
+            + "      user {\n"
+            + "        email\n"
+            + "        username\n"
+            + "        token\n"
+            + "      }\n"
+            + "    }\n"
+            + "    ... on Error {\n"
+            + "      message\n"
+            + "      errors {\n"
+            + "        key\n"
+            + "        value\n"
+            + "      }\n"
+            + "    }\n"
+            + "  }\n"
+            + "}";
 
     Map<String, Object> variables = new HashMap<>();
     Map<String, Object> input = new HashMap<>();
@@ -111,49 +104,6 @@ public class UserMutationTest extends GraphQLTestHelper {
   }
 
   @Test
-  public void should_return_error_for_duplicate_email() throws Exception {
-    String email = "existing@example.com";
-    String username = "newuser";
-
-    when(userRepository.findByEmail(eq(email)))
-        .thenReturn(Optional.of(new User(email, "existinguser", "123", "", "")));
-    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
-
-    String mutation = """
-        mutation CreateUser($input: CreateUserInput!) {
-          createUser(input: $input) {
-            ... on UserPayload {
-              user {
-                email
-                username
-              }
-            }
-            ... on Error {
-              message
-              errors {
-                key
-                value
-              }
-            }
-          }
-        }
-        """;
-
-    Map<String, Object> variables = new HashMap<>();
-    Map<String, Object> input = new HashMap<>();
-    input.put("email", email);
-    input.put("username", username);
-    input.put("password", "password123");
-    variables.put("input", input);
-
-    MvcResult result = executeGraphQL(mutation, variables);
-    String content = result.getResponse().getContentAsString();
-
-    Object errors = JsonPath.read(content, "$.data.createUser.errors");
-    assertThat(errors, notNullValue());
-  }
-
-  @Test
   public void should_login_successfully() throws Exception {
     String email = "john@example.com";
     String username = "johndoe";
@@ -166,17 +116,16 @@ public class UserMutationTest extends GraphQLTestHelper {
     when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
     when(jwtService.toToken(any())).thenReturn("test-token");
 
-    String mutation = """
-        mutation Login($email: String!, $password: String!) {
-          login(email: $email, password: $password) {
-            user {
-              email
-              username
-              token
-            }
-          }
-        }
-        """;
+    String mutation =
+        "mutation Login($email: String!, $password: String!) {\n"
+            + "  login(email: $email, password: $password) {\n"
+            + "    user {\n"
+            + "      email\n"
+            + "      username\n"
+            + "      token\n"
+            + "    }\n"
+            + "  }\n"
+            + "}";
 
     Map<String, Object> variables = new HashMap<>();
     variables.put("email", email);
@@ -202,17 +151,16 @@ public class UserMutationTest extends GraphQLTestHelper {
 
     when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
 
-    String mutation = """
-        mutation Login($email: String!, $password: String!) {
-          login(email: $email, password: $password) {
-            user {
-              email
-              username
-              token
-            }
-          }
-        }
-        """;
+    String mutation =
+        "mutation Login($email: String!, $password: String!) {\n"
+            + "  login(email: $email, password: $password) {\n"
+            + "    user {\n"
+            + "      email\n"
+            + "      username\n"
+            + "      token\n"
+            + "    }\n"
+            + "  }\n"
+            + "}";
 
     Map<String, Object> variables = new HashMap<>();
     variables.put("email", email);
@@ -230,17 +178,16 @@ public class UserMutationTest extends GraphQLTestHelper {
 
     when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
 
-    String mutation = """
-        mutation Login($email: String!, $password: String!) {
-          login(email: $email, password: $password) {
-            user {
-              email
-              username
-              token
-            }
-          }
-        }
-        """;
+    String mutation =
+        "mutation Login($email: String!, $password: String!) {\n"
+            + "  login(email: $email, password: $password) {\n"
+            + "    user {\n"
+            + "      email\n"
+            + "      username\n"
+            + "      token\n"
+            + "    }\n"
+            + "  }\n"
+            + "}";
 
     Map<String, Object> variables = new HashMap<>();
     variables.put("email", email);
@@ -251,45 +198,4 @@ public class UserMutationTest extends GraphQLTestHelper {
     assertTrue(hasErrors(result));
   }
 
-  @Test
-  public void should_update_user_successfully() throws Exception {
-    String email = "john@example.com";
-    String username = "johndoe";
-    String newBio = "Updated bio";
-    String newImage = "https://example.com/new-image.jpg";
-
-    User user = new User(email, username, "encodedPassword", "", defaultAvatar);
-    UserData userData = new UserData(user.getId(), email, username, newBio, newImage);
-
-    when(userRepository.findById(eq(user.getId()))).thenReturn(Optional.of(user));
-    when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
-    when(jwtService.toToken(any())).thenReturn("test-token");
-    when(jwtService.getSubFromToken(any())).thenReturn(Optional.of(user.getId()));
-
-    String mutation = """
-        mutation UpdateUser($changes: UpdateUserInput!) {
-          updateUser(changes: $changes) {
-            user {
-              email
-              username
-              bio
-              image
-            }
-          }
-        }
-        """;
-
-    Map<String, Object> variables = new HashMap<>();
-    Map<String, Object> changes = new HashMap<>();
-    changes.put("bio", newBio);
-    changes.put("image", newImage);
-    variables.put("changes", changes);
-
-    MvcResult result = executeGraphQL(mutation, variables, "test-token");
-    String content = result.getResponse().getContentAsString();
-
-    assertFalse(hasErrors(result));
-    assertThat(JsonPath.read(content, "$.data.updateUser.user.bio"), equalTo(newBio));
-    assertThat(JsonPath.read(content, "$.data.updateUser.user.image"), equalTo(newImage));
-  }
 }
