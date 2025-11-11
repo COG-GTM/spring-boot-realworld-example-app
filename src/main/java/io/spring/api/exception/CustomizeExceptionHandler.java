@@ -59,6 +59,18 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
             });
   }
 
+  @ExceptionHandler(NoAuthorizationException.class)
+  public ResponseEntity<Object> handleNoAuthorization(
+      NoAuthorizationException e, WebRequest request) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(
+            new HashMap<String, Object>() {
+              {
+                put("message", "Forbidden: You do not have permission to perform this action");
+              }
+            });
+  }
+
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
       MethodArgumentNotValidException e,
