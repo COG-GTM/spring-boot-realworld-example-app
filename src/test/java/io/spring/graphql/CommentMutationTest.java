@@ -62,6 +62,7 @@ public class CommentMutationTest {
     CommentData commentData = new CommentData(
         "comment-id",
         body,
+        testArticle.getId(),
         new DateTime(),
         new DateTime(),
         new ProfileData(testUser.getId(), testUser.getUsername(), testUser.getBio(), testUser.getImage(), false)
