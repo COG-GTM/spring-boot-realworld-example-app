@@ -10,8 +10,10 @@ import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
 import io.spring.TestHelper;
 import io.spring.application.ArticleQueryService;
+import io.spring.application.CommentQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
+import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ArticleData;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
@@ -25,12 +27,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.TestPropertySource;
+import java.util.Collections;
 
 @SpringBootTest(
     classes = {
       DgsAutoConfiguration.class,
-      ArticleDatafetcher.class
+      ArticleDatafetcher.class,
+      ProfileDatafetcher.class,
+      CommentDatafetcher.class
     })
+@TestPropertySource(properties = "dgs.graphql.schema-locations=classpath*:schema/**/*.graphqls")
 public class ArticleDatafetcherTest {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -39,6 +48,10 @@ public class ArticleDatafetcherTest {
 
   @MockBean private UserRepository userRepository;
 
+  @MockBean private ProfileQueryService profileQueryService;
+
+  @MockBean private CommentQueryService commentQueryService;
+
   private User user;
   private ArticleData articleData;
 
@@ -46,6 +59,9 @@ public class ArticleDatafetcherTest {
   public void setUp() {
     user = new User("test@example.com", "testuser", "password", "bio", "image");
     articleData = TestHelper.articleDataFixture("1", user);
+    
+    SecurityContextHolder.getContext()
+        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList()));
   }
 
   @Test
@@ -61,7 +77,10 @@ public class ArticleDatafetcherTest {
 
     ExecutionResult result = dgsQueryExecutor.execute(query, variables);
     assertNotNull(result);
-    assertTrue(result.getErrors().isEmpty());
+    if (!result.getErrors().isEmpty()) {
+      System.out.println("GraphQL Errors: " + result.getErrors());
+    }
+    assertTrue(result.getErrors().isEmpty(), () -> "Errors: " + result.getErrors());
 
     Map<String, Object> data = result.getData();
     assertNotNull(data);

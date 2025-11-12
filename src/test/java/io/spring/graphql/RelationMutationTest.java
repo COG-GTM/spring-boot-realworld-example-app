@@ -24,12 +24,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.TestPropertySource;
+import java.util.Collections;
 
 @SpringBootTest(
     classes = {
       DgsAutoConfiguration.class,
       RelationMutation.class
     })
+@TestPropertySource(properties = "dgs.graphql.schema-locations=classpath*:schema/**/*.graphqls")
 public class RelationMutationTest {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -49,7 +52,7 @@ public class RelationMutationTest {
     profileData = new ProfileData(targetUser.getId(), targetUser.getUsername(), targetUser.getBio(), targetUser.getImage(), true);
     
     SecurityContextHolder.getContext()
-        .setAuthentication(new UsernamePasswordAuthenticationToken(currentUser, null, null));
+        .setAuthentication(new UsernamePasswordAuthenticationToken(currentUser, null, Collections.emptyList()));
   }
 
   @Test

@@ -23,12 +23,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(
     classes = {
       DgsAutoConfiguration.class,
       CommentDatafetcher.class
     })
+@TestPropertySource(properties = "dgs.graphql.schema-locations=classpath*:schema/**/*.graphqls")
 public class CommentDatafetcherTest {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;

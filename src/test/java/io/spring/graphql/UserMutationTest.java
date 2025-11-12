@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(
     classes = {
@@ -33,6 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
       UserMutation.class,
       MeDatafetcher.class
     })
+@TestPropertySource(properties = "dgs.graphql.schema-locations=classpath*:schema/**/*.graphqls")
 public class UserMutationTest {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -141,7 +143,7 @@ public class UserMutationTest {
 
     ExecutionResult result = dgsQueryExecutor.execute(mutation, variables);
     assertNotNull(result);
-    assertTrue(result.getErrors().isEmpty());
+    assertTrue(result.getErrors().isEmpty(), () -> "Errors: " + result.getErrors());
 
     Map<String, Object> data = result.getData();
     assertNotNull(data);

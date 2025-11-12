@@ -19,12 +19,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.TestPropertySource;
+import java.util.Collections;
 
 @SpringBootTest(
     classes = {
       DgsAutoConfiguration.class,
       ProfileDatafetcher.class
     })
+@TestPropertySource(properties = "dgs.graphql.schema-locations=classpath*:schema/**/*.graphqls")
 public class ProfileDatafetcherTest {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -38,6 +43,9 @@ public class ProfileDatafetcherTest {
   public void setUp() {
     user = new User("test@example.com", "testuser", "password", "bio", "image");
     profileData = new ProfileData(user.getId(), user.getUsername(), user.getBio(), user.getImage(), false);
+    
+    SecurityContextHolder.getContext()
+        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList()));
   }
 
   @Test

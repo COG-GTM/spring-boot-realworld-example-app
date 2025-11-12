@@ -28,12 +28,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.TestPropertySource;
+import java.util.Collections;
 
 @SpringBootTest(
     classes = {
       DgsAutoConfiguration.class,
       CommentMutation.class
     })
+@TestPropertySource(properties = "dgs.graphql.schema-locations=classpath*:schema/**/*.graphqls")
 public class CommentMutationTest {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -52,14 +55,15 @@ public class CommentMutationTest {
   @BeforeEach
   public void setUp() {
     user = new User("test@example.com", "testuser", "password", "bio", "image");
-    article = new Article("Test Title", "Test Description", "Test Body", null, user.getId(), new DateTime());
-    comment = new Comment("Test comment body", user.getId(), article.getId());
+    article = new Article("Test Title", "Test Description", "Test Body", Collections.emptyList(), user.getId(), new DateTime());
+    comment = new Comment("Test comment body", user.getId(), "article-id-1");
     
     ProfileData profileData = new ProfileData(user.getId(), user.getUsername(), user.getBio(), user.getImage(), false);
-    commentData = new CommentData(comment.getId(), comment.getBody(), article.getId(), comment.getCreatedAt(), comment.getCreatedAt(), profileData);
+    DateTime now = new DateTime();
+    commentData = new CommentData("comment-id-1", "Test comment body", "article-id-1", now, now, profileData);
     
     SecurityContextHolder.getContext()
-        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, null));
+        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList()));
   }
 
   @Test
@@ -119,7 +123,7 @@ public class CommentMutationTest {
   @Test
   public void should_delete_comment_successfully() {
     when(articleRepository.findBySlug(eq("test-title"))).thenReturn(Optional.of(article));
-    when(commentRepository.findById(eq(article.getId()), eq("comment-id")))
+    when(commentRepository.findById(any(), eq("comment-id")))
         .thenReturn(Optional.of(comment));
 
     String mutation =
@@ -169,7 +173,7 @@ public class CommentMutationTest {
   @Test
   public void should_fail_delete_comment_when_comment_not_found() {
     when(articleRepository.findBySlug(eq("test-title"))).thenReturn(Optional.of(article));
-    when(commentRepository.findById(eq(article.getId()), eq("nonexistent")))
+    when(commentRepository.findById(any(), eq("nonexistent")))
         .thenReturn(Optional.empty());
 
     String mutation =

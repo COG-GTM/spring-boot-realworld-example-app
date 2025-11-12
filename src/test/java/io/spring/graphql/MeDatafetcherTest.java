@@ -20,12 +20,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.TestPropertySource;
+import java.util.Collections;
 
 @SpringBootTest(
     classes = {
       DgsAutoConfiguration.class,
-      MeDatafetcher.class
+      MeDatafetcher.class,
+      ProfileDatafetcher.class
     })
+@TestPropertySource(properties = "dgs.graphql.schema-locations=classpath*:schema/**/*.graphqls")
 public class MeDatafetcherTest {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -33,6 +37,8 @@ public class MeDatafetcherTest {
   @MockBean private UserQueryService userQueryService;
 
   @MockBean private JwtService jwtService;
+  
+  @MockBean private io.spring.application.ProfileQueryService profileQueryService;
 
   private User user;
   private UserData userData;
@@ -43,7 +49,7 @@ public class MeDatafetcherTest {
     userData = new UserData(user.getId(), user.getEmail(), user.getUsername(), user.getBio(), user.getImage());
     
     SecurityContextHolder.getContext()
-        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, null));
+        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList()));
   }
 
   @Test
@@ -62,7 +68,7 @@ public class MeDatafetcherTest {
 
     ExecutionResult result = dgsQueryExecutor.execute(query);
     assertNotNull(result);
-    assertTrue(result.getErrors().isEmpty());
+    assertTrue(result.getErrors().isEmpty(), () -> "Errors: " + result.getErrors());
 
     Map<String, Object> data = result.getData();
     assertNotNull(data);
@@ -108,7 +114,7 @@ public class MeDatafetcherTest {
 
     ExecutionResult result = dgsQueryExecutor.execute(query);
     assertNotNull(result);
-    assertTrue(result.getErrors().isEmpty());
+    assertTrue(result.getErrors().isEmpty(), () -> "Errors: " + result.getErrors());
 
     Map<String, Object> data = result.getData();
     assertNotNull(data);

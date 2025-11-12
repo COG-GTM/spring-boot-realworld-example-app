@@ -16,6 +16,7 @@ import io.spring.core.favorite.ArticleFavorite;
 import io.spring.core.favorite.ArticleFavoriteRepository;
 import io.spring.core.user.User;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,12 +28,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(
     classes = {
       DgsAutoConfiguration.class,
       ArticleMutation.class
     })
+@TestPropertySource(properties = "dgs.graphql.schema-locations=classpath*:schema/**/*.graphqls")
 public class ArticleMutationTest {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -58,7 +61,7 @@ public class ArticleMutationTest {
             user.getId(),
             new DateTime());
     SecurityContextHolder.getContext()
-        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, null));
+        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList()));
   }
 
   @Test
