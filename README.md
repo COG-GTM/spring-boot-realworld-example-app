@@ -8,7 +8,7 @@ This codebase was created to demonstrate a fully fledged full-stack application 
 
 For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
 
-# *NEW* GraphQL Support  
+# *NEW* GraphQL Support
 
 Following some DDD principles. REST or GraphQL is just a kind of adapter. And the domain layer will be consistent all the time. So this repository implement GraphQL and REST at the same time.
 
@@ -44,11 +44,11 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+uniYou'll need Java 17 installed.
 
     ./gradlew bootRun
 
-To test that it works, open a browser tab at http://localhost:8080/tags .  
+To test that it works, open a browser tab at http://localhost:8080/tags .
 Alternatively, you can run
 
     curl http://localhost:8080/tags
@@ -56,7 +56,7 @@ Alternatively, you can run
 # Try it out with [Docker](https://www.docker.com/)
 
 You'll need Docker installed.
-	
+
     ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
     docker run -p 8081:8080 spring-boot-realworld-example-app
 
