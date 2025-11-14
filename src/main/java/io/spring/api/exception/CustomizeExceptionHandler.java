@@ -11,6 +11,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,8 +26,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler({InvalidRequestException.class})
-  public ResponseEntity<Object> handleInvalidRequest(RuntimeException e, WebRequest request) {
-    InvalidRequestException ire = (InvalidRequestException) e;
+  public ResponseEntity<Object> handleInvalidRequest(InvalidRequestException ire, WebRequest request) {
 
     List<FieldErrorResource> errorResources =
         ire.getErrors().getFieldErrors().stream()
@@ -44,7 +44,7 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 
-    return handleExceptionInternal(e, error, headers, UNPROCESSABLE_ENTITY, request);
+    return handleExceptionInternal(ire, error, headers, UNPROCESSABLE_ENTITY, request);
   }
 
   @ExceptionHandler(InvalidAuthenticationException.class)
@@ -59,12 +59,14 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
             });
   }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Object> handleMethodArgumentNotValid(
-      MethodArgumentNotValidException e,
+  @Override
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(
+      MethodArgumentNotValidException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
       WebRequest request) {
     List<FieldErrorResource> errorResources =
-        e.getBindingResult().getFieldErrors().stream()
+        ex.getBindingResult().getFieldErrors().stream()
             .map(
                 fieldError ->
                     new FieldErrorResource(
@@ -74,7 +76,10 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
                         fieldError.getDefaultMessage()))
             .collect(Collectors.toList());
 
-    return ResponseEntity.status(UNPROCESSABLE_ENTITY).body(new ErrorResource(errorResources));
+    HttpHeaders responseHeaders = new HttpHeaders();
+    responseHeaders.putAll(headers);
+    responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+    return handleExceptionInternal(ex, new ErrorResource(errorResources), responseHeaders, UNPROCESSABLE_ENTITY, request);
   }
 
   @ExceptionHandler({ConstraintViolationException.class})
