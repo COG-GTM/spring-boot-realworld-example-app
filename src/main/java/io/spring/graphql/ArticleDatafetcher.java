@@ -7,7 +7,6 @@ import com.netflix.graphql.dgs.DgsQuery;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
-import io.spring.graphql.types.PageInfo;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.CursorPageParameter;
@@ -25,6 +24,7 @@ import io.spring.graphql.DgsConstants.QUERY;
 import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
+import io.spring.graphql.types.PageInfo;
 import io.spring.graphql.types.Profile;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -357,7 +357,8 @@ public class ArticleDatafetcher {
 
   private PageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
     return PageInfo.newBuilder()
-        .startCursor(articles.getStartCursor() == null ? null : articles.getStartCursor().toString())
+        .startCursor(
+            articles.getStartCursor() == null ? null : articles.getStartCursor().toString())
         .endCursor(articles.getEndCursor() == null ? null : articles.getEndCursor().toString())
         .hasPreviousPage(articles.hasPrevious())
         .hasNextPage(articles.hasNext())
