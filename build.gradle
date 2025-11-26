@@ -54,6 +54,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
+    testImplementation 'com.netflix.graphql.dgs:graphql-dgs-mocking:4.9.21'
 }
 
 tasks.named('test') {
