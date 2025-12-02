@@ -44,7 +44,14 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+## Requirements
+
+- Java 11 or higher (JDK 11+ required, Temurin/Adoptium recommended)
+- Gradle 7.6+ (included via wrapper)
+
+See [MIGRATION_NOTES.md](MIGRATION_NOTES.md) for details on the Java 11 migration.
+
+## Running the application
 
     ./gradlew bootRun
 
