@@ -76,6 +76,10 @@ Use spotless for code format.
 
     ./gradlew spotlessJavaApply
 
+# Migration Notes
+
+See [MIGRATION_NOTES.md](MIGRATION_NOTES.md) for details on the Java 11 migration and build tool updates.
+
 # Help
 
 Please fork and PR to improve the project.
