@@ -93,4 +93,46 @@ public class ProfileApiTest extends TestWithCurrentUser {
 
     verify(userRepository).removeRelation(eq(followRelation));
   }
+
+  @Test
+  public void should_get_401_when_following_user_without_token() throws Exception {
+    given()
+        .when()
+        .post("/profiles/{username}/follow", anotherUser.getUsername())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_following_user_with_invalid_token() throws Exception {
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token invalid-token")
+        .when()
+        .post("/profiles/{username}/follow", anotherUser.getUsername())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_unfollowing_user_without_token() throws Exception {
+    given()
+        .when()
+        .delete("/profiles/{username}/follow", anotherUser.getUsername())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_unfollowing_user_with_invalid_token() throws Exception {
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token invalid-token")
+        .when()
+        .delete("/profiles/{username}/follow", anotherUser.getUsername())
+        .then()
+        .statusCode(401);
+  }
 }

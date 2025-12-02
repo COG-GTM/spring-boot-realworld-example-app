@@ -206,6 +206,56 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .statusCode(403);
   }
 
+  @Test
+  public void should_get_401_when_updating_article_without_token() throws Exception {
+    Map<String, Object> updateParam = prepareUpdateParam("new title", "new body", "new description");
+
+    given()
+        .contentType("application/json")
+        .body(updateParam)
+        .when()
+        .put("/articles/{slug}", "any-slug")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_updating_article_with_invalid_token() throws Exception {
+    Map<String, Object> updateParam = prepareUpdateParam("new title", "new body", "new description");
+
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token invalid-token")
+        .body(updateParam)
+        .when()
+        .put("/articles/{slug}", "any-slug")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_deleting_article_without_token() throws Exception {
+    given()
+        .when()
+        .delete("/articles/{slug}", "any-slug")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_deleting_article_with_invalid_token() throws Exception {
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token invalid-token")
+        .when()
+        .delete("/articles/{slug}", "any-slug")
+        .then()
+        .statusCode(401);
+  }
+
   private HashMap<String, Object> prepareUpdateParam(
       final String title, final String body, final String description) {
     return new HashMap<String, Object>() {
