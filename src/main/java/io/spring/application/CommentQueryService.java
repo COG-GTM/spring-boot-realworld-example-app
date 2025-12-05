@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
-import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -53,8 +53,8 @@ public class CommentQueryService {
     return comments;
   }
 
-  public CursorPager<CommentData> findByArticleIdWithCursor(
-      String articleId, User user, CursorPageParameter<DateTime> page) {
+    public CursorPager<CommentData> findByArticleIdWithCursor(
+        String articleId, User user, CursorPageParameter<OffsetDateTime> page) {
     List<CommentData> comments = commentReadService.findByArticleIdWithCursor(articleId, page);
     if (comments.isEmpty()) {
       return new CursorPager<>(new ArrayList<>(), page.getDirection(), false);
