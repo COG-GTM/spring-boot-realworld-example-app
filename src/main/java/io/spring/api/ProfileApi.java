@@ -37,6 +37,19 @@ public class ProfileApi {
   @PostMapping(path = "follow")
   public ResponseEntity follow(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+    if (username == null || "null".equals(username)) {
+      return ResponseEntity.badRequest()
+          .body(
+              new HashMap<String, Object>() {
+                {
+                  put("errors", new HashMap<String, Object>() {
+                    {
+                      put("username", new String[] {"must be a valid username"});
+                    }
+                  });
+                }
+              });
+    }
     return userRepository
         .findByUsername(username)
         .map(
