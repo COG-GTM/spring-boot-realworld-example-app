@@ -14,6 +14,7 @@ import io.spring.core.user.User;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+// Spring Boot 3.x requires Jakarta EE 9+ (jakarta.* namespace instead of javax.*)
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
