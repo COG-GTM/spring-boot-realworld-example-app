@@ -221,8 +221,63 @@ If any dependency doesn't support Java 21, consider these alternatives:
 - [JJWT Documentation](https://github.com/jwtk/jjwt)
 - [Java 21 Release Notes](https://openjdk.org/projects/jdk/21/)
 
+## Known Security Vulnerabilities (Phase 1 Status)
+
+### Fixed in Phase 1
+
+The following security vulnerabilities were addressed in Phase 1 by upgrading dependencies:
+
+| Vulnerability ID | Severity | Package | Fixed Version | Description |
+|-----------------|----------|---------|---------------|-------------|
+| SNYK-JAVA-COMGRAPHQLJAVA-7573314 | High | graphql-java | 19.11 | Allocation of Resources Without Limits or Throttling |
+| SNYK-JAVA-COMGRAPHQLJAVA-5291199 | High | graphql-java | 19.11 | Stack-based Buffer Overflow |
+
+### Remaining Vulnerabilities (Require Phase 2 - Spring Boot 3.x)
+
+The following vulnerabilities require upgrading to Spring Boot 3.x and cannot be addressed in Phase 1:
+
+#### Spring Framework Vulnerabilities (35 issues total)
+
+| Vulnerability ID | Severity | Package | Current Version | Fix Requires |
+|-----------------|----------|---------|-----------------|--------------|
+| SNYK-JAVA-ORGSPRINGFRAMEWORKSECURITY-8309135 | Critical | spring-security-web | 5.7.11 | Spring Boot 3.x |
+| SNYK-JAVA-ORGSPRINGFRAMEWORK-12008931 | High | spring-beans | 5.3.31 | Spring Boot 3.x |
+| SNYK-JAVA-ORGSPRINGFRAMEWORK-12817817 | High | spring-core | 5.3.31 | Spring Boot 3.x |
+| SNYK-JAVA-ORGSPRINGFRAMEWORK-6261586 | High | spring-web | 5.3.31 | Spring Boot 3.x |
+| SNYK-JAVA-ORGSPRINGFRAMEWORK-6444790 | High | spring-web | 5.3.31 | Spring Boot 3.x |
+| SNYK-JAVA-ORGSPRINGFRAMEWORK-7945490 | High | spring-webmvc | 5.3.31 | Spring Boot 3.x |
+| SNYK-JAVA-ORGSPRINGFRAMEWORK-8230373 | High | spring-webmvc | 5.3.31 | Spring Boot 3.x |
+| SNYK-JAVA-ORGSPRINGFRAMEWORKSECURITY-6457293 | High | spring-security-core | 5.7.11 | Spring Boot 3.x |
+
+#### Tomcat Embed Vulnerabilities
+
+| Vulnerability ID | Severity | Package | Current Version | Fix Requires |
+|-----------------|----------|---------|-----------------|--------------|
+| SNYK-JAVA-ORGAPACHETOMCATEMBED-13733966 | High | tomcat-embed-core | 9.0.83 | Spring Boot 3.x |
+| SNYK-JAVA-ORGAPACHETOMCATEMBED-11799152 | High | tomcat-embed-core | 9.0.83 | Spring Boot 3.x |
+| SNYK-JAVA-ORGAPACHETOMCATEMBED-10674391 | High | tomcat-embed-core | 9.0.83 | Spring Boot 3.x |
+| SNYK-JAVA-ORGAPACHETOMCATEMBED-10676855 | High | tomcat-embed-core | 9.0.83 | Spring Boot 3.x |
+| SNYK-JAVA-ORGAPACHETOMCATEMBED-10365122 | High | tomcat-embed-core | 9.0.83 | Spring Boot 3.x |
+| SNYK-JAVA-ORGAPACHETOMCATEMBED-13746602 | High | tomcat-embed-core | 9.0.83 | Spring Boot 3.x |
+| SNYK-JAVA-ORGAPACHETOMCATEMBED-9396739 | High | tomcat-embed-core | 9.0.83 | Spring Boot 3.x |
+| SNYK-JAVA-ORGAPACHETOMCATEMBED-7430175 | High | tomcat-embed-core | 9.0.83 | Spring Boot 3.x |
+| SNYK-JAVA-ORGAPACHETOMCATEMBED-8073090 | High | tomcat-embed-core | 9.0.83 | Spring Boot 3.x |
+
+#### Other Vulnerabilities
+
+| Vulnerability ID | Severity | Package | Current Version | Fix Requires |
+|-----------------|----------|---------|-----------------|--------------|
+| SNYK-JAVA-ORGAPACHECOMMONS-10734078 | High | commons-lang3 | 3.12.0 | REST Assured 5.x upgrade |
+
+### Security Remediation Plan
+
+1. **Phase 1 (Complete)**: Fixed graphql-java and DGS vulnerabilities
+2. **Phase 2 (Spring Boot 3.x)**: Will address all Spring Framework, Spring Security, and Tomcat vulnerabilities
+3. **Phase 3 (Java 21)**: No additional security changes expected
+
 ## Version History
 
 | Version | Date | Description |
 |---------|------|-------------|
 | 1.0 | 2025-12-16 | Initial dependency compatibility matrix |
+| 1.1 | 2025-12-16 | Added security vulnerabilities section with Phase 1 fixes and Phase 2 requirements |
