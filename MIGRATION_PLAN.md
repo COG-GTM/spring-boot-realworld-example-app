@@ -263,6 +263,9 @@ The DGS codegen plugin 6.x generates code compatible with Jakarta EE and the new
 - Document breaking changes
 - Verify current build passes
 - Create this migration plan
+- Fix CI workflow deprecated GitHub Actions (actions/checkout, actions/setup-java, actions/cache upgraded from v2 to v4)
+
+**Note:** The CI workflow was failing due to deprecated `actions/cache@v2` which GitHub has disabled. This was fixed as part of Phase 1 to ensure CI can run for subsequent migration phases. The Java version remains at 11 in CI for now.
 
 ### Phase 2: Core Build System Upgrade
 - Update Gradle wrapper to 8.5
