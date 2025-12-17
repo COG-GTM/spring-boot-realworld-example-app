@@ -44,7 +44,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 17 installed.
 
     ./gradlew bootRun
 
@@ -52,6 +52,31 @@ To test that it works, open a browser tab at http://localhost:8080/tags .
 Alternatively, you can run
 
     curl http://localhost:8080/tags
+
+# JVM Optimization Settings
+
+This application is configured with JDK 17 optimizations for improved performance:
+
+**Gradle Wrapper JVM Options:**
+- `-Xmx1g` - Maximum heap size of 1GB
+- `-Xms512m` - Initial heap size of 512MB
+- `-XX:+UseG1GC` - Use G1 Garbage Collector
+- `-XX:+UseStringDeduplication` - Enable string deduplication
+- `-XX:+OptimizeStringConcat` - Optimize string concatenation
+- `-XX:+UseCompressedOops` - Use compressed object pointers
+- `-XX:+UseCompressedClassPointers` - Use compressed class pointers
+
+**Build-time Optimizations:**
+- Preview features enabled with `--enable-preview`
+- Method parameter names preserved with `-parameters`
+- Forked compilation with 2GB heap and G1GC
+
+**Test JVM Options:**
+- 1GB heap with G1GC and string deduplication
+
+**Runtime Optimizations (application.properties):**
+- Hibernate batch processing enabled
+- HikariCP connection pool configured with 20 max connections
 
 # Try it out with [Docker](https://www.docker.com/)
 
