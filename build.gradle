@@ -20,9 +20,8 @@ tasks.withType(JavaCompile) {
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
+        target fileTree('src') {
             include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
         }
         googleJavaFormat()
     }
