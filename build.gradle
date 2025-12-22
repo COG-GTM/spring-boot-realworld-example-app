@@ -42,6 +42,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3',
                 'io.jsonwebtoken:jjwt-jackson:0.12.3'
     implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
+    implementation 'joda-time:joda-time:2.12.5'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
