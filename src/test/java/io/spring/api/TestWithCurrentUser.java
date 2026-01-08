@@ -12,7 +12,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-abstract class TestWithCurrentUser {
+public abstract class TestWithCurrentUser {
   @MockBean protected UserRepository userRepository;
 
   @MockBean protected UserReadService userReadService;
