@@ -19,13 +19,14 @@ import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.user.User;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,27 +55,28 @@ public class ArticleApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_read_article_success() throws Exception {
-    String slug = "test-new-article";
-    DateTime time = new DateTime();
-    Article article =
-        new Article(
-            "Test New Article",
-            "Desc",
-            "Body",
-            Arrays.asList("java", "spring", "jpg"),
-            user.getId(),
-            time);
-    ArticleData articleData = TestHelper.getArticleDataFromArticleAndUser(article, user);
+        String slug = "test-new-article";
+        Instant time = Instant.now();
+        Article article =
+            new Article(
+                "Test New Article",
+                "Desc",
+                "Body",
+                Arrays.asList("java", "spring", "jpg"),
+                user.getId(),
+                time);
+        ArticleData articleData = TestHelper.getArticleDataFromArticleAndUser(article, user);
 
-    when(articleQueryService.findBySlug(eq(slug), eq(null))).thenReturn(Optional.of(articleData));
+        when(articleQueryService.findBySlug(eq(slug), eq(null))).thenReturn(Optional.of(articleData));
 
-    RestAssuredMockMvc.when()
-        .get("/articles/{slug}", slug)
-        .then()
-        .statusCode(200)
-        .body("article.slug", equalTo(slug))
-        .body("article.body", equalTo(articleData.getBody()))
-        .body("article.createdAt", equalTo(ISODateTimeFormat.dateTime().withZoneUTC().print(time)));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+        RestAssuredMockMvc.when()
+            .get("/articles/{slug}", slug)
+            .then()
+            .statusCode(200)
+            .body("article.slug", equalTo(slug))
+            .body("article.body", equalTo(articleData.getBody()))
+            .body("article.createdAt", equalTo(formatter.format(time)));
   }
 
   @Test
@@ -131,25 +133,25 @@ public class ArticleApiTest extends TestWithCurrentUser {
         new Article(
             title, description, body, Arrays.asList("java", "spring", "jpg"), anotherUser.getId());
 
-    DateTime time = new DateTime();
-    ArticleData articleData =
-        new ArticleData(
-            article.getId(),
-            article.getSlug(),
-            article.getTitle(),
-            article.getDescription(),
-            article.getBody(),
-            false,
-            0,
-            time,
-            time,
-            Arrays.asList("joda"),
-            new ProfileData(
-                anotherUser.getId(),
-                anotherUser.getUsername(),
-                anotherUser.getBio(),
-                anotherUser.getImage(),
-                false));
+        Instant time = Instant.now();
+        ArticleData articleData =
+            new ArticleData(
+                article.getId(),
+                article.getSlug(),
+                article.getTitle(),
+                article.getDescription(),
+                article.getBody(),
+                false,
+                0,
+                time,
+                time,
+                Arrays.asList("joda"),
+                new ProfileData(
+                    anotherUser.getId(),
+                    anotherUser.getUsername(),
+                    anotherUser.getBio(),
+                    anotherUser.getImage(),
+                    false));
 
     when(articleRepository.findBySlug(eq(article.getSlug()))).thenReturn(Optional.of(article));
     when(articleQueryService.findBySlug(eq(article.getSlug()), eq(user)))
