@@ -36,11 +36,8 @@ public class DefaultJwtService implements JwtService {
   @Override
   public Optional<String> getSubFromToken(String token) {
     try {
-      Claims claims = Jwts.parser()
-          .verifyWith(signingKey)
-          .build()
-          .parseSignedClaims(token)
-          .getPayload();
+      Claims claims =
+          Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token).getPayload();
       return Optional.ofNullable(claims.getSubject());
     } catch (Exception e) {
       return Optional.empty();

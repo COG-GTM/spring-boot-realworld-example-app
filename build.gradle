@@ -12,12 +12,18 @@ targetCompatibility = '17'
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
+        target fileTree('src') {
             include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
         }
         googleJavaFormat()
     }
+}
+
+// Ensure spotless tasks don't conflict with other tasks
+tasks.matching { it.name.startsWith('spotless') }.configureEach {
+    mustRunAfter tasks.matching { it.name == 'generateJava' }
+    mustRunAfter tasks.matching { it.name == 'compileJava' }
+    mustRunAfter tasks.matching { it.name == 'processResources' }
 }
 
 repositories {
