@@ -12,6 +12,10 @@ import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
+@Tag(name = "Users", description = "User registration and authentication")
 public class UsersApi {
   private UserRepository userRepository;
   private UserQueryService userQueryService;
@@ -36,6 +41,12 @@ public class UsersApi {
   private JwtService jwtService;
   private UserService userService;
 
+  @Operation(summary = "Register a new user", description = "Register a new user and return user with token")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "201", description = "User registered successfully"),
+        @ApiResponse(responseCode = "422", description = "Validation error - email or username already taken")
+      })
   @RequestMapping(path = "/users", method = POST)
   public ResponseEntity createUser(@Valid @RequestBody RegisterParam registerParam) {
     User user = userService.createUser(registerParam);
@@ -44,6 +55,12 @@ public class UsersApi {
         .body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
   }
 
+  @Operation(summary = "Login", description = "Login with email and password to get user with token")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Login successful"),
+        @ApiResponse(responseCode = "422", description = "Invalid email or password")
+      })
   @RequestMapping(path = "/users/login", method = POST)
   public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
     Optional<User> optional = userRepository.findByEmail(loginParam.getEmail());
