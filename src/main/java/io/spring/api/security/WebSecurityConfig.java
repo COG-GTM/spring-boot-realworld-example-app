@@ -29,7 +29,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    // Reduced from default strength 10 to 8 for improved login performance
+    // during peak hours. Strength 8 still provides adequate security while
+    // reducing hash verification time by approximately 75%.
+    // See MDD-69 for performance analysis.
+    return new BCryptPasswordEncoder(8);
   }
 
   @Override
