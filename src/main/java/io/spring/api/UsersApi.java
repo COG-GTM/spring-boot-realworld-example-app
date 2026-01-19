@@ -21,6 +21,8 @@ import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 public class UsersApi {
+  private static final Logger log = LoggerFactory.getLogger(UsersApi.class);
+
   private UserRepository userRepository;
   private UserQueryService userQueryService;
   private PasswordEncoder passwordEncoder;
@@ -46,15 +50,38 @@ public class UsersApi {
 
   @RequestMapping(path = "/users/login", method = POST)
   public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
+    long loginStartTime = System.currentTimeMillis();
+
+    long dbQueryStartTime = System.currentTimeMillis();
     Optional<User> optional = userRepository.findByEmail(loginParam.getEmail());
-    if (optional.isPresent()
-        && passwordEncoder.matches(loginParam.getPassword(), optional.get().getPassword())) {
-      UserData userData = userQueryService.findById(optional.get().getId()).get();
-      return ResponseEntity.ok(
-          userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
-    } else {
-      throw new InvalidAuthenticationException();
+    long dbQueryEndTime = System.currentTimeMillis();
+    log.info(
+        "MDD-69 Login Performance: DB query (findByEmail) took {}ms",
+        dbQueryEndTime - dbQueryStartTime);
+
+    if (optional.isPresent()) {
+      User user = optional.get();
+
+      long bcryptStartTime = System.currentTimeMillis();
+      boolean passwordMatches = passwordEncoder.matches(loginParam.getPassword(), user.getPassword());
+      long bcryptEndTime = System.currentTimeMillis();
+      log.info(
+          "MDD-69 Login Performance: BCrypt verification took {}ms",
+          bcryptEndTime - bcryptStartTime);
+
+      if (passwordMatches) {
+        UserData userData =
+            new UserData(
+                user.getId(), user.getEmail(), user.getUsername(), user.getBio(), user.getImage());
+
+        long totalLoginTime = System.currentTimeMillis() - loginStartTime;
+        log.info("MDD-69 Login Performance: Total login time {}ms", totalLoginTime);
+
+        return ResponseEntity.ok(
+            userResponse(new UserWithToken(userData, jwtService.toToken(user))));
+      }
     }
+    throw new InvalidAuthenticationException();
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {
