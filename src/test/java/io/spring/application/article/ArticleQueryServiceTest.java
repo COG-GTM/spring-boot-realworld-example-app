@@ -227,4 +227,100 @@ public class ArticleQueryServiceTest extends DbTestBase {
     ArticleData articleData = anotherUserFeed.getArticleDatas().get(0);
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
   }
+
+  @Test
+  public void should_query_article_with_multiple_filters_combined() {
+    User anotherUser = new User("other@email.com", "other", "123", "", "");
+    userRepository.save(anotherUser);
+
+    Article articleWithJavaTag =
+        new Article("java article", "desc", "body", Arrays.asList("java"), user.getId());
+    articleRepository.save(articleWithJavaTag);
+
+    Article articleWithSpringTag =
+        new Article("spring article", "desc", "body", Arrays.asList("spring"), anotherUser.getId());
+    articleRepository.save(articleWithSpringTag);
+
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), anotherUser.getId()));
+
+    ArticleDataList articlesWithTagAndAuthor =
+        queryService.findRecentArticles("java", user.getUsername(), null, new Page(), user);
+    Assertions.assertEquals(2, articlesWithTagAndAuthor.getCount());
+
+    ArticleDataList articlesWithTagAuthorAndFavorited =
+        queryService.findRecentArticles(
+            "java", user.getUsername(), anotherUser.getUsername(), new Page(), anotherUser);
+    Assertions.assertEquals(1, articlesWithTagAuthorAndFavorited.getCount());
+    Assertions.assertEquals(
+        article.getId(), articlesWithTagAuthorAndFavorited.getArticleDatas().get(0).getId());
+  }
+
+  @Test
+  public void should_return_empty_feed_when_user_has_no_followed_users() {
+    User lonelyUser = new User("lonely@email.com", "lonely", "123", "", "");
+    userRepository.save(lonelyUser);
+
+    ArticleDataList userFeed = queryService.findUserFeed(lonelyUser, new Page());
+    Assertions.assertEquals(0, userFeed.getCount());
+    Assertions.assertTrue(userFeed.getArticleDatas().isEmpty());
+  }
+
+  @Test
+  public void should_handle_cursor_pagination_first_page() {
+    Article article2 =
+        new Article(
+            "article 2", "desc", "body", Arrays.asList("test"), user.getId(), new DateTime().minusHours(1));
+    articleRepository.save(article2);
+
+    Article article3 =
+        new Article(
+            "article 3", "desc", "body", Arrays.asList("test"), user.getId(), new DateTime().minusHours(2));
+    articleRepository.save(article3);
+
+    CursorPager<ArticleData> firstPage =
+        queryService.findRecentArticlesWithCursor(
+            null, null, null, new CursorPageParameter<>(null, 2, Direction.NEXT), user);
+
+    Assertions.assertEquals(2, firstPage.getData().size());
+    Assertions.assertEquals(article.getId(), firstPage.getData().get(0).getId());
+    Assertions.assertNotNull(firstPage.getStartCursor());
+    Assertions.assertNotNull(firstPage.getEndCursor());
+  }
+
+  @Test
+  public void should_handle_cursor_pagination_with_limit_one() {
+    Article article2 =
+        new Article(
+            "article 2", "desc", "body", Arrays.asList("test"), user.getId(), new DateTime().minusHours(1));
+    articleRepository.save(article2);
+
+    CursorPager<ArticleData> singleItemPage =
+        queryService.findRecentArticlesWithCursor(
+            null, null, null, new CursorPageParameter<>(null, 1, Direction.NEXT), user);
+
+    Assertions.assertEquals(1, singleItemPage.getData().size());
+    Assertions.assertEquals(article.getId(), singleItemPage.getData().get(0).getId());
+  }
+
+  @Test
+  public void should_return_empty_when_no_articles_exist_for_filters() {
+    ArticleDataList noArticles =
+        queryService.findRecentArticles("nonexistent-tag", null, null, new Page(), user);
+    Assertions.assertEquals(0, noArticles.getCount());
+    Assertions.assertTrue(noArticles.getArticleDatas().isEmpty());
+
+    ArticleDataList noArticlesByAuthor =
+        queryService.findRecentArticles(null, "nonexistent-author", null, new Page(), user);
+    Assertions.assertEquals(0, noArticlesByAuthor.getCount());
+    Assertions.assertTrue(noArticlesByAuthor.getArticleDatas().isEmpty());
+  }
+
+  @Test
+  public void should_return_empty_optional_when_article_not_found() {
+    Optional<ArticleData> notFound = queryService.findById("nonexistent-id", user);
+    Assertions.assertFalse(notFound.isPresent());
+
+    Optional<ArticleData> notFoundBySlug = queryService.findBySlug("nonexistent-slug", user);
+    Assertions.assertFalse(notFoundBySlug.isPresent());
+  }
 }
