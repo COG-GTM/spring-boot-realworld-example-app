@@ -72,4 +72,90 @@ public class ListArticleApiTest extends TestWithCurrentUser {
         .then()
         .statusCode(200);
   }
+
+  @Test
+  public void should_get_articles_by_tag() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq("java"), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    RestAssuredMockMvc.when()
+        .get("/articles?tag=java")
+        .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_by_author() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq("johnjacob"), eq(null), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    RestAssuredMockMvc.when()
+        .get("/articles?author=johnjacob")
+        .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_by_favorited() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq(null), eq("johnjacob"), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    RestAssuredMockMvc.when()
+        .get("/articles?favorited=johnjacob")
+        .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_with_multiple_filters() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq("java"), eq("johnjacob"), eq("johnjacob"), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    RestAssuredMockMvc.when()
+        .get("/articles?tag=java&author=johnjacob&favorited=johnjacob")
+        .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_with_pagination() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq(null), eq(null), eq(new Page(10, 5)), eq(null)))
+        .thenReturn(articleDataList);
+
+    RestAssuredMockMvc.when()
+        .get("/articles?offset=10&limit=5")
+        .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_401_when_create_article_without_authentication() throws Exception {
+    given()
+        .contentType("application/json")
+        .body("{\"article\": {\"title\": \"test\", \"description\": \"test\", \"body\": \"test\"}}")
+        .when()
+        .post("/articles")
+        .then()
+        .statusCode(401);
+  }
 }
