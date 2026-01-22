@@ -16,6 +16,7 @@ import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
+import io.spring.core.util.StringUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
     when(articleCommandService.createArticle(any(), any()))
         .thenReturn(new Article(title, description, body, tagList, user.getId()));
 
-    when(articleQueryService.findBySlug(eq(Article.toSlug(title)), any()))
+    when(articleQueryService.findBySlug(eq(StringUtils.toSlug(title)), any()))
         .thenReturn(Optional.empty());
 
     when(articleQueryService.findById(any(), any())).thenReturn(Optional.of(articleData));
@@ -137,7 +138,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             asList(tagList),
             new ProfileData("userid", user.getUsername(), user.getBio(), user.getImage(), false));
 
-    when(articleQueryService.findBySlug(eq(Article.toSlug(title)), any()))
+    when(articleQueryService.findBySlug(eq(StringUtils.toSlug(title)), any()))
         .thenReturn(Optional.of(articleData));
 
     when(articleQueryService.findById(any(), any())).thenReturn(Optional.of(articleData));
