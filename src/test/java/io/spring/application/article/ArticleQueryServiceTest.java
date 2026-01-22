@@ -1,5 +1,6 @@
 package io.spring.application.article;
 
+import io.spring.application.ArticleDataEnricher;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
@@ -30,6 +31,7 @@ import org.springframework.context.annotation.Import;
 
 @Import({
   ArticleQueryService.class,
+  ArticleDataEnricher.class,
   MyBatisUserRepository.class,
   MyBatisArticleRepository.class,
   MyBatisArticleFavoriteRepository.class
