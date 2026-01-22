@@ -68,7 +68,7 @@ public class ArticleDataEnricher {
                 .collect(toList()));
     articles.forEach(
         articleData -> {
-          if (followingAuthors.contains(articleData.getId())) {
+          if (followingAuthors.contains(articleData.getProfileData().getId())) {
             articleData.getProfileData().setFollowing(true);
           }
         });
@@ -102,7 +102,7 @@ public class ArticleDataEnricher {
     articles.forEach(
         articleData -> {
           if (favoritedArticles.contains(articleData.getId())) {
-            articleData.setFavorited(true);
+            articleData.setFavorited(!articleData.isFavorited());
           }
         });
   }
