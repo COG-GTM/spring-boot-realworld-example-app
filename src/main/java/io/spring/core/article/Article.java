@@ -2,7 +2,7 @@ package io.spring.core.article;
 
 import static java.util.stream.Collectors.toList;
 
-import io.spring.Util;
+import io.spring.core.util.StringUtils;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +38,7 @@ public class Article {
       String userId,
       DateTime createdAt) {
     this.id = UUID.randomUUID().toString();
-    this.slug = toSlug(title);
+    this.slug = StringUtils.toSlug(title);
     this.title = title;
     this.description = description;
     this.body = body;
@@ -49,22 +49,18 @@ public class Article {
   }
 
   public void update(String title, String description, String body) {
-    if (!Util.isEmpty(title)) {
+    if (StringUtils.isNotEmpty(title)) {
       this.title = title;
-      this.slug = toSlug(title);
+      this.slug = StringUtils.toSlug(title);
       this.updatedAt = new DateTime();
     }
-    if (!Util.isEmpty(description)) {
+    if (StringUtils.isNotEmpty(description)) {
       this.description = description;
       this.updatedAt = new DateTime();
     }
-    if (!Util.isEmpty(body)) {
+    if (StringUtils.isNotEmpty(body)) {
       this.body = body;
       this.updatedAt = new DateTime();
     }
-  }
-
-  public static String toSlug(String title) {
-    return title.toLowerCase().replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\’|\\”|\\s\\?\\,\\.]+", "-");
   }
 }
