@@ -106,4 +106,15 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
       return String.join(".", Arrays.copyOfRange(splits, 2, splits.length));
     }
   }
+
+  protected String formatValidationMessage(String field, String message) {
+    if (field == null || field.isEmpty()) {
+      return message;
+    }
+    return String.format("%s: %s", field, message);
+  }
+
+  protected boolean isFieldError(ConstraintViolation<?> violation) {
+    return violation.getPropertyPath() != null && !violation.getPropertyPath().toString().isEmpty();
+  }
 }
