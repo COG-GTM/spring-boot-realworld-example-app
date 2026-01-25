@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,6 +28,7 @@ public class ArticleQueryService {
   private UserRelationshipQueryService userRelationshipQueryService;
   private ArticleFavoritesReadService articleFavoritesReadService;
 
+  @Cacheable(value = "articles", key = "#id", condition = "#user == null")
   public Optional<ArticleData> findById(String id, User user) {
     ArticleData articleData = articleReadService.findById(id);
     if (articleData == null) {
@@ -39,6 +41,7 @@ public class ArticleQueryService {
     }
   }
 
+  @Cacheable(value = "articles", key = "#slug", condition = "#user == null")
   public Optional<ArticleData> findBySlug(String slug, User user) {
     ArticleData articleData = articleReadService.findBySlug(slug);
     if (articleData == null) {
@@ -173,12 +176,9 @@ public class ArticleQueryService {
   }
 
   private void fillExtraInfo(String id, User user, ArticleData articleData) {
-    articleData.setFavorited(articleFavoritesReadService.isUserFavorite(user.getId(), id));
-    articleData.setFavoritesCount(articleFavoritesReadService.articleFavoriteCount(id));
-    articleData
-        .getProfileData()
-        .setFollowing(
-            userRelationshipQueryService.isUserFollowing(
-                user.getId(), articleData.getProfileData().getId()));
+    List<ArticleData> singleArticleList = Collections.singletonList(articleData);
+    setFavoriteCount(singleArticleList);
+    setIsFavorite(singleArticleList, user);
+    setIsFollowingAuthor(singleArticleList, user);
   }
 }
