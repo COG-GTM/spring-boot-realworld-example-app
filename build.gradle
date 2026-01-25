@@ -44,6 +44,23 @@ dependencies {
     implementation 'joda-time:joda-time:2.10.13'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
 
+    // PostgreSQL driver for production use
+    runtimeOnly 'org.postgresql:postgresql:42.3.3'
+
+    // Caching support
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.0.5'
+
+    // Monitoring and observability
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // Distributed tracing with Sleuth and Zipkin
+    implementation 'org.springframework.cloud:spring-cloud-starter-sleuth:3.1.1'
+
+    // Structured JSON logging
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
