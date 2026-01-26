@@ -23,9 +23,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-  @Bean
-  public JwtTokenFilter jwtTokenFilter() {
-    return new JwtTokenFilter();
+  private final JwtTokenFilter jwtTokenFilter;
+
+  public WebSecurityConfig(JwtTokenFilter jwtTokenFilter) {
+    this.jwtTokenFilter = jwtTokenFilter;
   }
 
   @Bean
@@ -62,7 +63,7 @@ public class WebSecurityConfig {
                     .anyRequest()
                     .authenticated());
 
-    http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 
