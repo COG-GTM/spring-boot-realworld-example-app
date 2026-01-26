@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,7 +26,7 @@ public class WebSecurityConfig {
 
   private final JwtTokenFilter jwtTokenFilter;
 
-  public WebSecurityConfig(JwtTokenFilter jwtTokenFilter) {
+  public WebSecurityConfig(@Lazy JwtTokenFilter jwtTokenFilter) {
     this.jwtTokenFilter = jwtTokenFilter;
   }
 
