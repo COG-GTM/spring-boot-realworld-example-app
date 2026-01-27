@@ -10,6 +10,10 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '22'
 targetCompatibility = '22'
 
+springBoot {
+    mainClass = 'io.spring.RealWorldApplication'
+}
+
 spotless {
     java {
         target project.fileTree(project.rootDir) {
