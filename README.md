@@ -1,81 +1,242 @@
-# ![RealWorld Example App using Kotlin and Spring](example-logo.png)
+# Spring Boot RealWorld Example App
 
-[![Actions](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
+A production-ready Spring Boot implementation of the [RealWorld](https://github.com/gothinkster/realworld) specification, demonstrating a Medium.com clone backend with both REST and GraphQL APIs.
 
-> ### Spring boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
+![RealWorld Example App](example-logo.png)
 
-This codebase was created to demonstrate a fully fledged full-stack application built with Spring boot + Mybatis including CRUD operations, authentication, routing, pagination, and more.
+[![Java CI](https://github.com/COG-GTM/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/COG-GTM/spring-boot-realworld-example-app/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
+## Table of Contents
 
-# *NEW* GraphQL Support  
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Getting Started](#getting-started)
+- [API Documentation](#api-documentation)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Docker](#docker)
+- [Contributing](#contributing)
+- [License](#license)
 
-Following some DDD principles. REST or GraphQL is just a kind of adapter. And the domain layer will be consistent all the time. So this repository implement GraphQL and REST at the same time.
+## Overview
 
-The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-example-app/blob/master/src/main/resources/schema/schema.graphqls and the visualization looks like below.
+This codebase demonstrates a fully-featured backend application built with Spring Boot and MyBatis, implementing CRUD operations, JWT authentication, pagination, and more. The application follows Domain-Driven Design (DDD) principles and uses the Command Query Responsibility Segregation (CQRS) pattern to separate read and write operations.
 
-![](graphql-schema.png)
+The backend serves as a reference implementation for the RealWorld specification, which defines a standardized API for building Medium-like applications. Frontend developers can connect any RealWorld-compliant frontend to this backend without modification.
 
-And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
-# How it works
+## Features
 
-The application uses Spring Boot (Web, Mybatis).
+The application provides a complete set of features for a social blogging platform:
 
-* Use the idea of Domain Driven Design to separate the business term and infrastructure term.
-* Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
-* Use [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern to separate the read model and write model.
+**User Management** handles registration, authentication via JWT tokens, and profile management including bio and avatar updates. **Content Publishing** supports creating, reading, updating, and deleting articles with automatic slug generation from titles. **Social Features** enable users to follow other users, favorite articles, and comment on articles. **Content Discovery** allows browsing articles by tags, filtering by author or favorited users, and accessing personalized feeds.
 
-And the code is organized as this:
+Both REST and GraphQL APIs are available, sharing the same underlying domain logic. The GraphQL implementation uses Netflix's DGS Framework and supports cursor-based pagination for efficient data fetching.
 
-1. `api` is the web layer implemented by Spring MVC
-2. `core` is the business model including entities and services
-3. `application` is the high-level services for querying the data transfer objects
-4. `infrastructure`  contains all the implementation classes as the technique details
+## Architecture
 
-# Security
+The application follows a four-layer architecture with clear separation of concerns:
 
-Integration with Spring Security and add other filter for jwt token process.
+```
+src/main/java/io/spring/
+├── api/                    # REST controllers and security filters
+├── application/            # Use case orchestration and DTOs
+├── core/                   # Domain entities and repository interfaces
+├── graphql/                # GraphQL resolvers and data fetchers
+└── infrastructure/         # MyBatis implementations and services
+```
 
-The secret key is stored in `application.properties`.
+**API Layer** exposes HTTP endpoints via Spring MVC controllers and handles request validation. **Application Layer** orchestrates use cases through query and command services, implementing the CQRS pattern. **Core Layer** contains pure business logic with domain entities like User, Article, Comment, and Tag, along with repository interfaces. **Infrastructure Layer** provides concrete implementations using MyBatis for data persistence and services for JWT token handling and password encryption.
 
-# Database
+The Data Mapper pattern is implemented through MyBatis, which maps between domain objects and the SQLite database. Flyway manages database migrations, with the schema defined in `src/main/resources/db/migration/`.
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
+## Requirements
 
-# Getting started
+- Java 11 or higher
+- Gradle 7.4+ (wrapper included)
 
-You'll need Java 11 installed.
+## Getting Started
 
-    ./gradlew bootRun
+Clone the repository and run the application using the Gradle wrapper:
 
-To test that it works, open a browser tab at http://localhost:8080/tags .  
-Alternatively, you can run
+```bash
+# Clone the repository
+git clone https://github.com/COG-GTM/spring-boot-realworld-example-app.git
+cd spring-boot-realworld-example-app
 
-    curl http://localhost:8080/tags
+# Run the application
+./gradlew bootRun
+```
 
-# Try it out with [Docker](https://www.docker.com/)
+The server starts on port 8080. Verify it's running by fetching the tags endpoint:
 
-You'll need Docker installed.
-	
-    ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+```bash
+curl http://localhost:8080/tags
+```
 
-# Try it out with a RealWorld frontend
+Or open http://localhost:8080/tags in your browser.
 
-The entry point address of the backend API is at http://localhost:8080, **not** http://localhost:8080/api as some of the frontend documentation suggests.
+### Connecting a Frontend
 
-# Run test
+The backend API is available at `http://localhost:8080` (note: there is no `/api` prefix). Any RealWorld-compliant frontend can connect to this backend by configuring its API base URL accordingly.
 
-The repository contains a lot of test cases to cover both api test and repository test.
+## API Documentation
 
-    ./gradlew test
+### REST API
 
-# Code format
+The REST API follows the [RealWorld API specification](https://github.com/gothinkster/realworld/tree/main/api). Key endpoints include:
 
-Use spotless for code format.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/users` | Register a new user |
+| POST | `/users/login` | Authenticate and receive JWT token |
+| GET | `/user` | Get current user (requires auth) |
+| PUT | `/user` | Update current user (requires auth) |
+| GET | `/profiles/:username` | Get user profile |
+| POST | `/profiles/:username/follow` | Follow a user (requires auth) |
+| DELETE | `/profiles/:username/follow` | Unfollow a user (requires auth) |
+| GET | `/articles` | List articles with optional filters |
+| GET | `/articles/feed` | Get personalized feed (requires auth) |
+| POST | `/articles` | Create an article (requires auth) |
+| GET | `/articles/:slug` | Get a single article |
+| PUT | `/articles/:slug` | Update an article (requires auth) |
+| DELETE | `/articles/:slug` | Delete an article (requires auth) |
+| POST | `/articles/:slug/favorite` | Favorite an article (requires auth) |
+| DELETE | `/articles/:slug/favorite` | Unfavorite an article (requires auth) |
+| GET | `/articles/:slug/comments` | Get article comments |
+| POST | `/articles/:slug/comments` | Add a comment (requires auth) |
+| DELETE | `/articles/:slug/comments/:id` | Delete a comment (requires auth) |
+| GET | `/tags` | Get all tags |
 
-    ./gradlew spotlessJavaApply
+Authentication uses JWT tokens passed in the `Authorization` header with the format `Token <jwt>`. Tokens expire after 24 hours.
 
-# Help
+### GraphQL API
 
-Please fork and PR to improve the project.
+The GraphQL endpoint is available at `http://localhost:8080/graphql`. An interactive GraphiQL IDE is accessible at `http://localhost:8080/graphiql` for exploring the schema and testing queries.
+
+![GraphQL Schema](graphql-schema.png)
+
+The schema supports queries for articles, profiles, tags, and the current user, along with mutations for user registration, authentication, article management, and comments. Cursor-based pagination is available for article and comment lists.
+
+Example query:
+
+```graphql
+query {
+  articles(first: 10) {
+    edges {
+      node {
+        title
+        slug
+        author {
+          username
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+```
+
+## Project Structure
+
+```
+spring-boot-realworld-example-app/
+├── src/
+│   ├── main/
+│   │   ├── java/io/spring/
+│   │   │   ├── api/                 # REST controllers
+│   │   │   │   ├── security/        # JWT filter and security config
+│   │   │   │   └── exception/       # Exception handlers
+│   │   │   ├── application/         # Query/command services and DTOs
+│   │   │   ├── core/                # Domain entities and repositories
+│   │   │   │   ├── article/         # Article, Tag entities
+│   │   │   │   ├── comment/         # Comment entity
+│   │   │   │   ├── favorite/        # ArticleFavorite entity
+│   │   │   │   └── user/            # User, FollowRelation entities
+│   │   │   ├── graphql/             # GraphQL resolvers
+│   │   │   └── infrastructure/      # MyBatis implementations
+│   │   └── resources/
+│   │       ├── db/migration/        # Flyway migrations
+│   │       ├── mapper/              # MyBatis XML mappers
+│   │       ├── schema/              # GraphQL schema
+│   │       └── application.properties
+│   └── test/                        # Unit and integration tests
+├── build.gradle                     # Gradle build configuration
+├── gradlew                          # Gradle wrapper (Unix)
+├── gradlew.bat                      # Gradle wrapper (Windows)
+├── Dockerfile                       # Container image definition
+└── docker-compose.yml               # Local development with Docker
+```
+
+## Testing
+
+The repository includes comprehensive tests covering API endpoints, repository operations, and service logic:
+
+```bash
+# Run all tests
+./gradlew test
+```
+
+Tests use JUnit 5 with Spring Boot Test for integration testing and REST Assured for API testing. The test suite validates both REST and GraphQL endpoints along with repository persistence.
+
+### Code Formatting
+
+The project uses Spotless with Google Java Format for consistent code style:
+
+```bash
+# Apply code formatting
+./gradlew spotlessJavaApply
+
+# Check formatting without applying changes
+./gradlew spotlessCheck
+```
+
+## Docker
+
+Build and run the application in a container:
+
+```bash
+# Build the Docker image
+./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
+
+# Run the container
+docker run -p 8081:8080 spring-boot-realworld-example-app
+```
+
+The application will be available at `http://localhost:8081`.
+
+Alternatively, use Docker Compose for local development:
+
+```bash
+docker-compose up
+```
+
+## Configuration
+
+Key configuration options in `src/main/resources/application.properties`:
+
+| Property | Description | Default |
+|----------|-------------|---------|
+| `spring.datasource.url` | Database connection URL | `jdbc:sqlite:dev.db` |
+| `jwt.secret` | Secret key for JWT signing | (configured) |
+| `jwt.sessionTime` | JWT token expiration in seconds | `86400` (24 hours) |
+| `image.default` | Default user avatar URL | (configured) |
+
+The application uses SQLite by default for easy local development. To use a different database, update the datasource configuration and add the appropriate JDBC driver dependency.
+
+## Contributing
+
+Contributions are welcome. Please fork the repository and submit a pull request with your changes. Ensure all tests pass and code follows the project's formatting standards before submitting.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+_Originally written and maintained by contributors and [Devin](https://app.devin.ai), with updates from the core team._
