@@ -35,34 +35,23 @@ public class WebSecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    http.csrf()
-        .disable()
-        .cors()
-        .and()
-        .exceptionHandling()
-        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-        .and()
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-        .authorizeHttpRequests()
-        .requestMatchers(HttpMethod.OPTIONS)
-        .permitAll()
-        .requestMatchers("/graphiql")
-        .permitAll()
-        .requestMatchers("/graphql")
-        .permitAll()
-        .requestMatchers(HttpMethod.GET, "/articles/feed")
-        .authenticated()
-        .requestMatchers(HttpMethod.POST, "/users", "/users/login")
-        .permitAll()
-        .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
-        .permitAll()
-        .anyRequest()
-        .authenticated();
+    http
+        .csrf(csrf -> csrf.disable())
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .exceptionHandling(exception -> exception
+            .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(HttpMethod.OPTIONS).permitAll()
+            .requestMatchers("/graphiql").permitAll()
+            .requestMatchers("/graphql").permitAll()
+            .requestMatchers(HttpMethod.GET, "/articles/feed").authenticated()
+            .requestMatchers(HttpMethod.POST, "/users", "/users/login").permitAll()
+            .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags").permitAll()
+            .anyRequest().authenticated())
+        .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
-    http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-    
     return http.build();
   }
 
