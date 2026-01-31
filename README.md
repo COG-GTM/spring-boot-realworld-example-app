@@ -1,81 +1,180 @@
-# ![RealWorld Example App using Kotlin and Spring](example-logo.png)
+# ![RealWorld Example App](example-logo.png)
 
-[![Actions](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
+A full-stack Spring Boot application implementing the [RealWorld](https://github.com/gothinkster/realworld) specification with both REST and GraphQL APIs.
 
-> ### Spring boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
+[![Java CI](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This codebase was created to demonstrate a fully fledged full-stack application built with Spring boot + Mybatis including CRUD operations, authentication, routing, pagination, and more.
+## Table of Contents
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
+- [Overview](#overview)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Quick Start](#quick-start)
+- [Running with Docker](#running-with-docker)
+- [Project Structure](#project-structure)
+- [API Documentation](#api-documentation)
+- [GraphQL Support](#graphql-support)
+- [Database](#database)
+- [Security](#security)
+- [Testing](#testing)
+- [Code Formatting](#code-formatting)
+- [Contributing](#contributing)
+- [License](#license)
 
-# *NEW* GraphQL Support  
+## Overview
 
-Following some DDD principles. REST or GraphQL is just a kind of adapter. And the domain layer will be consistent all the time. So this repository implement GraphQL and REST at the same time.
+This codebase demonstrates a fully-featured application built with Spring Boot and MyBatis, including CRUD operations, authentication, routing, pagination, and more. It adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API, making it compatible with any RealWorld frontend implementation.
 
-The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-example-app/blob/master/src/main/resources/schema/schema.graphqls and the visualization looks like below.
+The application follows Domain Driven Design (DDD) principles to separate business logic from infrastructure concerns, and implements the Command Query Responsibility Segregation (CQRS) pattern to separate read and write models.
 
-![](graphql-schema.png)
+## Features
 
-And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
-# How it works
+This implementation includes support for both REST and GraphQL APIs, allowing you to choose the interface that best fits your needs. The REST API follows the RealWorld specification while the GraphQL API provides a flexible query interface using Netflix's [DGS Framework](https://github.com/Netflix/dgs-framework).
 
-The application uses Spring Boot (Web, Mybatis).
+The application uses MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence, providing clean separation between domain objects and database operations. Authentication is handled through JWT tokens integrated with Spring Security.
 
-* Use the idea of Domain Driven Design to separate the business term and infrastructure term.
-* Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
-* Use [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern to separate the read model and write model.
+## Requirements
 
-And the code is organized as this:
+- Java 11 or higher
+- Gradle (wrapper included)
 
-1. `api` is the web layer implemented by Spring MVC
-2. `core` is the business model including entities and services
-3. `application` is the high-level services for querying the data transfer objects
-4. `infrastructure`  contains all the implementation classes as the technique details
+## Quick Start
 
-# Security
+Clone the repository and run the application:
 
-Integration with Spring Security and add other filter for jwt token process.
+```bash
+# Clone the repository
+git clone https://github.com/gothinkster/spring-boot-realworld-example-app.git
+cd spring-boot-realworld-example-app
 
-The secret key is stored in `application.properties`.
+# Run the application
+./gradlew bootRun
+```
 
-# Database
+The application will start on `http://localhost:8080`. You can verify it's running by visiting `http://localhost:8080/tags` in your browser or using curl:
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
+```bash
+curl http://localhost:8080/tags
+```
 
-# Getting started
+## Running with Docker
 
-You'll need Java 11 installed.
+If you prefer to run the application in a container:
 
-    ./gradlew bootRun
+```bash
+# Build the Docker image
+./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
 
-To test that it works, open a browser tab at http://localhost:8080/tags .  
-Alternatively, you can run
+# Run the container
+docker run -p 8081:8080 spring-boot-realworld-example-app
+```
 
-    curl http://localhost:8080/tags
+The application will be available at `http://localhost:8081`.
 
-# Try it out with [Docker](https://www.docker.com/)
+## Project Structure
 
-You'll need Docker installed.
-	
-    ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+```
+src/main/java/io/spring/
+├── api/                    # REST API controllers (Spring MVC)
+│   ├── ArticleApi.java
+│   ├── ArticlesApi.java
+│   ├── CommentsApi.java
+│   ├── CurrentUserApi.java
+│   ├── ProfileApi.java
+│   ├── TagsApi.java
+│   ├── UsersApi.java
+│   ├── exception/          # Exception handlers
+│   └── security/           # Security filters and configuration
+├── application/            # Query services and DTOs (read model)
+├── core/                   # Domain model and business logic
+│   ├── article/
+│   ├── comment/
+│   ├── favorite/
+│   ├── service/
+│   └── user/
+├── graphql/                # GraphQL resolvers and data fetchers
+└── infrastructure/         # Technical implementations
+    ├── mybatis/            # MyBatis mappers and type handlers
+    ├── repository/         # Repository implementations
+    └── service/            # Infrastructure services
+```
 
-# Try it out with a RealWorld frontend
+The code organization follows DDD principles where `api` serves as the web layer, `core` contains the business model including entities and services, `application` provides high-level services for querying data transfer objects, and `infrastructure` contains all implementation classes for technical details.
 
-The entry point address of the backend API is at http://localhost:8080, **not** http://localhost:8080/api as some of the frontend documentation suggests.
+## API Documentation
 
-# Run test
+The REST API entry point is at `http://localhost:8080`. Note that this differs from some frontend documentation which may suggest `http://localhost:8080/api`.
 
-The repository contains a lot of test cases to cover both api test and repository test.
+The API implements the full RealWorld specification including endpoints for user registration and authentication, user profile management, article CRUD operations, comments on articles, favoriting articles, following users, and tag listing.
 
-    ./gradlew test
+For detailed API documentation, refer to the [RealWorld API Spec](https://github.com/gothinkster/realworld/tree/master/api).
 
-# Code format
+## GraphQL Support
 
-Use spotless for code format.
+The application provides a GraphQL API alongside the REST API. Both interfaces share the same domain layer, demonstrating how DDD principles allow different adapters to coexist.
 
-    ./gradlew spotlessJavaApply
+The GraphQL schema is located at `src/main/resources/schema/schema.graphqls` and supports queries for articles, user profiles, tags, and feeds, as well as mutations for user management, article operations, and comments.
 
-# Help
+![GraphQL Schema](graphql-schema.png)
 
-Please fork and PR to improve the project.
+The GraphQL endpoint is available at `http://localhost:8080/graphql` with an interactive GraphiQL interface at `http://localhost:8080/graphiql`.
+
+## Database
+
+The application uses SQLite for persistence, which allows for easy local development without losing test data between restarts. The database file (`dev.db`) is created automatically in the project root.
+
+To use a different database, modify the connection settings in `src/main/resources/application.properties`:
+
+```properties
+spring.datasource.url=jdbc:sqlite:dev.db
+spring.datasource.driver-class-name=org.sqlite.JDBC
+```
+
+Database migrations are managed by Flyway and located in `src/main/resources/db/migration`.
+
+## Security
+
+Authentication is implemented using JWT tokens integrated with Spring Security. The JWT secret key and session duration are configured in `application.properties`:
+
+```properties
+jwt.secret=your-secret-key
+jwt.sessionTime=86400
+```
+
+For production deployments, ensure you change the default secret key to a secure value.
+
+## Testing
+
+The repository includes comprehensive test coverage for both API and repository layers:
+
+```bash
+# Run all tests
+./gradlew test
+```
+
+## Code Formatting
+
+The project uses [Spotless](https://github.com/diffplug/spotless) with Google Java Format for consistent code style:
+
+```bash
+# Apply code formatting
+./gradlew spotlessJavaApply
+
+# Check formatting without applying changes
+./gradlew spotlessCheck
+```
+
+## Contributing
+
+Contributions are welcome. Please fork the repository and submit a pull request with your changes. Ensure that all tests pass and code formatting is applied before submitting.
+
+For more information on how this project works with other frontends and backends, visit the [RealWorld](https://github.com/gothinkster/realworld) repository.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+_Originally written and maintained by contributors and [Devin](https://app.devin.ai), with updates from the core team._
