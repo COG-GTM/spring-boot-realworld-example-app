@@ -153,6 +153,43 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .statusCode(422);
   }
 
+  @Test
+  public void should_get_401_when_creating_article_without_token() {
+    String title = "How to train your dragon";
+    String description = "Ever wonder how?";
+    String body = "You have to believe";
+    List<String> tagList = asList("reactjs", "angularjs", "dragons");
+    Map<String, Object> param = prepareParam(title, description, body, tagList);
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/articles")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_creating_article_with_invalid_token() {
+    String title = "How to train your dragon";
+    String description = "Ever wonder how?";
+    String body = "You have to believe";
+    List<String> tagList = asList("reactjs", "angularjs", "dragons");
+    Map<String, Object> param = prepareParam(title, description, body, tagList);
+
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token invalid-token")
+        .body(param)
+        .when()
+        .post("/articles")
+        .then()
+        .statusCode(401);
+  }
+
   private HashMap<String, Object> prepareParam(
       final String title, final String description, final String body, final List<String> tagList) {
     return new HashMap<String, Object>() {
