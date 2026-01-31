@@ -47,7 +47,10 @@ public class CommentQueryServiceTest extends DbTestBase {
 
   @Test
   public void should_read_comment_success() {
-    Comment comment = new Comment("content", user.getId(), "123");
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), user.getId());
+    articleRepository.save(article);
+    
+    Comment comment = new Comment("content", user.getId(), article.getId());
     commentRepository.save(comment);
 
     Optional<CommentData> optional = commentQueryService.findById(comment.getId(), user);
