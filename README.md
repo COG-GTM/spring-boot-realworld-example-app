@@ -44,7 +44,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 17 installed.
 
     ./gradlew bootRun
 
@@ -52,6 +52,41 @@ To test that it works, open a browser tab at http://localhost:8080/tags .
 Alternatively, you can run
 
     curl http://localhost:8080/tags
+
+# Java 17 Migration
+
+This project has been updated to require Java 17 as a prerequisite. Java 17 is a Long Term Support (LTS) release that provides improved performance, security, and language features compared to Java 11.
+
+## Migration Changes
+
+The following changes were made during the Java 17 migration process:
+
+### Build Configuration
+- **Gradle compatibility**: Updated `sourceCompatibility` and `targetCompatibility` from Java 11 to Java 17 in `build.gradle`
+- **Build tools**: Ensured Gradle version compatibility with Java 17
+
+### CI/CD Pipeline
+- **GitHub Actions**: Updated the CI workflow to use Java 17 instead of Java 11 in `.github/workflows/gradle.yml`
+- **Build environment**: Updated the JDK setup action to use Java 17 distribution
+
+### Dependency Compatibility
+- **Spring Boot**: The current Spring Boot version 2.6.3 fully supports Java 17
+- **Framework compatibility**: All major dependencies (MyBatis, Netflix DGS, JWT libraries) are compatible with Java 17
+- **Future-proofing**: Aligns with Spring Framework 6 and Spring Boot 3 baseline requirements
+
+### Benefits of Java 17
+- **Long Term Support**: Java 17 is an LTS release supported until September 2029
+- **Performance improvements**: Enhanced garbage collection and runtime optimizations
+- **Language features**: Access to modern Java language features and APIs
+- **Security**: Latest security updates and improvements
+- **Spring ecosystem**: Better alignment with future Spring Framework versions
+
+### Migration Verification
+To verify the Java 17 migration:
+1. Ensure Java 17 is installed: `java -version`
+2. Run the application: `./gradlew bootRun`
+3. Execute tests: `./gradlew test`
+4. Check code formatting: `./gradlew spotlessJavaApply`
 
 # Try it out with [Docker](https://www.docker.com/)
 
