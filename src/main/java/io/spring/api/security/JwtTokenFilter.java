@@ -1,10 +1,14 @@
 package io.spring.api.security;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.UserRepository;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
+import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +30,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
     getTokenString(request.getHeader(header))
-        .flatMap(token -> jwtService.getSubFromToken(token))
+        .flatMap(token -> validateAccessToken(token))
         .ifPresent(
             id -> {
               if (SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -45,6 +49,24 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             });
 
     filterChain.doFilter(request, response);
+  }
+
+  private Optional<String> validateAccessToken(String token) {
+    try {
+      SecretKey signingKey = jwtService.getSigningKey();
+      Jws<Claims> claimsJws =
+          Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
+      Claims claims = claimsJws.getBody();
+
+      String tokenType = claims.get("type", String.class);
+      if (tokenType != null && !"access".equals(tokenType)) {
+        return Optional.empty();
+      }
+
+      return Optional.ofNullable(claims.getSubject());
+    } catch (Exception e) {
+      return Optional.empty();
+    }
   }
 
   private Optional<String> getTokenString(String header) {
