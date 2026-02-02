@@ -1,0 +1,35 @@
+# Seed data for local/dev profiles. Production loads agreements from the CSA golden source.
+agreements:
+  - reference: CSA-ACME-2019-01
+    counterparty: ACME CAPITAL LLP
+    currency: USD
+    threshold: 5000000
+    minimumTransferAmount: 500000
+    positions:
+      - asset: UST 2.5% 2031
+        assetClass: GOVT
+        marketValue: 12500000
+        haircutBps: 200
+      - asset: IBM 3.3% 2027
+        assetClass: CORP
+        marketValue: 4000000
+        haircutBps: 800
+    exposure: 21750000
+  - reference: CSA-NORTHWIND-2021-07
+    counterparty: NORTHWIND ASSET MGMT
+    currency: EUR
+    threshold: 1000000
+    minimumTransferAmount: 250000
+    positions:
+      - asset: BUND 0% 2030
+        assetClass: GOVT
+        marketValue: 3000000
+        haircutBps: 150
+    exposure: 2900000
+  - reference: CSA-HALCYON-2023-03
+    counterparty: HALCYON RE
+    currency: USD
+    threshold: 0
+    minimumTransferAmount: 100000
+    positions: []
+    exposure: 80000
