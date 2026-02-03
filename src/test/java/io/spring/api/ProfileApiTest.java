@@ -93,4 +93,135 @@ public class ProfileApiTest extends TestWithCurrentUser {
 
     verify(userRepository).removeRelation(eq(followRelation));
   }
+
+  @Test
+  public void should_get_404_for_nonexistent_user_profile() throws Exception {
+    String nonexistentUsername = "nonexistent";
+    when(profileQueryService.findByUsername(eq(nonexistentUsername), eq(null)))
+        .thenReturn(Optional.empty());
+
+    RestAssuredMockMvc.when()
+        .get("/profiles/{username}", nonexistentUsername)
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_404_when_following_nonexistent_user() throws Exception {
+    String nonexistentUsername = "nonexistent";
+    when(userRepository.findByUsername(eq(nonexistentUsername))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/profiles/{username}/follow", nonexistentUsername)
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_404_when_unfollowing_nonexistent_user() throws Exception {
+    String nonexistentUsername = "nonexistent";
+    when(userRepository.findByUsername(eq(nonexistentUsername))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/profiles/{username}/follow", nonexistentUsername)
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_401_when_following_without_authentication() throws Exception {
+    given()
+        .when()
+        .post("/profiles/{username}/follow", anotherUser.getUsername())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_unfollowing_without_authentication() throws Exception {
+    given()
+        .when()
+        .delete("/profiles/{username}/follow", anotherUser.getUsername())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_404_when_unfollowing_user_not_followed() throws Exception {
+    when(userRepository.findRelation(eq(user.getId()), eq(anotherUser.getId())))
+        .thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/profiles/{username}/follow", anotherUser.getUsername())
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_user_profile_with_authentication() throws Exception {
+    ProfileData profileDataWithFollowing =
+        new ProfileData(
+            anotherUser.getId(),
+            anotherUser.getUsername(),
+            anotherUser.getBio(),
+            anotherUser.getImage(),
+            true);
+    when(profileQueryService.findByUsername(eq(profileData.getUsername()), eq(user)))
+        .thenReturn(Optional.of(profileDataWithFollowing));
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .get("/profiles/{username}", profileData.getUsername())
+        .then()
+        .statusCode(200)
+        .body("profile.username", equalTo(profileData.getUsername()))
+        .body("profile.following", equalTo(true));
+  }
+
+  @Test
+  public void should_get_user_profile_without_following_status_when_not_authenticated()
+      throws Exception {
+    when(profileQueryService.findByUsername(eq(profileData.getUsername()), eq(null)))
+        .thenReturn(Optional.of(profileData));
+
+    RestAssuredMockMvc.when()
+        .get("/profiles/{username}", profileData.getUsername())
+        .then()
+        .statusCode(200)
+        .body("profile.username", equalTo(profileData.getUsername()))
+        .body("profile.following", equalTo(false));
+  }
+
+  @Test
+  public void should_get_401_when_following_with_invalid_token() throws Exception {
+    String invalidToken = "invalid-token";
+    when(jwtService.getSubFromToken(eq(invalidToken))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + invalidToken)
+        .when()
+        .post("/profiles/{username}/follow", anotherUser.getUsername())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_unfollowing_with_invalid_token() throws Exception {
+    String invalidToken = "invalid-token";
+    when(jwtService.getSubFromToken(eq(invalidToken))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + invalidToken)
+        .when()
+        .delete("/profiles/{username}/follow", anotherUser.getUsername())
+        .then()
+        .statusCode(401);
+  }
 }
