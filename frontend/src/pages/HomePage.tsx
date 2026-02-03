@@ -8,9 +8,7 @@ const ARTICLES_PER_PAGE = 10;
 
 export function HomePage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const [activeTab, setActiveTab] = useState<'global' | 'feed' | 'tag'>(
-    isAuthenticated ? 'feed' : 'global'
-  );
+  const [activeTab, setActiveTab] = useState<'global' | 'feed' | 'tag'>('global');
   const [selectedTag, setSelectedTag] = useState<string | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
 

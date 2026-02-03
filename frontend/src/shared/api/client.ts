@@ -23,7 +23,7 @@ apiClient.interceptors.response.use(
     if (axios.isAxiosError(error)) {
       if (error.response?.status === 401) {
         localStorage.removeItem('conduit-auth');
-        window.location.href = '/login';
+        delete apiClient.defaults.headers.common['Authorization'];
       }
     }
     return Promise.reject(error);
