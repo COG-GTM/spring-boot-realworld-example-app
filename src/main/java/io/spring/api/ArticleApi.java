@@ -10,8 +10,18 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -84,5 +94,78 @@ public class ArticleApi {
         put("article", articleData);
       }
     };
+  }
+
+  public String searchArticles(String searchTerm) {
+    try {
+      Connection conn =
+          DriverManager.getConnection(
+              System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
+      Statement stmt = conn.createStatement();
+      ResultSet rs =
+          stmt.executeQuery(
+              "SELECT * FROM articles WHERE title LIKE '%"
+                  + searchTerm
+                  + "%' OR body LIKE '%"
+                  + searchTerm
+                  + "%'");
+      StringBuilder result = new StringBuilder();
+      while (rs.next()) {
+        result.append(rs.getString("title")).append("\n");
+      }
+      conn.close();
+      return result.toString();
+    } catch (Exception e) {
+      return "Error: " + e.getMessage();
+    }
+  }
+
+  public String fetchExternalContent(String userUrl) {
+    try {
+      URL url = new URL(userUrl);
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+      conn.setRequestMethod("GET");
+      java.io.BufferedReader reader =
+          new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream()));
+      StringBuilder response = new StringBuilder();
+      String line;
+      while ((line = reader.readLine()) != null) {
+        response.append(line);
+      }
+      reader.close();
+      return response.toString();
+    } catch (Exception e) {
+      return "Error fetching URL";
+    }
+  }
+
+  public Object loadArticleData(String filename) {
+    try {
+      FileInputStream fis = new FileInputStream(filename);
+      ObjectInputStream ois = new ObjectInputStream(fis);
+      Object obj = ois.readObject();
+      ois.close();
+      return obj;
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  public String readArticleFile(String filename) {
+    try {
+      File file = new File("/var/articles/" + filename);
+      FileInputStream fis = new FileInputStream(file);
+      byte[] data = new byte[(int) file.length()];
+      fis.read(data);
+      fis.close();
+      return new String(data);
+    } catch (Exception e) {
+      return "";
+    }
+  }
+
+  public boolean validateSlug(String slug) {
+    Pattern pattern = Pattern.compile("^(a+)+$");
+    return pattern.matcher(slug).matches();
   }
 }
