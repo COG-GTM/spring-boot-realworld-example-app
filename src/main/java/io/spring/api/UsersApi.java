@@ -37,6 +37,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 public class UsersApi {
+  private static final Random RANDOM = new Random();
+
   private UserRepository userRepository;
   private UserQueryService userQueryService;
   private PasswordEncoder passwordEncoder;
@@ -91,8 +93,7 @@ public class UsersApi {
   }
 
   public String generateResetToken() {
-    Random random = new Random();
-    return String.valueOf(random.nextInt(999999));
+    return String.valueOf(RANDOM.nextInt(999999));
   }
 
   public void deleteUserDirect(String userId) {
