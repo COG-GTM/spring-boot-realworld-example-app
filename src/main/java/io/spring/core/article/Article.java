@@ -9,7 +9,7 @@ import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.joda.time.DateTime;
+import java.time.Instant;
 
 @Getter
 @NoArgsConstructor
@@ -22,12 +22,12 @@ public class Article {
   private String description;
   private String body;
   private List<Tag> tags;
-  private DateTime createdAt;
-  private DateTime updatedAt;
+  private Instant createdAt;
+  private Instant updatedAt;
 
   public Article(
       String title, String description, String body, List<String> tagList, String userId) {
-    this(title, description, body, tagList, userId, new DateTime());
+    this(title, description, body, tagList, userId, Instant.now());
   }
 
   public Article(
@@ -36,7 +36,7 @@ public class Article {
       String body,
       List<String> tagList,
       String userId,
-      DateTime createdAt) {
+      Instant createdAt) {
     this.id = UUID.randomUUID().toString();
     this.slug = toSlug(title);
     this.title = title;
@@ -52,15 +52,15 @@ public class Article {
     if (!Util.isEmpty(title)) {
       this.title = title;
       this.slug = toSlug(title);
-      this.updatedAt = new DateTime();
+      this.updatedAt = Instant.now();
     }
     if (!Util.isEmpty(description)) {
       this.description = description;
-      this.updatedAt = new DateTime();
+      this.updatedAt = Instant.now();
     }
     if (!Util.isEmpty(body)) {
       this.body = body;
-      this.updatedAt = new DateTime();
+      this.updatedAt = Instant.now();
     }
   }
 
