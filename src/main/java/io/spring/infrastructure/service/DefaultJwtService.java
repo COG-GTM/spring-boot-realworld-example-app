@@ -6,6 +6,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Date;
 import java.util.Optional;
 import javax.crypto.SecretKey;
@@ -25,7 +27,13 @@ public class DefaultJwtService implements JwtService {
       @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
     this.sessionTime = sessionTime;
     signatureAlgorithm = SignatureAlgorithm.HS512;
-    this.signingKey = new SecretKeySpec(secret.getBytes(), signatureAlgorithm.getJcaName());
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-512");
+      byte[] keyBytes = digest.digest(secret.getBytes(StandardCharsets.UTF_8));
+      this.signingKey = new SecretKeySpec(keyBytes, signatureAlgorithm.getJcaName());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -40,9 +48,8 @@ public class DefaultJwtService implements JwtService {
   @Override
   public Optional<String> getSubFromToken(String token) {
     try {
-      Jws<Claims> claimsJws =
-          Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
-      return Optional.ofNullable(claimsJws.getBody().getSubject());
+      Jws<Claims> claimsJws = Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token);
+      return Optional.ofNullable(claimsJws.getPayload().getSubject());
     } catch (Exception e) {
       return Optional.empty();
     }
