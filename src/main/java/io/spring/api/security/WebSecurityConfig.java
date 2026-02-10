@@ -8,10 +8,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -20,7 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
@@ -32,9 +32,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     return new BCryptPasswordEncoder();
   }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf()
         .disable()
         .cors()
@@ -45,23 +44,24 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
-        .authorizeRequests()
-        .antMatchers(HttpMethod.OPTIONS)
+        .authorizeHttpRequests()
+        .requestMatchers(HttpMethod.OPTIONS)
         .permitAll()
-        .antMatchers("/graphiql")
+        .requestMatchers("/graphiql")
         .permitAll()
-        .antMatchers("/graphql")
+        .requestMatchers("/graphql")
         .permitAll()
-        .antMatchers(HttpMethod.GET, "/articles/feed")
+        .requestMatchers(HttpMethod.GET, "/articles/feed")
         .authenticated()
-        .antMatchers(HttpMethod.POST, "/users", "/users/login")
+        .requestMatchers(HttpMethod.POST, "/users", "/users/login")
         .permitAll()
-        .antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
+        .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
         .permitAll()
         .anyRequest()
         .authenticated();
 
     http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+    return http.build();
   }
 
   @Bean
