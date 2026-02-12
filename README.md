@@ -17,6 +17,17 @@ The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-examp
 ![](graphql-schema.png)
 
 And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
+
+## Documentation
+
+See the docs in `docs/`:
+
+- [REST API](docs/rest.md)
+- [GraphQL API](docs/graphql.md)
+- [Authentication](docs/auth.md)
+- [Models (DTOs)](docs/models.md)
+- [Pagination](docs/pagination.md)
+- [Errors](docs/errors.md)
 # How it works
 
 The application uses Spring Boot (Web, Mybatis).
