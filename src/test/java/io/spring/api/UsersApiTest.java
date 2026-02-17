@@ -1,6 +1,8 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -267,5 +269,389 @@ public class UsersApiTest {
         .then()
         .statusCode(422)
         .body("message", equalTo("invalid email or password"));
+  }
+
+  @Test
+  public void should_show_error_message_for_blank_email() throws Exception {
+    String email = "";
+    String username = "johnjacob";
+
+    Map<String, Object> param = prepareRegisterParameter(email, username);
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.email[0]", notNullValue());
+  }
+
+  @Test
+  public void should_show_error_message_for_blank_password() throws Exception {
+    String email = "john@jacob.com";
+    String username = "johnjacob";
+
+    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", email);
+                    put("password", "");
+                    put("username", username);
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.password[0]", equalTo("can't be empty"));
+  }
+
+  @Test
+  public void should_show_error_for_missing_username_field() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "john@jacob.com");
+                    put("password", "johnnyjacob");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.username[0]", equalTo("can't be empty"));
+  }
+
+  @Test
+  public void should_show_error_for_missing_email_field() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("password", "johnnyjacob");
+                    put("username", "johnjacob");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.email[0]", notNullValue());
+  }
+
+  @Test
+  public void should_show_error_for_missing_password_field() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "john@jacob.com");
+                    put("username", "johnjacob");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.password[0]", equalTo("can't be empty"));
+  }
+
+  @Test
+  public void should_show_errors_for_all_blank_fields() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "");
+                    put("password", "");
+                    put("username", "");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors", hasKey("email"))
+        .body("errors", hasKey("password"))
+        .body("errors", hasKey("username"));
+  }
+
+  @Test
+  public void should_show_error_for_duplicated_email_and_username() throws Exception {
+    String email = "john@jacob.com";
+    String username = "johnjacob";
+
+    when(userRepository.findByUsername(eq(username)))
+        .thenReturn(Optional.of(new User(email, username, "123", "bio", "")));
+    when(userRepository.findByEmail(eq(email)))
+        .thenReturn(Optional.of(new User(email, username, "123", "bio", "")));
+
+    Map<String, Object> param = prepareRegisterParameter(email, username);
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors", hasKey("email"))
+        .body("errors", hasKey("username"));
+  }
+
+  @Test
+  public void should_fail_login_with_nonexistent_email() throws Exception {
+    when(userRepository.findByEmail(eq("nonexistent@example.com"))).thenReturn(Optional.empty());
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "nonexistent@example.com");
+                    put("password", "password123");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422)
+        .body("message", equalTo("invalid email or password"));
+  }
+
+  @Test
+  public void should_fail_login_with_blank_email() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "");
+                    put("password", "password123");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422)
+        .body("errors", hasKey("email"));
+  }
+
+  @Test
+  public void should_fail_login_with_blank_password() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "john@jacob.com");
+                    put("password", "");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422)
+        .body("errors", hasKey("password"));
+  }
+
+  @Test
+  public void should_fail_login_with_all_blank_fields() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "");
+                    put("password", "");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422)
+        .body("errors", hasKey("email"))
+        .body("errors", hasKey("password"));
+  }
+
+  @Test
+  public void should_fail_login_with_invalid_email_format() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "notanemail");
+                    put("password", "password123");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422)
+        .body("errors", hasKey("email"));
+  }
+
+  @Test
+  public void should_return_correct_response_structure_on_successful_registration()
+      throws Exception {
+    String email = "structure@test.com";
+    String username = "structuretest";
+
+    when(jwtService.toToken(any())).thenReturn("jwt-token");
+    User user = new User(email, username, "123", "", defaultAvatar);
+    UserData userData = new UserData(user.getId(), email, username, "", defaultAvatar);
+    when(userReadService.findById(any())).thenReturn(userData);
+    when(userService.createUser(any())).thenReturn(user);
+    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+
+    Map<String, Object> param = prepareRegisterParameter(email, username);
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(201)
+        .body("user", hasKey("email"))
+        .body("user", hasKey("username"))
+        .body("user", hasKey("bio"))
+        .body("user", hasKey("image"))
+        .body("user", hasKey("token"));
+  }
+
+  @Test
+  public void should_return_correct_response_structure_on_successful_login() throws Exception {
+    String email = "john@jacob.com";
+    String username = "johnjacob2";
+    String password = "123";
+
+    User user = new User(email, username, passwordEncoder.encode(password), "", defaultAvatar);
+    UserData userData = new UserData(user.getId(), email, username, "", defaultAvatar);
+
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+    when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
+    when(jwtService.toToken(any())).thenReturn("jwt-token");
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", email);
+                    put("password", password);
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(200)
+        .body("user", hasKey("email"))
+        .body("user", hasKey("username"))
+        .body("user", hasKey("bio"))
+        .body("user", hasKey("image"))
+        .body("user", hasKey("token"));
   }
 }
