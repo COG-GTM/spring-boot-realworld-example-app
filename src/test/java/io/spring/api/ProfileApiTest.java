@@ -2,6 +2,7 @@ package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,5 +93,43 @@ public class ProfileApiTest extends TestWithCurrentUser {
         .statusCode(200);
 
     verify(userRepository).removeRelation(eq(followRelation));
+  }
+
+  @Test
+  public void should_get_404_when_profile_not_found() throws Exception {
+    when(profileQueryService.findByUsername(eq("nonexistent"), eq(null)))
+        .thenReturn(Optional.empty());
+    RestAssuredMockMvc.when()
+        .get("/profiles/{username}", "nonexistent")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("message", equalTo("Resource not found"));
+  }
+
+  @Test
+  public void should_get_404_when_follow_nonexistent_user() throws Exception {
+    when(userRepository.findByUsername(eq("nonexistent"))).thenReturn(Optional.empty());
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/profiles/{username}/follow", "nonexistent")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("message", equalTo("Resource not found"));
+  }
+
+  @Test
+  public void should_get_404_when_unfollow_nonexistent_user() throws Exception {
+    when(userRepository.findByUsername(eq("nonexistent"))).thenReturn(Optional.empty());
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/profiles/{username}/follow", "nonexistent")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("message", equalTo("Resource not found"));
   }
 }
