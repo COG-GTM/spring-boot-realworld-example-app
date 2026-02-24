@@ -29,12 +29,13 @@ public class ArticlesApi {
   public ResponseEntity createArticle(
       @Valid @RequestBody NewArticleParam newArticleParam, @AuthenticationPrincipal User user) {
     Article article = articleCommandService.createArticle(newArticleParam, user);
-    return ResponseEntity.ok(
-        new HashMap<String, Object>() {
-          {
-            put("article", articleQueryService.findById(article.getId(), user).get());
-          }
-        });
+    return ResponseEntity.status(201)
+        .body(
+            new HashMap<String, Object>() {
+              {
+                put("article", articleQueryService.findById(article.getId(), user).get());
+              }
+            });
   }
 
   @GetMapping(path = "feed")
