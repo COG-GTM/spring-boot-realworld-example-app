@@ -40,7 +40,9 @@ public class WebSecurityConfig {
         .cors()
         .and()
         .exceptionHandling()
-        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+        .authenticationEntryPoint(
+            new HttpStatusEntryPoint(
+                HttpStatus.UNAUTHORIZED))
         .and()
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -61,7 +63,9 @@ public class WebSecurityConfig {
         .anyRequest()
         .authenticated();
 
-    http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(
+        jwtTokenFilter(),
+        UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
@@ -70,15 +74,21 @@ public class WebSecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     final CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(asList("*"));
-    configuration.setAllowedMethods(asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
+    configuration.setAllowedMethods(
+        asList("HEAD", "GET", "POST",
+            "PUT", "DELETE", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
-    // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
+    // The value of the 'Access-Control-Allow-Origin'
+    // header in the response must not be the
     // wildcard '*' when the request's credentials mode is 'include'.
     configuration.setAllowCredentials(false);
     // setAllowedHeaders is important! Without it, OPTIONS preflight request
     // will fail with 403 Invalid CORS request
-    configuration.setAllowedHeaders(asList("Authorization", "Cache-Control", "Content-Type"));
-    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    configuration.setAllowedHeaders(
+        asList("Authorization",
+            "Cache-Control", "Content-Type"));
+    final UrlBasedCorsConfigurationSource source =
+        new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
   }
