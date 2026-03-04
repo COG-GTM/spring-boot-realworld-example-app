@@ -5,10 +5,12 @@ import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
+@ToString(exclude = "password")
 public class User {
   private String id;
   private String email;

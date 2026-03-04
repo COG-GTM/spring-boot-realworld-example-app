@@ -21,6 +21,7 @@ import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,6 +68,7 @@ public class UsersApi {
 }
 
 @Getter
+@ToString(exclude = "password")
 @JsonRootName("user")
 @NoArgsConstructor
 class LoginParam {
