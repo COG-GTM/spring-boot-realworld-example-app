@@ -9,6 +9,7 @@ import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
 import io.spring.api.exception.FieldErrorResource;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
 import java.util.ArrayList;
@@ -60,6 +61,14 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .message(handlerParameters.getException().getMessage())
               .path(handlerParameters.getPath())
               .extensions(errorsToMap(errors))
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (handlerParameters.getException() instanceof ResourceNotFoundException) {
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBuilder()
+              .errorType(ErrorType.NOT_FOUND)
+              .message("Resource not found")
+              .path(handlerParameters.getPath())
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
     } else {
