@@ -22,7 +22,7 @@ type Mutation {
     ### User & Profile
     createUser(input: CreateUserInput): UserResult
     login(password: String!, email: String!): UserPayload
-    updateUser(changes: UpdateUserInput!): UserPayload
+    updateUser(changes: UpdateUserInput!): UserResult
     followUser(username: String!): ProfilePayload
     unfollowUser(username: String!): ProfilePayload
 
