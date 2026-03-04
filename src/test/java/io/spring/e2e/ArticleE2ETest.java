@@ -58,7 +58,7 @@ public class ArticleE2ETest extends BaseE2ETest {
     String token = registerAndGetToken("updateart@test.com", "updateartuser", "password123");
 
     Map<String, Object> createParam =
-        articleParam("Original Title", "Original Desc", "Original Body", null);
+        articleParam("Original Title", "Original Desc", "Original Body", new String[] {});
     post("/articles", createParam, token);
 
     Map<String, Object> article = new HashMap<>();
@@ -79,7 +79,7 @@ public class ArticleE2ETest extends BaseE2ETest {
   void should_delete_article() {
     String token = registerAndGetToken("deleteart@test.com", "deleteartuser", "password123");
 
-    Map<String, Object> param = articleParam("Article To Delete", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("Article To Delete", "Desc", "Body", new String[] {});
     post("/articles", param, token);
 
     ResponseEntity<String> response = delete("/articles/article-to-delete", token);
@@ -132,7 +132,7 @@ public class ArticleE2ETest extends BaseE2ETest {
   void should_list_articles_filtered_by_author() {
     String token = registerAndGetToken("authorfilter@test.com", "authorfilteruser", "password123");
 
-    Map<String, Object> param = articleParam("Author Filtered Article", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("Author Filtered Article", "Desc", "Body", new String[] {});
     post("/articles", param, token);
 
     ResponseEntity<String> response = get("/articles?author=authorfilteruser");
@@ -151,7 +151,7 @@ public class ArticleE2ETest extends BaseE2ETest {
     post("/profiles/feeduser2/follow", null, token1);
 
     // feeduser2 creates an article
-    Map<String, Object> param = articleParam("Feed Article", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("Feed Article", "Desc", "Body", new String[] {});
     post("/articles", param, token2);
 
     // feeduser1 should see the article in their feed
@@ -165,7 +165,7 @@ public class ArticleE2ETest extends BaseE2ETest {
 
   @Test
   void should_fail_create_article_without_auth() {
-    Map<String, Object> param = articleParam("Unauth Article", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("Unauth Article", "Desc", "Body", new String[] {});
     HttpClientErrorException ex = expectClientError(HttpMethod.POST, "/articles", param, null);
 
     assertEquals(HttpStatus.UNAUTHORIZED.value(), ex.getRawStatusCode());
@@ -176,7 +176,7 @@ public class ArticleE2ETest extends BaseE2ETest {
     String token1 = registerAndGetToken("artowner@test.com", "artowneruser", "password123");
     String token2 = registerAndGetToken("artother@test.com", "artotheruser", "password123");
 
-    Map<String, Object> param = articleParam("Owner Only Article", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("Owner Only Article", "Desc", "Body", new String[] {});
     post("/articles", param, token1);
 
     HttpClientErrorException ex =

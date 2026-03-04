@@ -17,7 +17,7 @@ public class FavoriteE2ETest extends BaseE2ETest {
     String authorToken = registerAndGetToken("favauthor@test.com", "favauthoruser", "password123");
     String userToken = registerAndGetToken("favuser@test.com", "favuseruser", "password123");
 
-    Map<String, Object> param = articleParam("Favorite Article", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("Favorite Article", "Desc", "Body", new String[] {});
     post("/articles", param, authorToken);
 
     ResponseEntity<String> response = post("/articles/favorite-article/favorite", null, userToken);
@@ -35,7 +35,7 @@ public class FavoriteE2ETest extends BaseE2ETest {
         registerAndGetToken("unfavauthor@test.com", "unfavauthoruser", "password123");
     String userToken = registerAndGetToken("unfavuser@test.com", "unfavuseruser", "password123");
 
-    Map<String, Object> param = articleParam("Unfavorite Article", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("Unfavorite Article", "Desc", "Body", new String[] {});
     post("/articles", param, authorToken);
 
     // First favorite
@@ -58,7 +58,7 @@ public class FavoriteE2ETest extends BaseE2ETest {
     String user1Token = registerAndGetToken("incruser1@test.com", "incruser1", "password123");
     String user2Token = registerAndGetToken("incruser2@test.com", "incruser2", "password123");
 
-    Map<String, Object> param = articleParam("Multi Fav Article", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("Multi Fav Article", "Desc", "Body", new String[] {});
     post("/articles", param, authorToken);
 
     post("/articles/multi-fav-article/favorite", null, user1Token);
@@ -74,7 +74,7 @@ public class FavoriteE2ETest extends BaseE2ETest {
     String authorToken =
         registerAndGetToken("noauthfavauthor@test.com", "noauthfavauthor", "password123");
 
-    Map<String, Object> param = articleParam("No Auth Fav Article", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("No Auth Fav Article", "Desc", "Body", new String[] {});
     post("/articles", param, authorToken);
 
     HttpClientErrorException ex =
@@ -89,7 +89,7 @@ public class FavoriteE2ETest extends BaseE2ETest {
         registerAndGetToken("favlistauthor@test.com", "favlistauthor", "password123");
     String userToken = registerAndGetToken("favlistuser@test.com", "favlistuser", "password123");
 
-    Map<String, Object> param = articleParam("Favorited List Article", "Desc", "Body", null);
+    Map<String, Object> param = articleParam("Favorited List Article", "Desc", "Body", new String[] {});
     post("/articles", param, authorToken);
 
     post("/articles/favorited-list-article/favorite", null, userToken);

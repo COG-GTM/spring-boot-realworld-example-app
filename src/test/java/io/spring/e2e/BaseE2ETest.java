@@ -3,8 +3,10 @@ package io.spring.e2e;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -32,6 +35,13 @@ public abstract class BaseE2ETest {
     driver = new HtmlUnitDriver(true);
     restTemplate = new RestTemplate();
     objectMapper = new ObjectMapper();
+  }
+
+  @AfterEach
+  public void baseTearDown() {
+    if (driver != null) {
+      driver.quit();
+    }
   }
 
   protected String baseUrl() {
@@ -56,7 +66,8 @@ public abstract class BaseE2ETest {
   }
 
   protected ResponseEntity<String> post(String path, Object body, String token) {
-    HttpEntity<String> entity = new HttpEntity<>(toJson(body), authHeaders(token));
+    String jsonBody = body != null ? toJson(body) : toJson(Collections.emptyMap());
+    HttpEntity<String> entity = new HttpEntity<>(jsonBody, authHeaders(token));
     return restTemplate.exchange(baseUrl() + path, HttpMethod.POST, entity, String.class);
   }
 
@@ -160,9 +171,7 @@ public abstract class BaseE2ETest {
     article.put("title", title);
     article.put("description", description);
     article.put("body", body);
-    if (tagList != null) {
-      article.put("tagList", tagList);
-    }
+    article.put("tagList", tagList != null ? tagList : new String[] {});
     Map<String, Object> param = new HashMap<>();
     param.put("article", article);
     return param;
@@ -212,6 +221,10 @@ public abstract class BaseE2ETest {
       throw new AssertionError("Expected HttpClientErrorException but request succeeded");
     } catch (HttpClientErrorException e) {
       return e;
+    } catch (HttpServerErrorException e) {
+      throw new AssertionError(
+          "Expected client error but got server error: " + e.getStatusCode() + " " + e.getMessage(),
+          e);
     }
   }
 }

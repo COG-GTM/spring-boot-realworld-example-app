@@ -16,7 +16,7 @@ public class CommentE2ETest extends BaseE2ETest {
   void should_create_comment_on_article() {
     String token = registerAndGetToken("commentauthor@test.com", "commentauthor", "password123");
 
-    Map<String, Object> articleBody = articleParam("Comment Article", "Desc", "Body", null);
+    Map<String, Object> articleBody = articleParam("Comment Article", "Desc", "Body", new String[] {});
     post("/articles", articleBody, token);
 
     Map<String, Object> commentBody = commentParam("This is a great article!");
@@ -36,7 +36,7 @@ public class CommentE2ETest extends BaseE2ETest {
   void should_get_comments_for_article() {
     String token = registerAndGetToken("getcomments@test.com", "getcommentsuser", "password123");
 
-    Map<String, Object> articleBody = articleParam("Comments List Article", "Desc", "Body", null);
+    Map<String, Object> articleBody = articleParam("Comments List Article", "Desc", "Body", new String[] {});
     post("/articles", articleBody, token);
 
     Map<String, Object> comment1 = commentParam("First comment");
@@ -57,7 +57,7 @@ public class CommentE2ETest extends BaseE2ETest {
   void should_delete_own_comment() {
     String token = registerAndGetToken("delcomment@test.com", "delcommentuser", "password123");
 
-    Map<String, Object> articleBody = articleParam("Delete Comment Article", "Desc", "Body", null);
+    Map<String, Object> articleBody = articleParam("Delete Comment Article", "Desc", "Body", new String[] {});
     post("/articles", articleBody, token);
 
     Map<String, Object> commentBody = commentParam("Comment to delete");
@@ -78,7 +78,7 @@ public class CommentE2ETest extends BaseE2ETest {
     String token =
         registerAndGetToken("noauthcomment@test.com", "noauthcommentuser", "password123");
 
-    Map<String, Object> articleBody = articleParam("No Auth Comment Article", "Desc", "Body", null);
+    Map<String, Object> articleBody = articleParam("No Auth Comment Article", "Desc", "Body", new String[] {});
     post("/articles", articleBody, token);
 
     Map<String, Object> commentBody = commentParam("Unauthorized comment");
@@ -94,7 +94,7 @@ public class CommentE2ETest extends BaseE2ETest {
     String token1 = registerAndGetToken("commentowner@test.com", "commentowneruser", "password123");
     String token2 = registerAndGetToken("commentother@test.com", "commentotheruser", "password123");
 
-    Map<String, Object> articleBody = articleParam("Other Comment Article", "Desc", "Body", null);
+    Map<String, Object> articleBody = articleParam("Other Comment Article", "Desc", "Body", new String[] {});
     post("/articles", articleBody, token1);
 
     Map<String, Object> commentBody = commentParam("Owner comment");
@@ -118,7 +118,7 @@ public class CommentE2ETest extends BaseE2ETest {
   void should_fail_create_comment_with_empty_body() {
     String token = registerAndGetToken("emptycomment@test.com", "emptycommentuser", "password123");
 
-    Map<String, Object> articleBody = articleParam("Empty Comment Article", "Desc", "Body", null);
+    Map<String, Object> articleBody = articleParam("Empty Comment Article", "Desc", "Body", new String[] {});
     post("/articles", articleBody, token);
 
     Map<String, Object> commentBody = commentParam("");
