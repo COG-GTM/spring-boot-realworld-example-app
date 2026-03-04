@@ -6,8 +6,6 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.DgsQuery;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
-import graphql.relay.DefaultConnectionCursor;
-import graphql.relay.DefaultPageInfo;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
@@ -24,8 +22,8 @@ import io.spring.graphql.DgsConstants.COMMENT;
 import io.spring.graphql.DgsConstants.PROFILE;
 import io.spring.graphql.DgsConstants.QUERY;
 import io.spring.graphql.types.Article;
+import io.spring.graphql.types.ArticleConnection;
 import io.spring.graphql.types.ArticleEdge;
-import io.spring.graphql.types.ArticlesConnection;
 import io.spring.graphql.types.Profile;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -40,7 +38,7 @@ public class ArticleDatafetcher {
   private UserRepository userRepository;
 
   @DgsQuery(field = QUERY.Feed)
-  public DataFetcherResult<ArticlesConnection> getFeed(
+  public DataFetcherResult<ArticleConnection> getFeed(
       @InputArgument("first") Integer first,
       @InputArgument("after") String after,
       @InputArgument("last") Integer last,
@@ -64,9 +62,9 @@ public class ArticleDatafetcher {
               current,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
-    ArticlesConnection articlesConnection =
-        ArticlesConnection.newBuilder()
+    io.spring.graphql.types.PageInfo pageInfo = buildArticlePageInfo(articles);
+    ArticleConnection articlesConnection =
+        ArticleConnection.newBuilder()
             .pageInfo(pageInfo)
             .edges(
                 articles.getData().stream()
@@ -78,7 +76,7 @@ public class ArticleDatafetcher {
                                 .build())
                     .collect(Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult.<ArticleConnection>newResult()
         .data(articlesConnection)
         .localContext(
             articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
@@ -86,7 +84,7 @@ public class ArticleDatafetcher {
   }
 
   @DgsData(parentType = PROFILE.TYPE_NAME, field = PROFILE.Feed)
-  public DataFetcherResult<ArticlesConnection> userFeed(
+  public DataFetcherResult<ArticleConnection> userFeed(
       @InputArgument("first") Integer first,
       @InputArgument("after") String after,
       @InputArgument("last") Integer last,
@@ -114,9 +112,9 @@ public class ArticleDatafetcher {
               target,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
-    ArticlesConnection articlesConnection =
-        ArticlesConnection.newBuilder()
+    io.spring.graphql.types.PageInfo pageInfo = buildArticlePageInfo(articles);
+    ArticleConnection articlesConnection =
+        ArticleConnection.newBuilder()
             .pageInfo(pageInfo)
             .edges(
                 articles.getData().stream()
@@ -128,7 +126,7 @@ public class ArticleDatafetcher {
                                 .build())
                     .collect(Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult.<ArticleConnection>newResult()
         .data(articlesConnection)
         .localContext(
             articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
@@ -136,7 +134,7 @@ public class ArticleDatafetcher {
   }
 
   @DgsData(parentType = PROFILE.TYPE_NAME, field = PROFILE.Favorites)
-  public DataFetcherResult<ArticlesConnection> userFavorites(
+  public DataFetcherResult<ArticleConnection> userFavorites(
       @InputArgument("first") Integer first,
       @InputArgument("after") String after,
       @InputArgument("last") Integer last,
@@ -167,10 +165,10 @@ public class ArticleDatafetcher {
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    io.spring.graphql.types.PageInfo pageInfo = buildArticlePageInfo(articles);
 
-    ArticlesConnection articlesConnection =
-        ArticlesConnection.newBuilder()
+    ArticleConnection articlesConnection =
+        ArticleConnection.newBuilder()
             .pageInfo(pageInfo)
             .edges(
                 articles.getData().stream()
@@ -182,7 +180,7 @@ public class ArticleDatafetcher {
                                 .build())
                     .collect(Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult.<ArticleConnection>newResult()
         .data(articlesConnection)
         .localContext(
             articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
@@ -190,7 +188,7 @@ public class ArticleDatafetcher {
   }
 
   @DgsData(parentType = PROFILE.TYPE_NAME, field = PROFILE.Articles)
-  public DataFetcherResult<ArticlesConnection> userArticles(
+  public DataFetcherResult<ArticleConnection> userArticles(
       @InputArgument("first") Integer first,
       @InputArgument("after") String after,
       @InputArgument("last") Integer last,
@@ -221,9 +219,9 @@ public class ArticleDatafetcher {
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
-    ArticlesConnection articlesConnection =
-        ArticlesConnection.newBuilder()
+    io.spring.graphql.types.PageInfo pageInfo = buildArticlePageInfo(articles);
+    ArticleConnection articlesConnection =
+        ArticleConnection.newBuilder()
             .pageInfo(pageInfo)
             .edges(
                 articles.getData().stream()
@@ -235,7 +233,7 @@ public class ArticleDatafetcher {
                                 .build())
                     .collect(Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult.<ArticleConnection>newResult()
         .data(articlesConnection)
         .localContext(
             articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
@@ -243,7 +241,7 @@ public class ArticleDatafetcher {
   }
 
   @DgsData(parentType = DgsConstants.QUERY_TYPE, field = QUERY.Articles)
-  public DataFetcherResult<ArticlesConnection> getArticles(
+  public DataFetcherResult<ArticleConnection> getArticles(
       @InputArgument("first") Integer first,
       @InputArgument("after") String after,
       @InputArgument("last") Integer last,
@@ -276,9 +274,9 @@ public class ArticleDatafetcher {
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
-    ArticlesConnection articlesConnection =
-        ArticlesConnection.newBuilder()
+    io.spring.graphql.types.PageInfo pageInfo = buildArticlePageInfo(articles);
+    ArticleConnection articlesConnection =
+        ArticleConnection.newBuilder()
             .pageInfo(pageInfo)
             .edges(
                 articles.getData().stream()
@@ -290,7 +288,7 @@ public class ArticleDatafetcher {
                                 .build())
                     .collect(Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult.<ArticleConnection>newResult()
         .data(articlesConnection)
         .localContext(
             articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
@@ -356,16 +354,14 @@ public class ArticleDatafetcher {
         .build();
   }
 
-  private DefaultPageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
-    return new DefaultPageInfo(
-        articles.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getStartCursor().toString()),
-        articles.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getEndCursor().toString()),
-        articles.hasPrevious(),
-        articles.hasNext());
+  private io.spring.graphql.types.PageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
+    return io.spring.graphql.types.PageInfo.newBuilder()
+        .startCursor(
+            articles.getStartCursor() == null ? null : articles.getStartCursor().toString())
+        .endCursor(articles.getEndCursor() == null ? null : articles.getEndCursor().toString())
+        .hasPreviousPage(articles.hasPrevious())
+        .hasNextPage(articles.hasNext())
+        .build();
   }
 
   private Article buildArticleResult(ArticleData articleData) {
