@@ -102,8 +102,7 @@ public class CommentDatafetcher {
     return PageInfo.newBuilder()
         .startCursor(
             comments.getStartCursor() == null ? null : comments.getStartCursor().toString())
-        .endCursor(
-            comments.getEndCursor() == null ? null : comments.getEndCursor().toString())
+        .endCursor(comments.getEndCursor() == null ? null : comments.getEndCursor().toString())
         .hasPreviousPage(comments.hasPrevious())
         .hasNextPage(comments.hasNext())
         .build();
