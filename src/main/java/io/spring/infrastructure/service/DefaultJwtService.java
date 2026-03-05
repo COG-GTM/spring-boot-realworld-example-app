@@ -3,6 +3,7 @@ package io.spring.infrastructure.service;
 import io.jsonwebtoken.Jwts;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 import javax.crypto.SecretKey;
@@ -20,7 +21,12 @@ public class DefaultJwtService implements JwtService {
   public DefaultJwtService(
       @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
     this.sessionTime = sessionTime;
-    this.signingKey = new SecretKeySpec(secret.getBytes(), "HmacSHA512");
+    byte[] keyBytes = secret.getBytes();
+    // HS512 requires a key of at least 64 bytes (512 bits)
+    if (keyBytes.length < 64) {
+      keyBytes = Arrays.copyOf(keyBytes, 64);
+    }
+    this.signingKey = new SecretKeySpec(keyBytes, "HmacSHA512");
   }
 
   @Override
