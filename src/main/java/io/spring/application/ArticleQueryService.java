@@ -40,7 +40,14 @@ public class ArticleQueryService {
   }
 
   public Optional<ArticleData> findBySlug(String slug, User user) {
-    ArticleData articleData = articleReadService.findBySlug(slug);
+    if (slug == null || slug.trim().isEmpty()) {
+      return Optional.empty();
+    }
+    String sanitizedSlug = slug.replaceAll("[^a-zA-Z0-9\\-]", "");
+    if (sanitizedSlug.isEmpty()) {
+      return Optional.empty();
+    }
+    ArticleData articleData = articleReadService.findBySlug(sanitizedSlug);
     if (articleData == null) {
       return Optional.empty();
     } else {

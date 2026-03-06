@@ -37,4 +37,24 @@ public class ArticleTest {
     Article article = new Article("what?the.hell,w", "desc", "body", Arrays.asList("java"), "123");
     assertThat(article.getSlug(), is("what-the-hell-w"));
   }
+
+  @Test
+  public void should_return_empty_slug_for_null_title() {
+    assertThat(Article.toSlug(null), is(""));
+  }
+
+  @Test
+  public void should_return_empty_slug_for_empty_title() {
+    assertThat(Article.toSlug(""), is(""));
+  }
+
+  @Test
+  public void should_return_empty_slug_for_blank_title() {
+    assertThat(Article.toSlug("   "), is(""));
+  }
+
+  @Test
+  public void should_handle_special_characters_in_title() {
+    assertThat(Article.toSlug("hello$world"), is("hello$world"));
+  }
 }
