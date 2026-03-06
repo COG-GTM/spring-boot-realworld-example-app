@@ -21,6 +21,7 @@ import io.spring.graphql.types.Article;
 import io.spring.graphql.types.Comment;
 import io.spring.graphql.types.CommentEdge;
 import io.spring.graphql.types.CommentsConnection;
+import io.spring.graphql.types.PageInfo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -78,7 +79,7 @@ public class CommentDatafetcher {
               current,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildCommentPageInfo(comments);
+    PageInfo pageInfo = buildCommentPageInfo(comments);
     CommentsConnection result =
         CommentsConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -99,16 +100,27 @@ public class CommentDatafetcher {
         .build();
   }
 
-  private DefaultPageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
-    return new DefaultPageInfo(
-        comments.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getStartCursor().toString()),
-        comments.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getEndCursor().toString()),
-        comments.hasPrevious(),
-        comments.hasNext());
+  private PageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
+    DefaultPageInfo relayPageInfo =
+        new DefaultPageInfo(
+            comments.getStartCursor() == null
+                ? null
+                : new DefaultConnectionCursor(comments.getStartCursor().toString()),
+            comments.getEndCursor() == null
+                ? null
+                : new DefaultConnectionCursor(comments.getEndCursor().toString()),
+            comments.hasPrevious(),
+            comments.hasNext());
+    return PageInfo.newBuilder()
+        .startCursor(
+            relayPageInfo.getStartCursor() == null
+                ? null
+                : relayPageInfo.getStartCursor().getValue())
+        .endCursor(
+            relayPageInfo.getEndCursor() == null ? null : relayPageInfo.getEndCursor().getValue())
+        .hasPreviousPage(relayPageInfo.isHasPreviousPage())
+        .hasNextPage(relayPageInfo.isHasNextPage())
+        .build();
   }
 
   private Comment buildCommentResult(CommentData comment) {
