@@ -212,6 +212,30 @@ public class ArticleQueryServiceTest extends DbTestBase {
   }
 
   @Test
+  public void should_return_empty_for_null_slug() {
+    Optional<ArticleData> result = queryService.findBySlug(null, user);
+    Assertions.assertFalse(result.isPresent());
+  }
+
+  @Test
+  public void should_return_empty_for_blank_slug() {
+    Optional<ArticleData> result = queryService.findBySlug("   ", user);
+    Assertions.assertFalse(result.isPresent());
+  }
+
+  @Test
+  public void should_return_empty_for_slug_with_only_special_characters() {
+    Optional<ArticleData> result = queryService.findBySlug("!@#$%^&*()", user);
+    Assertions.assertFalse(result.isPresent());
+  }
+
+  @Test
+  public void should_return_empty_for_nonexistent_slug_with_special_chars() {
+    Optional<ArticleData> result = queryService.findBySlug("nonexistent-slug$pecial", user);
+    Assertions.assertFalse(result.isPresent());
+  }
+
+  @Test
   public void should_get_user_feed() {
     User anotherUser = new User("other@email.com", "other", "123", "", "");
     userRepository.save(anotherUser);

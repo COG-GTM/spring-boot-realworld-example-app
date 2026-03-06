@@ -186,6 +186,21 @@ public class ArticleApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_404_for_slug_with_special_characters() throws Exception {
+    when(articleQueryService.findBySlug(anyString(), any())).thenReturn(Optional.empty());
+    RestAssuredMockMvc.when()
+        .get("/articles/{slug}", "slug-with-$pecial-chars!@#")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_404_for_empty_slug_lookup() throws Exception {
+    when(articleQueryService.findBySlug(anyString(), any())).thenReturn(Optional.empty());
+    RestAssuredMockMvc.when().get("/articles/{slug}", "   ").then().statusCode(404);
+  }
+
+  @Test
   public void should_403_if_not_author_delete_article() throws Exception {
     String title = "new-title";
     String body = "new body";
