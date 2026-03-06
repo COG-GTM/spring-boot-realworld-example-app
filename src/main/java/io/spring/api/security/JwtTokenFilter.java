@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -22,9 +23,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
   private final String header = "Authorization";
 
   @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    String path = request.getRequestURI();
+    String method = request.getMethod();
+    return HttpMethod.POST.matches(method)
+        && ("/users/login".equals(path) || "/users".equals(path));
+  }
+
+  @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
+    SecurityContextHolder.clearContext();
+
     getTokenString(request.getHeader(header))
         .flatMap(token -> jwtService.getSubFromToken(token))
         .ifPresent(

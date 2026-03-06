@@ -233,6 +233,47 @@ public class UsersApiTest {
   }
 
   @Test
+  public void should_login_success_even_with_expired_token() throws Exception {
+    String email = "john@jacob.com";
+    String username = "johnjacob2";
+    String password = "123";
+
+    User user = new User(email, username, passwordEncoder.encode(password), "", defaultAvatar);
+    UserData userData = new UserData("123", email, username, "", defaultAvatar);
+
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+    when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
+    when(jwtService.toToken(any())).thenReturn("new-token");
+    when(jwtService.getSubFromToken(eq("expired-token"))).thenReturn(Optional.empty());
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", email);
+                    put("password", password);
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token expired-token")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(200)
+        .body("user.email", equalTo(email))
+        .body("user.username", equalTo(username))
+        .body("user.token", equalTo("new-token"));
+  }
+
+  @Test
   public void should_fail_login_with_wrong_password() throws Exception {
     String email = "john@jacob.com";
     String username = "johnjacob2";
