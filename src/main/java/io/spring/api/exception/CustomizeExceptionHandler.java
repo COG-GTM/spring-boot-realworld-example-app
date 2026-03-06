@@ -24,6 +24,25 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
 
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<Object> handleResourceNotFound(
+      ResourceNotFoundException e, WebRequest request) {
+    String message = e.getMessage() != null ? e.getMessage() : "Resource not found";
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            new HashMap<String, Object>() {
+              {
+                put(
+                    "errors",
+                    new HashMap<String, Object>() {
+                      {
+                        put("message", message);
+                      }
+                    });
+              }
+            });
+  }
+
   @ExceptionHandler({InvalidRequestException.class})
   public ResponseEntity<Object> handleInvalidRequest(RuntimeException e, WebRequest request) {
     InvalidRequestException ire = (InvalidRequestException) e;

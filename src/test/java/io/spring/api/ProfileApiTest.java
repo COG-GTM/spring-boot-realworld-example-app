@@ -93,4 +93,85 @@ public class ProfileApiTest extends TestWithCurrentUser {
 
     verify(userRepository).removeRelation(eq(followRelation));
   }
+
+  @Test
+  public void should_return_404_for_null_username_on_get_profile() throws Exception {
+    RestAssuredMockMvc.when()
+        .get("/profiles/{username}", "null")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("errors.message", equalTo("Profile not found"));
+  }
+
+  @Test
+  public void should_return_404_for_undefined_username_on_get_profile() throws Exception {
+    RestAssuredMockMvc.when()
+        .get("/profiles/{username}", "undefined")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("errors.message", equalTo("Profile not found"));
+  }
+
+  @Test
+  public void should_return_404_for_null_username_on_follow() throws Exception {
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/profiles/{username}/follow", "null")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("errors.message", equalTo("Profile not found"));
+  }
+
+  @Test
+  public void should_return_404_for_undefined_username_on_follow() throws Exception {
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/profiles/{username}/follow", "undefined")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("errors.message", equalTo("Profile not found"));
+  }
+
+  @Test
+  public void should_return_404_for_nonexistent_username_on_get_profile() throws Exception {
+    when(profileQueryService.findByUsername(eq("nonexistent"), eq(null)))
+        .thenReturn(Optional.empty());
+    RestAssuredMockMvc.when()
+        .get("/profiles/{username}", "nonexistent")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("errors.message", equalTo("Profile not found"));
+  }
+
+  @Test
+  public void should_return_404_for_nonexistent_username_on_follow() throws Exception {
+    when(userRepository.findByUsername(eq("nonexistent"))).thenReturn(Optional.empty());
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/profiles/{username}/follow", "nonexistent")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("errors.message", equalTo("Profile not found"));
+  }
+
+  @Test
+  public void should_return_404_for_null_username_on_unfollow() throws Exception {
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/profiles/{username}/follow", "null")
+        .prettyPeek()
+        .then()
+        .statusCode(404)
+        .body("errors.message", equalTo("Profile not found"));
+  }
 }
