@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.6.3'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
+    id 'jacoco'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
 }
@@ -58,6 +59,49 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, includes: [
+                'io/spring/api/UsersApi.class',
+                'io/spring/api/CurrentUserApi.class',
+                'io/spring/api/ProfileApi.class',
+                'io/spring/api/LoginParam.class',
+                'io/spring/core/user/User.class',
+                'io/spring/core/user/FollowRelation.class',
+                'io/spring/core/user/UserRepository.class',
+                'io/spring/application/user/UserService.class',
+                'io/spring/application/user/UpdateUserValidator.class',
+                'io/spring/application/user/RegisterParam.class',
+                'io/spring/application/user/UpdateUserParam.class',
+                'io/spring/application/user/UpdateUserCommand.class',
+                'io/spring/application/user/DuplicatedEmailValidator.class',
+                'io/spring/application/user/DuplicatedUsernameValidator.class',
+                'io/spring/application/UserQueryService.class',
+                'io/spring/application/ProfileQueryService.class',
+                'io/spring/application/data/UserData.class',
+                'io/spring/application/data/UserWithToken.class',
+                'io/spring/application/data/ProfileData.class',
+                'io/spring/infrastructure/repository/MyBatisUserRepository.class',
+                'io/spring/infrastructure/mybatis/readservice/UserReadService.class',
+                'io/spring/infrastructure/mybatis/readservice/UserRelationshipQueryService.class',
+                'io/spring/api/security/JwtTokenFilter.class',
+                'io/spring/api/exception/InvalidAuthenticationException.class'
+            ])
+        }))
+    }
 }
 
 tasks.named('clean') {
