@@ -6,8 +6,11 @@ import io.spring.application.data.ProfileData;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,21 +25,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "profiles/{username}")
 @AllArgsConstructor
 public class ProfileApi {
+  private static final Set<String> INVALID_USERNAMES =
+      new HashSet<>(Arrays.asList("null", "undefined"));
+
   private ProfileQueryService profileQueryService;
   private UserRepository userRepository;
 
   @GetMapping
   public ResponseEntity getProfile(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+    validateUsername(username);
     return profileQueryService
         .findByUsername(username, user)
         .map(this::profileResponse)
-        .orElseThrow(ResourceNotFoundException::new);
+        .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
   }
 
   @PostMapping(path = "follow")
   public ResponseEntity follow(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+    validateUsername(username);
     return userRepository
         .findByUsername(username)
         .map(
@@ -45,12 +53,13 @@ public class ProfileApi {
               userRepository.saveRelation(followRelation);
               return profileResponse(profileQueryService.findByUsername(username, user).get());
             })
-        .orElseThrow(ResourceNotFoundException::new);
+        .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
   }
 
   @DeleteMapping(path = "follow")
   public ResponseEntity unfollow(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+    validateUsername(username);
     Optional<User> userOptional = userRepository.findByUsername(username);
     if (userOptional.isPresent()) {
       User target = userOptional.get();
@@ -61,9 +70,17 @@ public class ProfileApi {
                 userRepository.removeRelation(relation);
                 return profileResponse(profileQueryService.findByUsername(username, user).get());
               })
-          .orElseThrow(ResourceNotFoundException::new);
+          .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
     } else {
-      throw new ResourceNotFoundException();
+      throw new ResourceNotFoundException("Profile not found");
+    }
+  }
+
+  private void validateUsername(String username) {
+    if (username == null
+        || username.isBlank()
+        || INVALID_USERNAMES.contains(username.toLowerCase())) {
+      throw new ResourceNotFoundException("Profile not found");
     }
   }
 
