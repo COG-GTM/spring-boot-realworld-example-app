@@ -52,6 +52,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .permitAll()
         .antMatchers("/graphql")
         .permitAll()
+        .antMatchers(HttpMethod.GET, "/*.html", "/css/**", "/js/**", "/favicon.ico")
+        .permitAll()
         .antMatchers(HttpMethod.GET, "/articles/feed")
         .authenticated()
         .antMatchers(HttpMethod.POST, "/users", "/users/login")
@@ -75,7 +77,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     configuration.setAllowCredentials(false);
     // setAllowedHeaders is important! Without it, OPTIONS preflight request
     // will fail with 403 Invalid CORS request
-    configuration.setAllowedHeaders(asList("Authorization", "Cache-Control", "Content-Type"));
+    configuration.setAllowedHeaders(
+        asList(
+            "Authorization",
+            "Cache-Control",
+            "Content-Type",
+            "Accept",
+            "Origin",
+            "X-Requested-With"));
     final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
