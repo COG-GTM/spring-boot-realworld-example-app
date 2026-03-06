@@ -1,0 +1,273 @@
+/* ==========================================================================
+   Mobile-First Login Styles
+   Fix: touch-action and tap delay issues on mobile devices (ADO #31)
+   ========================================================================== */
+
+/* Reset and base styles */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    /* Prevent iOS text size adjust after orientation change */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    /* Enable smooth touch scrolling */
+    -webkit-overflow-scrolling: touch;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #373a3c;
+    background-color: #fff;
+    /* Prevent pull-to-refresh interfering with form interactions */
+    overscroll-behavior: none;
+}
+
+/* Screen reader only utility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Container */
+.container {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* Navigation */
+.navbar {
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.navbar-brand {
+    font-size: 24px;
+    font-weight: 700;
+    color: #5cb85c;
+    text-decoration: none;
+}
+
+/* Auth page layout */
+.auth-page {
+    padding: 32px 0;
+}
+
+.auth-content {
+    text-align: center;
+}
+
+.auth-content h1 {
+    font-size: 40px;
+    font-weight: 300;
+    margin: 0 0 8px;
+}
+
+.auth-content p {
+    margin: 0 0 16px;
+}
+
+.auth-content p a {
+    color: #5cb85c;
+    text-decoration: none;
+}
+
+/* Error messages */
+.error-messages {
+    color: #b85c5c;
+    font-weight: 700;
+    text-align: left;
+    margin-bottom: 16px;
+    padding: 12px;
+    background-color: #fdf2f2;
+    border-radius: 4px;
+}
+
+.error-messages ul {
+    margin: 0;
+    padding: 0 0 0 20px;
+}
+
+/* Form styles */
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 18px;
+    line-height: 1.5;
+    color: #55595c;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    /* CRITICAL FIX: Prevent iOS zoom on input focus (font-size >= 16px) */
+    /* CRITICAL FIX: Allow normal touch interactions on inputs */
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #5cb85c;
+    outline: 0;
+    /* Visible focus state for accessibility */
+    box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.25);
+}
+
+.form-control::placeholder {
+    color: #999;
+}
+
+/* ==========================================================================
+   MOBILE TAP FIX: Button styles with touch-action and proper sizing
+   
+   Root cause: Mobile browsers (iOS Safari, Android Chrome) have a ~300ms
+   delay on click events to distinguish taps from double-taps/scrolls.
+   
+   Fix applied:
+   1. touch-action: manipulation - removes 300ms delay by telling browser
+      this element only needs pan and pinch-zoom, not double-tap-zoom
+   2. Minimum 44x44px touch target (Apple HIG / WCAG 2.5.5)
+   3. -webkit-tap-highlight-color: transparent - removes tap flash
+   4. cursor: pointer - visual affordance
+   5. user-select: none - prevents accidental text selection on tap
+   ========================================================================== */
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    /* CRITICAL FIX: Remove 300ms tap delay on mobile */
+    touch-action: manipulation;
+    /* Prevent text selection on repeated taps */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Remove tap highlight that can obscure visual feedback */
+    -webkit-tap-highlight-color: transparent;
+    /* Smooth visual feedback */
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
+        opacity 0.15s ease-in-out;
+}
+
+.btn:focus {
+    outline: 0;
+    /* Visible focus state for accessibility */
+    box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.25);
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #5cb85c;
+    border-color: #5cb85c;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #449d44;
+    border-color: #449d44;
+}
+
+/* Active/pressed state - provides immediate visual feedback on tap */
+.btn-primary:active,
+.btn-primary.is-active {
+    background-color: #398439;
+    border-color: #398439;
+    transform: scale(0.98);
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 18px;
+    line-height: 1.5;
+    /* CRITICAL FIX: Minimum 48px height for reliable mobile tap target */
+    min-height: 48px;
+    /* CRITICAL FIX: Minimum 44px wide touch target per WCAG 2.5.5 */
+    min-width: 44px;
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* Disabled state during form submission */
+.btn:disabled,
+.btn.is-loading {
+    opacity: 0.65;
+    cursor: not-allowed;
+    /* Prevent taps while loading */
+    pointer-events: none;
+}
+
+/* Loading spinner */
+.btn.is-loading::after {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================================================================
+   Responsive adjustments
+   ========================================================================== */
+@media (max-width: 480px) {
+    .auth-content h1 {
+        font-size: 32px;
+    }
+
+    .form-control {
+        /* Larger padding for easier touch on small screens */
+        padding: 14px 16px;
+    }
+
+    .btn-lg {
+        /* Even larger tap target on small screens */
+        padding: 14px 24px;
+        min-height: 52px;
+    }
+}
