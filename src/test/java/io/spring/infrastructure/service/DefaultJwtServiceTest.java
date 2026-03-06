@@ -14,7 +14,8 @@ public class DefaultJwtServiceTest {
   @BeforeEach
   public void setUp() {
     jwtService =
-        new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+        new DefaultJwtService(
+            "1231231231231231231231231231231231231231231231231231231231231231abcd", 3600);
   }
 
   @Test
