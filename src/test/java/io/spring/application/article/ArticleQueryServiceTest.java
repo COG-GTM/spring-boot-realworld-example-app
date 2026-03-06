@@ -19,8 +19,12 @@ import io.spring.infrastructure.DbTestBase;
 import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -226,5 +230,69 @@ public class ArticleQueryServiceTest extends DbTestBase {
     Assertions.assertEquals(anotherUserFeed.getCount(), 1);
     ArticleData articleData = anotherUserFeed.getArticleDatas().get(0);
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
+  }
+
+  @Test
+  public void should_paginate_articles_without_duplicates_when_same_created_at() {
+    DateTime sameTime = new DateTime();
+    List<Article> articles = new ArrayList<>();
+    articles.add(article);
+    for (int i = 0; i < 5; i++) {
+      Article a =
+          new Article(
+              "article-" + i, "desc", "body", Arrays.asList("test"), user.getId(), sameTime);
+      articleRepository.save(a);
+      articles.add(a);
+    }
+
+    Set<String> seenIds = new HashSet<>();
+    int pageSize = 2;
+    int totalFetched = 0;
+
+    for (int offset = 0; offset < 6; offset += pageSize) {
+      ArticleDataList page =
+          queryService.findRecentArticles(null, null, null, new Page(offset, pageSize), user);
+      for (ArticleData ad : page.getArticleDatas()) {
+        Assertions.assertFalse(
+            seenIds.contains(ad.getId()), "Duplicate article found across pages: " + ad.getId());
+        seenIds.add(ad.getId());
+      }
+      totalFetched += page.getArticleDatas().size();
+    }
+
+    Assertions.assertEquals(6, totalFetched);
+    Assertions.assertEquals(6, seenIds.size());
+  }
+
+  @Test
+  public void should_paginate_user_feed_without_duplicates_when_same_created_at() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+
+    DateTime sameTime = new DateTime();
+    for (int i = 0; i < 5; i++) {
+      Article a =
+          new Article(
+              "feed-article-" + i, "desc", "body", Arrays.asList("test"), user.getId(), sameTime);
+      articleRepository.save(a);
+    }
+
+    Set<String> seenIds = new HashSet<>();
+    int pageSize = 2;
+    int totalFetched = 0;
+
+    for (int offset = 0; offset < 6; offset += pageSize) {
+      ArticleDataList page = queryService.findUserFeed(follower, new Page(offset, pageSize));
+      for (ArticleData ad : page.getArticleDatas()) {
+        Assertions.assertFalse(
+            seenIds.contains(ad.getId()), "Duplicate article found in feed pages: " + ad.getId());
+        seenIds.add(ad.getId());
+      }
+      totalFetched += page.getArticleDatas().size();
+    }
+
+    Assertions.assertEquals(6, totalFetched);
+    Assertions.assertEquals(6, seenIds.size());
   }
 }

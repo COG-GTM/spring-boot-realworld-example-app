@@ -57,7 +57,7 @@
                 AND AFU.username = #{favoritedBy}
             </if>
         </where>
-        order by A.created_at desc
+        order by A.created_at desc, A.id asc
         limit #{page.offset}, #{page.limit}
     </select>
     <select id="countArticle" resultType="java.lang.Integer">
@@ -88,7 +88,7 @@
         <foreach index="index" collection="articleIds" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
-        order by A.created_at desc
+        order by A.created_at desc, A.id asc
     </select>
     <select id="findArticlesOfAuthors" resultMap="transfer.data.articleData">
         <include refid="selectArticleData"/>
@@ -96,6 +96,7 @@
         <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+        order by A.created_at desc, A.id asc
         limit #{page.offset}, #{page.limit}
     </select>
     <select id="countFeedSize" resultType="java.lang.Integer">
@@ -124,10 +125,10 @@
             </if>
         </where>
         <if test='page.direction.name() == "NEXT"'>
-            order by A.created_at desc
+            order by A.created_at desc, A.id asc
         </if>
         <if test='page.direction.name() == "PREV"'>
-            order by A.created_at asc
+            order by A.created_at asc, A.id desc
         </if>
         limit #{page.queryLimit}
     </select>
@@ -145,10 +146,10 @@
             AND A.created_at > #{page.cursor}
         </if>
         <if test='page.direction.name() == "NEXT"'>
-            order by A.created_at desc
+            order by A.created_at desc, A.id asc
         </if>
         <if test='page.direction.name() == "PREV"'>
-            order by A.created_at asc
+            order by A.created_at asc, A.id desc
         </if>
         </where>
         limit #{page.queryLimit}
