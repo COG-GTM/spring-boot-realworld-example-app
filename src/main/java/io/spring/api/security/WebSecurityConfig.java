@@ -58,6 +58,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .permitAll()
         .antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
         .permitAll()
+        .antMatchers(HttpMethod.GET, "/api/profiles/**")
+        .permitAll()
+        .antMatchers(HttpMethod.OPTIONS, "/api/profiles/**")
+        .permitAll()
         .anyRequest()
         .authenticated();
 
@@ -77,6 +81,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // will fail with 403 Invalid CORS request
     configuration.setAllowedHeaders(asList("Authorization", "Cache-Control", "Content-Type"));
     final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/profiles/**", configuration);
+    source.registerCorsConfiguration("/api/profiles/**", configuration);
     source.registerCorsConfiguration("/**", configuration);
     return source;
   }
