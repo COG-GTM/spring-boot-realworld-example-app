@@ -83,7 +83,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .when()
         .post("/articles")
         .then()
-        .statusCode(200)
+        .statusCode(201)
         .body("article.title", equalTo(title))
         .body("article.favorited", equalTo(false))
         .body("article.body", equalTo(body))
