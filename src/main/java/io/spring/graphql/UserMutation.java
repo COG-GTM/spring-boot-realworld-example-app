@@ -67,7 +67,7 @@ public class UserMutation {
   }
 
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.UpdateUser)
-  public DataFetcherResult<UserPayload> updateUser(
+  public DataFetcherResult<UserResult> updateUser(
       @InputArgument("changes") UpdateUserInput updateUserInput) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof AnonymousAuthenticationToken
@@ -84,8 +84,14 @@ public class UserMutation {
             .image(updateUserInput.getImage())
             .build();
 
-    userService.updateUser(new UpdateUserCommand(currentUser, param));
-    return DataFetcherResult.<UserPayload>newResult()
+    try {
+      userService.updateUser(new UpdateUserCommand(currentUser, param));
+    } catch (ConstraintViolationException cve) {
+      return DataFetcherResult.<UserResult>newResult()
+          .data(GraphQLCustomizeExceptionHandler.getErrorsAsData(cve))
+          .build();
+    }
+    return DataFetcherResult.<UserResult>newResult()
         .data(UserPayload.newBuilder().build())
         .localContext(currentUser)
         .build();
