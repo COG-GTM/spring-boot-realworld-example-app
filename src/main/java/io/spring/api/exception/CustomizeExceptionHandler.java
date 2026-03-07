@@ -21,6 +21,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+/**
+ * Global exception handler for REST API controllers.
+ */
+
 @RestControllerAdvice
 public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -55,6 +59,18 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
             new HashMap<String, Object>() {
               {
                 put("message", e.getMessage());
+              }
+            });
+  }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<Object> handleResourceNotFound(
+      ResourceNotFoundException e, WebRequest request) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            new HashMap<String, Object>() {
+              {
+                put("message", "Resource not found");
               }
             });
   }
