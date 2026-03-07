@@ -59,6 +59,18 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
             });
   }
 
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<Object> handleResourceNotFound(
+      ResourceNotFoundException e, WebRequest request) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            new HashMap<String, Object>() {
+              {
+                put("message", "Resource not found");
+              }
+            });
+  }
+
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
       MethodArgumentNotValidException e,
