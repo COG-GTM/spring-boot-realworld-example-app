@@ -76,6 +76,19 @@ public class ProfileApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_return_404_when_following_nonexistent_user() throws Exception {
+    when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/profiles/nonexistent/follow")
+        .then()
+        .statusCode(404)
+        .body("message", equalTo("Profile not found"));
+  }
+
+  @Test
   public void should_unfollow_user_success() throws Exception {
     FollowRelation followRelation = new FollowRelation(user.getId(), anotherUser.getId());
     when(userRepository.findRelation(eq(user.getId()), eq(anotherUser.getId())))

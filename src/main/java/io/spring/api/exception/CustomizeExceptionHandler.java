@@ -1,11 +1,13 @@
 package io.spring.api.exception;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -45,6 +47,12 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
     headers.setContentType(MediaType.APPLICATION_JSON);
 
     return handleExceptionInternal(e, error, headers, UNPROCESSABLE_ENTITY, request);
+  }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<Object> handleResourceNotFound(
+      ResourceNotFoundException e, WebRequest request) {
+    return ResponseEntity.status(NOT_FOUND).body(Map.of("message", "Profile not found"));
   }
 
   @ExceptionHandler(InvalidAuthenticationException.class)
