@@ -360,7 +360,7 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
   }
 
   @Test
-  public void should_update_user_profile_and_verify_service_called() throws Exception {
+  public void should_update_user_profile_and_return_correct_response() throws Exception {
     String newEmail = "newemail2@example.com";
     String newBio = "updated bio";
     String newUsername = "newuser2";
