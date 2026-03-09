@@ -10,6 +10,7 @@ import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.UserQueryService;
+import io.spring.application.data.UserData;
 import io.spring.application.user.UserService;
 import io.spring.core.user.User;
 import java.util.HashMap;
@@ -369,7 +370,9 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
 
     when(userRepository.findByUsername(eq(newUsername))).thenReturn(Optional.empty());
     when(userRepository.findByEmail(eq(newEmail))).thenReturn(Optional.empty());
-    when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(userData));
+    UserData updatedUserData =
+        new UserData(user.getId(), newEmail, newUsername, newBio, defaultAvatar);
+    when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(updatedUserData));
 
     given()
         .contentType("application/json")
@@ -379,8 +382,8 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .put("/user")
         .then()
         .statusCode(200)
-        .body("user.email", equalTo(email))
-        .body("user.username", equalTo(username));
+        .body("user.email", equalTo(newEmail))
+        .body("user.username", equalTo(newUsername));
   }
 
   @Test
