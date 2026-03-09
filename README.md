@@ -1,10 +1,16 @@
-# ![RealWorld Example App using Kotlin and Spring](example-logo.png)
+# Spring Boot RealWorld Example App
+
+![RealWorld Example App using Kotlin and Spring](example-logo.png)
 
 [![Actions](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
+[![Java](https://img.shields.io/badge/Java-11-orange.svg)](https://openjdk.java.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.x-green.svg)](https://spring.io/projects/spring-boot)
 
-> ### Spring boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
+> Spring Boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
 
-This codebase was created to demonstrate a fully fledged full-stack application built with Spring boot + Mybatis including CRUD operations, authentication, routing, pagination, and more.
+## Overview
+
+This codebase demonstrates a fully fledged full-stack application built with Spring Boot + MyBatis including CRUD operations, authentication, routing, pagination, and more. It follows Domain Driven Design (DDD) principles and implements both REST and GraphQL APIs.
 
 For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
 
