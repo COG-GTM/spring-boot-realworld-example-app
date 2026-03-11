@@ -9,6 +9,8 @@ import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
 import io.spring.api.exception.FieldErrorResource;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.api.exception.NoAuthorizationException;
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
 import java.util.ArrayList;
@@ -19,10 +21,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHandler {
+
+  private static final Logger logger =
+      LoggerFactory.getLogger(GraphQLCustomizeExceptionHandler.class);
 
   private final DefaultDataFetcherExceptionHandler defaultHandler =
       new DefaultDataFetcherExceptionHandler();
@@ -30,19 +37,59 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
   @Override
   public DataFetcherExceptionHandlerResult onException(
       DataFetcherExceptionHandlerParameters handlerParameters) {
-    if (handlerParameters.getException() instanceof InvalidAuthenticationException) {
+    Throwable exception = handlerParameters.getException();
+
+    if (exception instanceof InvalidAuthenticationException) {
+      logger.warn(
+          "Authentication failed for path {}: {}",
+          handlerParameters.getPath(),
+          exception.getMessage());
       GraphQLError graphqlError =
           TypedGraphQLError.newBuilder()
               .errorType(ErrorType.UNAUTHENTICATED)
-              .message(handlerParameters.getException().getMessage())
+              .message(
+                  exception.getMessage() != null
+                      ? exception.getMessage()
+                      : "Authentication required")
               .path(handlerParameters.getPath())
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
-    } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
+    } else if (exception instanceof ResourceNotFoundException) {
+      logger.debug("Resource not found for path {}", handlerParameters.getPath());
+      GraphQLError graphqlError =
+          TypedGraphQLError.newNotFoundBuilder()
+              .message("The requested resource was not found")
+              .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (exception instanceof NoAuthorizationException) {
+      logger.warn(
+          "Authorization denied for path {}: {}",
+          handlerParameters.getPath(),
+          exception.getMessage());
+      GraphQLError graphqlError =
+          TypedGraphQLError.newPermissionDeniedBuilder()
+              .message("You are not authorized to perform this action")
+              .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (exception instanceof IllegalArgumentException) {
+      logger.warn(
+          "Invalid argument for path {}: {}",
+          handlerParameters.getPath(),
+          exception.getMessage());
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBadRequestBuilder()
+              .message(
+                  exception.getMessage() != null ? exception.getMessage() : "Invalid argument")
+              .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (exception instanceof ConstraintViolationException) {
+      logger.warn("Validation failed for path {}", handlerParameters.getPath());
       List<FieldErrorResource> errors = new ArrayList<>();
       for (ConstraintViolation<?> violation :
-          ((ConstraintViolationException) handlerParameters.getException())
-              .getConstraintViolations()) {
+          ((ConstraintViolationException) exception).getConstraintViolations()) {
         FieldErrorResource fieldErrorResource =
             new FieldErrorResource(
                 violation.getRootBeanClass().getName(),
@@ -57,12 +104,17 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
       }
       GraphQLError graphqlError =
           TypedGraphQLError.newBadRequestBuilder()
-              .message(handlerParameters.getException().getMessage())
+              .message("Validation failed")
               .path(handlerParameters.getPath())
               .extensions(errorsToMap(errors))
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
     } else {
+      logger.error(
+          "Unexpected error for path {}: {}",
+          handlerParameters.getPath(),
+          exception.getMessage(),
+          exception);
       return defaultHandler.onException(handlerParameters);
     }
   }
