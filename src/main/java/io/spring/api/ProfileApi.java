@@ -6,6 +6,12 @@ import io.spring.application.data.ProfileData;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -21,22 +27,41 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "profiles/{username}")
 @AllArgsConstructor
+@Tag(name = "Profiles", description = "User profile and follow operations")
 public class ProfileApi {
   private ProfileQueryService profileQueryService;
   private UserRepository userRepository;
 
+  @Operation(summary = "Get a profile", description = "Get a user's public profile")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+      })
   @GetMapping
   public ResponseEntity getProfile(
-      @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+      @Parameter(description = "Username of the profile") @PathVariable("username") String username,
+      @AuthenticationPrincipal User user) {
     return profileQueryService
         .findByUsername(username, user)
         .map(this::profileResponse)
         .orElseThrow(ResourceNotFoundException::new);
   }
 
+  @Operation(
+      summary = "Follow a user",
+      description = "Follow a user. Authentication required.",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "User followed successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+      })
   @PostMapping(path = "follow")
   public ResponseEntity follow(
-      @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+      @Parameter(description = "Username to follow") @PathVariable("username") String username,
+      @AuthenticationPrincipal User user) {
     return userRepository
         .findByUsername(username)
         .map(
@@ -48,9 +73,20 @@ public class ProfileApi {
         .orElseThrow(ResourceNotFoundException::new);
   }
 
+  @Operation(
+      summary = "Unfollow a user",
+      description = "Unfollow a user. Authentication required.",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "User unfollowed successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "404", description = "User not found or not following")
+      })
   @DeleteMapping(path = "follow")
   public ResponseEntity unfollow(
-      @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+      @Parameter(description = "Username to unfollow") @PathVariable("username") String username,
+      @AuthenticationPrincipal User user) {
     Optional<User> userOptional = userRepository.findByUsername(username);
     if (userOptional.isPresent()) {
       User target = userOptional.get();
