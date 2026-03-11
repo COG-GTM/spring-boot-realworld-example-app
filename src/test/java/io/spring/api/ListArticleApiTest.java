@@ -72,4 +72,103 @@ public class ListArticleApiTest extends TestWithCurrentUser {
         .then()
         .statusCode(200);
   }
+
+  @Test
+  public void should_get_articles_with_tag_filter() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq("java"), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    given()
+        .param("tag", "java")
+        .when()
+        .get("/articles")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_with_author_filter() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq("johnjacob"), eq(null), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    given()
+        .param("author", "johnjacob")
+        .when()
+        .get("/articles")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_with_favorited_filter() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq(null), eq("johnjacob"), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    given()
+        .param("favorited", "johnjacob")
+        .when()
+        .get("/articles")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_with_pagination() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq(null), eq(null), eq(new Page(10, 5)), eq(null)))
+        .thenReturn(articleDataList);
+
+    given()
+        .param("offset", "10")
+        .param("limit", "5")
+        .when()
+        .get("/articles")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_feeds_with_pagination() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findUserFeed(eq(user), eq(new Page(10, 5))))
+        .thenReturn(articleDataList);
+
+    given()
+        .header("Authorization", "Token " + token)
+        .param("offset", "10")
+        .param("limit", "5")
+        .when()
+        .get("/articles/feed")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_with_authenticated_user() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(
+            asList(articleDataFixture("1", user), articleDataFixture("2", user)), 2);
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq(null), eq(null), eq(new Page(0, 20)), eq(user)))
+        .thenReturn(articleDataList);
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .get("/articles")
+        .then()
+        .statusCode(200);
+  }
 }

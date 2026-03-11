@@ -222,4 +222,91 @@ public class ArticleApiTest extends TestWithCurrentUser {
       }
     };
   }
+
+  @Test
+  public void should_get_401_without_token_when_update_article() throws Exception {
+    String title = "new-title";
+    String body = "new body";
+    String description = "new description";
+    Map<String, Object> updateParam = prepareUpdateParam(title, body, description);
+
+    Article article =
+        new Article(title, description, body, Arrays.asList("java", "spring"), user.getId());
+
+    given()
+        .contentType("application/json")
+        .body(updateParam)
+        .when()
+        .put("/articles/{slug}", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_without_token_when_delete_article() throws Exception {
+    Article article =
+        new Article("title", "description", "body", Arrays.asList("java", "spring"), user.getId());
+
+    RestAssuredMockMvc.when()
+        .delete("/articles/{slug}", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_404_when_update_nonexistent_article() throws Exception {
+    String title = "new-title";
+    String body = "new body";
+    String description = "new description";
+    Map<String, Object> updateParam = prepareUpdateParam(title, body, description);
+
+    when(articleRepository.findBySlug(eq("nonexistent-slug"))).thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(updateParam)
+        .when()
+        .put("/articles/{slug}", "nonexistent-slug")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_404_when_delete_nonexistent_article() throws Exception {
+    when(articleRepository.findBySlug(eq("nonexistent-slug"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/articles/{slug}", "nonexistent-slug")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_read_article_with_authenticated_user() throws Exception {
+    String slug = "test-new-article";
+    DateTime time = new DateTime();
+    Article article =
+        new Article(
+            "Test New Article",
+            "Desc",
+            "Body",
+            Arrays.asList("java", "spring", "jpg"),
+            user.getId(),
+            time);
+    ArticleData articleData = TestHelper.getArticleDataFromArticleAndUser(article, user);
+
+    when(articleQueryService.findBySlug(eq(slug), eq(user))).thenReturn(Optional.of(articleData));
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .get("/articles/{slug}", slug)
+        .then()
+        .statusCode(200)
+        .body("article.slug", equalTo(slug))
+        .body("article.body", equalTo(articleData.getBody()));
+  }
 }

@@ -170,4 +170,104 @@ public class ArticlesApiTest extends TestWithCurrentUser {
       }
     };
   }
+
+  @Test
+  public void should_get_401_without_token_when_create_article() throws Exception {
+    String title = "How to train your dragon";
+    String description = "Ever wonder how?";
+    String body = "You have to believe";
+    List<String> tagList = asList("reactjs", "angularjs", "dragons");
+    Map<String, Object> param = prepareParam(title, description, body, tagList);
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/articles")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_error_message_with_blank_title() throws Exception {
+    String title = "";
+    String description = "Ever wonder how?";
+    String body = "You have to believe";
+    List<String> tagList = asList("reactjs", "angularjs", "dragons");
+    Map<String, Object> param = prepareParam(title, description, body, tagList);
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles")
+        .then()
+        .statusCode(422)
+        .body("errors.title[0]", equalTo("can't be empty"));
+  }
+
+  @Test
+  public void should_get_error_message_with_blank_description() throws Exception {
+    String title = "How to train your dragon";
+    String description = "";
+    String body = "You have to believe";
+    List<String> tagList = asList("reactjs", "angularjs", "dragons");
+    Map<String, Object> param = prepareParam(title, description, body, tagList);
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles")
+        .then()
+        .statusCode(422)
+        .body("errors.description[0]", equalTo("can't be empty"));
+  }
+
+  @Test
+  public void should_create_article_success_with_empty_taglist() throws Exception {
+    String title = "How to train your dragon";
+    String slug = "how-to-train-your-dragon";
+    String description = "Ever wonder how?";
+    String body = "You have to believe";
+    List<String> tagList = asList();
+    Map<String, Object> param = prepareParam(title, description, body, tagList);
+
+    ArticleData articleData =
+        new ArticleData(
+            "123",
+            slug,
+            title,
+            description,
+            body,
+            false,
+            0,
+            new DateTime(),
+            new DateTime(),
+            tagList,
+            new ProfileData("userid", user.getUsername(), user.getBio(), user.getImage(), false));
+
+    when(articleCommandService.createArticle(any(), any()))
+        .thenReturn(new Article(title, description, body, tagList, user.getId()));
+
+    when(articleQueryService.findBySlug(eq(Article.toSlug(title)), any()))
+        .thenReturn(Optional.empty());
+
+    when(articleQueryService.findById(any(), any())).thenReturn(Optional.of(articleData));
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles")
+        .then()
+        .statusCode(200)
+        .body("article.title", equalTo(title))
+        .body("article.body", equalTo(body));
+
+    verify(articleCommandService).createArticle(any(), any());
+  }
 }
