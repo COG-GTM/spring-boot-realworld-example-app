@@ -21,6 +21,8 @@ import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 public class UsersApi {
+  private static final Logger log = LoggerFactory.getLogger(UsersApi.class);
+
   private UserRepository userRepository;
   private UserQueryService userQueryService;
   private PasswordEncoder passwordEncoder;
@@ -46,15 +50,41 @@ public class UsersApi {
 
   @RequestMapping(path = "/users/login", method = POST)
   public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
+    long loginStartTime = System.currentTimeMillis();
+    log.info("[LOGIN_PERF] Login attempt started for email: {}", loginParam.getEmail());
+
+    long dbQueryStartTime = System.currentTimeMillis();
     Optional<User> optional = userRepository.findByEmail(loginParam.getEmail());
-    if (optional.isPresent()
-        && passwordEncoder.matches(loginParam.getPassword(), optional.get().getPassword())) {
-      UserData userData = userQueryService.findById(optional.get().getId()).get();
-      return ResponseEntity.ok(
-          userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
-    } else {
-      throw new InvalidAuthenticationException();
+    long dbQueryEndTime = System.currentTimeMillis();
+    log.info(
+        "[LOGIN_PERF] findByEmail query completed in {}ms", (dbQueryEndTime - dbQueryStartTime));
+
+    if (optional.isPresent()) {
+      long bcryptStartTime = System.currentTimeMillis();
+      boolean passwordMatches =
+          passwordEncoder.matches(loginParam.getPassword(), optional.get().getPassword());
+      long bcryptEndTime = System.currentTimeMillis();
+      log.info(
+          "[LOGIN_PERF] BCrypt password verification completed in {}ms",
+          (bcryptEndTime - bcryptStartTime));
+
+      if (passwordMatches) {
+        User user = optional.get();
+        UserData userData =
+            new UserData(
+                user.getId(), user.getEmail(), user.getUsername(), user.getBio(), user.getImage());
+        log.info("[LOGIN_PERF] UserData created from User object (no second DB query needed)");
+
+        long totalTime = System.currentTimeMillis() - loginStartTime;
+        log.info("[LOGIN_PERF] Login successful - total time: {}ms", totalTime);
+
+        return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
+      }
     }
+
+    long totalTime = System.currentTimeMillis() - loginStartTime;
+    log.info("[LOGIN_PERF] Login failed - total time: {}ms", totalTime);
+    throw new InvalidAuthenticationException();
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {
