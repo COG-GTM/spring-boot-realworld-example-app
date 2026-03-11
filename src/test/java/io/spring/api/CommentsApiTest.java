@@ -162,4 +162,76 @@ public class CommentsApiTest extends TestWithCurrentUser {
         .then()
         .statusCode(403);
   }
+
+  @Test
+  public void should_get_401_when_creating_comment_without_token() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "comment",
+                new HashMap<String, Object>() {
+                  {
+                    put("body", "comment content");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/articles/{slug}/comments", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_creating_comment_with_invalid_token() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "comment",
+                new HashMap<String, Object>() {
+                  {
+                    put("body", "comment content");
+                  }
+                });
+          }
+        };
+
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token invalid-token")
+        .body(param)
+        .when()
+        .post("/articles/{slug}/comments", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_deleting_comment_without_token() throws Exception {
+    given()
+        .when()
+        .delete("/articles/{slug}/comments/{id}", article.getSlug(), "comment-id")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_deleting_comment_with_invalid_token() throws Exception {
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token invalid-token")
+        .when()
+        .delete("/articles/{slug}/comments/{id}", article.getSlug(), "comment-id")
+        .then()
+        .statusCode(401);
+  }
 }

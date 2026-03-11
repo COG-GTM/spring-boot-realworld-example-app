@@ -100,4 +100,46 @@ public class ArticleFavoriteApiTest extends TestWithCurrentUser {
         .body("article.id", equalTo(article.getId()));
     verify(articleFavoriteRepository).remove(new ArticleFavorite(article.getId(), user.getId()));
   }
+
+  @Test
+  public void should_get_401_when_favoriting_article_without_token() throws Exception {
+    given()
+        .when()
+        .post("/articles/{slug}/favorite", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_favoriting_article_with_invalid_token() throws Exception {
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token invalid-token")
+        .when()
+        .post("/articles/{slug}/favorite", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_unfavoriting_article_without_token() throws Exception {
+    given()
+        .when()
+        .delete("/articles/{slug}/favorite", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_unfavoriting_article_with_invalid_token() throws Exception {
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token invalid-token")
+        .when()
+        .delete("/articles/{slug}/favorite", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
 }

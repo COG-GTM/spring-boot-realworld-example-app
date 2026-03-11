@@ -176,4 +176,42 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .then()
         .statusCode(401);
   }
+
+  @Test
+  public void should_get_401_with_empty_token_string() throws Exception {
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token ")
+        .when()
+        .get("/user")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_with_authorization_header_without_space() throws Exception {
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token" + token)
+        .when()
+        .get("/user")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_token_refers_to_nonexistent_user() throws Exception {
+    String tokenForDeletedUser = "deleted-user-token";
+    String deletedUserId = "deleted-user-id";
+    when(jwtService.getSubFromToken(eq(tokenForDeletedUser))).thenReturn(Optional.of(deletedUserId));
+    when(userRepository.findById(eq(deletedUserId))).thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + tokenForDeletedUser)
+        .when()
+        .get("/user")
+        .then()
+        .statusCode(401);
+  }
 }
