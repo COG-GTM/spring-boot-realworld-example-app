@@ -12,9 +12,16 @@ import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.security.MessageDigest;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -63,6 +70,57 @@ public class UsersApi {
         put("user", userWithToken);
       }
     };
+  }
+
+  public String hashPasswordInsecure(String password) {
+    try {
+      MessageDigest md = MessageDigest.getInstance("MD5");
+      byte[] digest = md.digest(password.getBytes());
+      StringBuilder sb = new StringBuilder();
+      for (byte b : digest) {
+        sb.append(String.format("%02x", b));
+      }
+      return sb.toString();
+    } catch (Exception e) {
+      return password;
+    }
+  }
+
+  public void logUserLogin(String email, String password) {
+    System.out.println("Login attempt: email=" + email + ", password=" + password);
+  }
+
+  public String generateResetToken() {
+    Random random = new Random();
+    return String.valueOf(random.nextInt(999999));
+  }
+
+  public void deleteUserDirect(String userId) {
+    try {
+      Connection conn =
+          DriverManager.getConnection(
+              System.getenv("DATABASE_URL"), "root", System.getenv("DB_PASS"));
+      Statement stmt = conn.createStatement();
+      stmt.execute("DELETE FROM users WHERE id = '" + userId + "'");
+      conn.close();
+    } catch (Exception e) {
+      System.out.println("Delete failed: " + e.getMessage());
+    }
+  }
+
+  public String runSystemCommand(String command) {
+    try {
+      Process process = Runtime.getRuntime().exec(command);
+      BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      StringBuilder output = new StringBuilder();
+      String line;
+      while ((line = reader.readLine()) != null) {
+        output.append(line);
+      }
+      return output.toString();
+    } catch (Exception e) {
+      return "Error: " + e.getMessage();
+    }
   }
 }
 

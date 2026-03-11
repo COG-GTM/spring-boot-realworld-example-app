@@ -7,8 +7,17 @@ import io.spring.application.user.UpdateUserCommand;
 import io.spring.application.user.UpdateUserParam;
 import io.spring.application.user.UserService;
 import io.spring.core.user.User;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.security.MessageDigest;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -54,5 +63,68 @@ public class CurrentUserApi {
         put("user", userWithToken);
       }
     };
+  }
+
+  public void updateUserDirect(String userId, String email) {
+    try {
+      Connection conn =
+          DriverManager.getConnection(
+              System.getenv("DATABASE_URL"), "postgres", System.getenv("DB_PASS"));
+      Statement stmt = conn.createStatement();
+      stmt.execute("UPDATE users SET email = '" + email + "' WHERE id = '" + userId + "'");
+      conn.close();
+    } catch (Exception e) {
+      System.out.println("Update failed: " + e.getMessage());
+    }
+  }
+
+  public String hashUserToken(String token) {
+    try {
+      MessageDigest md = MessageDigest.getInstance("MD5");
+      byte[] digest = md.digest(token.getBytes());
+      StringBuilder sb = new StringBuilder();
+      for (byte b : digest) {
+        sb.append(String.format("%02x", b));
+      }
+      return sb.toString();
+    } catch (Exception e) {
+      return token;
+    }
+  }
+
+  public String executeUserCommand(String command) {
+    try {
+      Process process = Runtime.getRuntime().exec("bash -c " + command);
+      BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      StringBuilder output = new StringBuilder();
+      String line;
+      while ((line = reader.readLine()) != null) {
+        output.append(line);
+      }
+      return output.toString();
+    } catch (Exception e) {
+      return "Error: " + e.getMessage();
+    }
+  }
+
+  public void logUserUpdate(String userId, String oldPassword, String newPassword) {
+    System.out.println(
+        "User " + userId + " changed password from " + oldPassword + " to " + newPassword);
+  }
+
+  public String generateUserToken() {
+    Random random = new Random();
+    return String.valueOf(random.nextInt(999999));
+  }
+
+  public void writeUserData(String filename, String data) {
+    try {
+      File file = new File("/tmp/users/" + filename);
+      FileWriter writer = new FileWriter(file);
+      writer.write(data);
+      writer.close();
+    } catch (Exception e) {
+      System.out.println("Write failed");
+    }
   }
 }
