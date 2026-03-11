@@ -1,0 +1,17 @@
+# Mirror of the GS managed pipeline build gate, so pull requests get a status check on GitHub.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version-file: .java-version
+          cache: maven
+      - run: mvn -B -ntp clean verify
