@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Coverage Report - Spring Boot RealWorld Example App</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        h3 {
+            color: #7f8c8d;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-type {
+            background: #ecf0f1;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .test-type h4 {
+            margin-top: 0;
+            color: #2980b9;
+        }
+        .file-list {
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .file-list li {
+            margin: 5px 0;
+        }
+        .coverage-gap {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .coverage-gap h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .improvement {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .improvement h4 {
+            margin-top: 0;
+            color: #155724;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-existing {
+            background: #3498db;
+            color: white;
+        }
+        .status-missing {
+            background: #e74c3c;
+            color: white;
+        }
+        .status-added {
+            background: #27ae60;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .summary-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 200px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-card .label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Coverage Report</h1>
+    <p><strong>Repository:</strong> spring-boot-realworld-example-app</p>
+    <p><strong>Report Generated:</strong> <span id="report-date"></span></p>
+    <script>document.getElementById('report-date').textContent = new Date().toLocaleDateString();</script>
+
+    <div class="section">
+        <h2>Executive Summary</h2>
+        <div class="summary-stats">
+            <div class="stat-card">
+                <div class="number">23</div>
+                <div class="label">Initial Test Files</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="color: #27ae60;">32</div>
+                <div class="label">Total Test Files (After Improvements)</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="color: #27ae60;">9</div>
+                <div class="label">New Test Files Added</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="color: #27ae60;">~100</div>
+                <div class="label">New Test Cases Added</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1: Current Test Types in the Repository</h2>
+        
+        <div class="test-type">
+            <h4>1. API Integration Tests (Controller Layer) <span class="status-badge status-existing">Existing</span></h4>
+            <p><strong>Location:</strong> <code>src/test/java/io/spring/api/</code></p>
+            <p><strong>Technology:</strong> Uses <code>@WebMvcTest</code> annotation with RestAssured MockMvc</p>
+            <p><strong>Purpose:</strong> Test REST endpoints in isolation with mocked dependencies</p>
+            <p><strong>Test Files:</strong></p>
+            <ul class="file-list">
+                <li><code>UsersApiTest.java</code> - User registration and login (8 tests)</li>
+                <li><code>CurrentUserApiTest.java</code> - Current user operations</li>
+                <li><code>ArticlesApiTest.java</code> - Article creation operations</li>
+                <li><code>ArticleApiTest.java</code> - Single article CRUD operations</li>
+                <li><code>CommentsApiTest.java</code> - Comment operations</li>
+                <li><code>ArticleFavoriteApiTest.java</code> - Article favorites</li>
+                <li><code>ProfileApiTest.java</code> - User profiles and following</li>
+                <li><code>ListArticleApiTest.java</code> - Article listing and feeds</li>
+                <li><code>TestWithCurrentUser.java</code> - Base class for authenticated tests</li>
+            </ul>
+            <p><strong>Pattern Used:</strong></p>
+            <pre style="background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto;">
+@WebMvcTest(UsersApi.class)
+@Import({WebSecurityConfig.class, UserQueryService.class, BCryptPasswordEncoder.class, JacksonCustomizations.class})
+public class UsersApiTest {
+    @Autowired private MockMvc mvc;
+    @MockBean private UserRepository userRepository;
+    @MockBean private JwtService jwtService;
+    // ... tests using RestAssuredMockMvc
+}</pre>
+        </div>
+
+        <div class="test-type">
+            <h4>2. Repository/Persistence Tests (Data Layer) <span class="status-badge status-existing">Existing</span></h4>
+            <p><strong>Location:</strong> <code>src/test/java/io/spring/infrastructure/</code></p>
+            <p><strong>Technology:</strong> Uses <code>@MybatisTest</code> via <code>DbTestBase</code> class, tests against actual SQLite database</p>
+            <p><strong>Purpose:</strong> Test MyBatis repositories against real database</p>
+            <p><strong>Test Files:</strong></p>
+            <ul class="file-list">
+                <li><code>MyBatisArticleRepositoryTest.java</code> - Article repository CRUD (3 tests)</li>
+                <li><code>MyBatisCommentRepositoryTest.java</code> - Comment repository operations</li>
+                <li><code>MyBatisArticleFavoriteRepositoryTest.java</code> - Article favorite repository</li>
+                <li><code>ArticleRepositoryTransactionTest.java</code> - Transaction behavior</li>
+                <li><code>MyBatisUserRepositoryTest.java</code> - User repository operations (4 tests)</li>
+                <li><code>DefaultJwtServiceTest.java</code> - JWT service tests</li>
+                <li><code>DbTestBase.java</code> - Base class for database tests</li>
+            </ul>
+            <p><strong>Pattern Used:</strong></p>
+            <pre style="background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto;">
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = Replace.NONE)
+@MybatisTest
+public abstract class DbTestBase {}
+
+@Import({MyBatisArticleRepository.class, MyBatisUserRepository.class})
+public class MyBatisArticleRepositoryTest extends DbTestBase {
+    @Autowired private ArticleRepository articleRepository;
+    // ... tests
+}</pre>
+        </div>
+
+        <div class="test-type">
+            <h4>3. Unit Tests (Domain Logic) <span class="status-badge status-existing">Existing</span></h4>
+            <p><strong>Location:</strong> <code>src/test/java/io/spring/core/</code></p>
+            <p><strong>Technology:</strong> Simple JUnit 5 tests without Spring context</p>
+            <p><strong>Purpose:</strong> Test domain entities and business logic in isolation</p>
+            <p><strong>Test Files:</strong></p>
+            <ul class="file-list">
+                <li><code>ArticleTest.java</code> - Article slug generation logic (5 tests)</li>
+            </ul>
+            <p><strong>Pattern Used:</strong></p>
+            <pre style="background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto;">
+public class ArticleTest {
+    @Test
+    public void should_get_right_slug() {
+        Article article = new Article("a new   title", "desc", "body", Arrays.asList("java"), "123");
+        assertThat(article.getSlug(), is("a-new-title"));
+    }
+}</pre>
+        </div>
+
+        <div class="test-type">
+            <h4>4. Application Service Tests (Query Services) <span class="status-badge status-existing">Existing</span></h4>
+            <p><strong>Location:</strong> <code>src/test/java/io/spring/application/</code></p>
+            <p><strong>Technology:</strong> Uses <code>DbTestBase</code> with real database</p>
+            <p><strong>Purpose:</strong> Test query services with actual database operations</p>
+            <p><strong>Test Files:</strong></p>
+            <ul class="file-list">
+                <li><code>ArticleQueryServiceTest.java</code> - Article query operations (9 tests)</li>
+                <li><code>CommentQueryServiceTest.java</code> - Comment query operations</li>
+                <li><code>ProfileQueryServiceTest.java</code> - Profile query operations</li>
+                <li><code>TagsQueryServiceTest.java</code> - Tags query operations</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 2: Coverage Gaps Identified</h2>
+        
+        <div class="improvement">
+            <h4>1. Service Layer Unit Tests <span class="status-badge status-added">RESOLVED</span></h4>
+            <p>No unit tests for command service classes in the <code>application</code> package:</p>
+            <ul>
+                <li><code>UserService</code> - User creation and update logic</li>
+                <li><code>ArticleCommandService</code> - Article creation and update logic</li>
+            </ul>
+            <p><strong>Resolution:</strong> Added <code>ArticleCommandServiceTest.java</code> (12 tests) and <code>UserServiceTest.java</code> (13 tests)</p>
+        </div>
+
+        <div class="improvement">
+            <h4>2. GraphQL API Tests <span class="status-badge status-added">RESOLVED</span></h4>
+            <p>The repository supports GraphQL (via Netflix DGS) but has no GraphQL-specific tests:</p>
+            <ul>
+                <li>No tests for GraphQL queries (articles, profile, tags)</li>
+                <li>No tests for GraphQL mutations (createUser, createArticle, etc.)</li>
+                <li>No tests for GraphQL authentication flow</li>
+            </ul>
+            <p><strong>Resolution:</strong> Added <code>GraphQLIntegrationTest.java</code> with 18 tests covering queries and mutations</p>
+        </div>
+
+        <div class="improvement">
+            <h4>3. Security/Authorization Unit Tests <span class="status-badge status-added">RESOLVED</span></h4>
+            <p>No dedicated tests for authorization logic:</p>
+            <ul>
+                <li><code>AuthorizationService</code> - canWriteArticle() and canWriteComment() methods</li>
+                <li>JWT token validation edge cases</li>
+            </ul>
+            <p><strong>Resolution:</strong> Added <code>AuthorizationServiceTest.java</code> with 14 tests</p>
+        </div>
+
+        <div class="improvement">
+            <h4>4. TagRepository Tests <span class="status-badge status-added">RESOLVED</span></h4>
+            <p>Missing tests for tag-related repository operations. Tags are created as part of articles but there's no dedicated TagRepository test.</p>
+            <p><strong>Resolution:</strong> Added <code>MyBatisTagRepositoryTest.java</code> with 13 tests</p>
+        </div>
+
+        <div class="improvement">
+            <h4>5. Full End-to-End Integration Tests <span class="status-badge status-added">RESOLVED</span></h4>
+            <p>No integration tests that start the entire application context and test complete user flows:</p>
+            <ul>
+                <li>User registration -> login -> create article -> favorite -> comment flow</li>
+                <li>User following and feed functionality</li>
+                <li>Authorization checks across different users</li>
+            </ul>
+            <p><strong>Resolution:</strong> Added <code>UserArticleFlowIntegrationTest.java</code> with 13 tests</p>
+        </div>
+
+        <div class="improvement">
+            <h4>6. Domain Entity Tests <span class="status-badge status-added">RESOLVED</span></h4>
+            <p>Only <code>ArticleTest</code> exists. Missing tests for:</p>
+            <ul>
+                <li><code>User</code> - update() method with various parameter combinations</li>
+                <li><code>Comment</code> - creation and validation</li>
+                <li><code>Tag</code> - equality and any normalization logic</li>
+            </ul>
+            <p><strong>Resolution:</strong> Added <code>UserTest.java</code> (17 tests), <code>CommentTest.java</code> (11 tests), and <code>TagTest.java</code> (15 tests)</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 3: Test Coverage Improvements</h2>
+        <p><em>This section will be updated as tests are added.</em></p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Test Category</th>
+                    <th>Test File</th>
+                    <th>Tests Added</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="improvements-table">
+                <tr>
+                    <td>Domain Entity Tests</td>
+                    <td><code>UserTest.java</code></td>
+                    <td>17 tests - User creation, update() method, equality</td>
+                    <td><span class="status-badge status-added">Added</span></td>
+                </tr>
+                <tr>
+                    <td>Domain Entity Tests</td>
+                    <td><code>CommentTest.java</code></td>
+                    <td>11 tests - Comment creation, field validation, equality</td>
+                    <td><span class="status-badge status-added">Added</span></td>
+                </tr>
+                <tr>
+                    <td>Domain Entity Tests</td>
+                    <td><code>TagTest.java</code></td>
+                    <td>15 tests - Tag creation, equality by name, hashCode</td>
+                    <td><span class="status-badge status-added">Added</span></td>
+                </tr>
+                <tr>
+                    <td>Service Layer Tests</td>
+                    <td><code>ArticleCommandServiceTest.java</code></td>
+                    <td>12 tests - Article creation, update, slug generation</td>
+                    <td><span class="status-badge status-added">Added</span></td>
+                </tr>
+                <tr>
+                    <td>Service Layer Tests</td>
+                    <td><code>UserServiceTest.java</code></td>
+                    <td>13 tests - User creation, password encoding, updates</td>
+                    <td><span class="status-badge status-added">Added</span></td>
+                </tr>
+                <tr>
+                    <td>Authorization Tests</td>
+                    <td><code>AuthorizationServiceTest.java</code></td>
+                    <td>14 tests - canWriteArticle(), canWriteComment()</td>
+                    <td><span class="status-badge status-added">Added</span></td>
+                </tr>
+                <tr>
+                    <td>Integration Tests</td>
+                    <td><code>UserArticleFlowIntegrationTest.java</code></td>
+                    <td>13 tests - Full user flows, authorization checks</td>
+                    <td><span class="status-badge status-added">Added</span></td>
+                </tr>
+                <tr>
+                    <td>Integration Tests</td>
+                    <td><code>GraphQLIntegrationTest.java</code></td>
+                    <td>18 tests - GraphQL queries and mutations</td>
+                    <td><span class="status-badge status-added">Added</span></td>
+                </tr>
+                <tr>
+                    <td>Repository Tests</td>
+                    <td><code>MyBatisTagRepositoryTest.java</code></td>
+                    <td>13 tests - Tag creation, lookup, reuse</td>
+                    <td><span class="status-badge status-added">Added</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Part 4: Issues Encountered</h2>
+        <p>No significant issues were encountered during test implementation. All tests follow existing patterns in the codebase:</p>
+        <ul>
+            <li>Unit tests use plain JUnit 5 with Hamcrest matchers</li>
+            <li>Service layer tests use Mockito with <code>@ExtendWith(MockitoExtension.class)</code></li>
+            <li>Repository tests extend <code>DbTestBase</code> for database access</li>
+            <li>Integration tests use <code>@SpringBootTest</code> with random port</li>
+            <li>GraphQL tests use Netflix DGS <code>DgsQueryExecutor</code></li>
+        </ul>
+        <div id="issues-section">
+            <p>All tests were implemented successfully following the existing patterns.</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 5: Remaining Gaps</h2>
+        <p>After the improvements, the following areas could still benefit from additional testing:</p>
+        <ul>
+            <li><strong>Error handling tests:</strong> More comprehensive tests for exception scenarios and error responses</li>
+            <li><strong>Edge cases:</strong> Additional boundary condition tests for pagination, validation limits</li>
+            <li><strong>Performance tests:</strong> Load testing for API endpoints</li>
+            <li><strong>Security tests:</strong> More comprehensive JWT token expiration and invalid token scenarios</li>
+            <li><strong>GraphQL error handling:</strong> Tests for GraphQL-specific error responses</li>
+        </ul>
+        <p>However, the core functionality is now well-covered with the added tests.</p>
+    </div>
+
+    <div class="section">
+        <h2>Summary</h2>
+        <p>This test coverage improvement initiative added <strong>9 new test files</strong> with approximately <strong>100+ new test cases</strong>, addressing all 6 identified coverage gaps:</p>
+        <ol>
+            <li>Service Layer Unit Tests - Added ArticleCommandServiceTest and UserServiceTest</li>
+            <li>GraphQL API Tests - Added GraphQLIntegrationTest</li>
+            <li>Security/Authorization Tests - Added AuthorizationServiceTest</li>
+            <li>TagRepository Tests - Added MyBatisTagRepositoryTest</li>
+            <li>Full Integration Tests - Added UserArticleFlowIntegrationTest</li>
+            <li>Domain Entity Tests - Added UserTest, CommentTest, and TagTest</li>
+        </ol>
+        <p>The test suite now provides comprehensive coverage across all layers of the application: domain entities, services, repositories, REST API, and GraphQL API.</p>
+    </div>
+
+</body>
+</html>
