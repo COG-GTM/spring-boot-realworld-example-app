@@ -142,6 +142,7 @@ class LoginParam {
 }
 
 @Getter
+@JsonRootName("token")
 @NoArgsConstructor
 class RefreshTokenParam {
   @NotBlank(message = "can't be empty")

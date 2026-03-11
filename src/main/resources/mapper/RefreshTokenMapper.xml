@@ -33,6 +33,6 @@
     </update>
 
     <delete id="deleteExpired">
-        delete from refresh_tokens where expiry_date &lt; datetime('now')
+        delete from refresh_tokens where expiry_date &lt; CURRENT_TIMESTAMP
     </delete>
 </mapper>
