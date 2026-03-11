@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Coverage Report - Spring Boot RealWorld Example App</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #16a34a;
+            --warning-color: #ca8a04;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .summary-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .summary-card .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .section h3 {
+            color: var(--text-color);
+            margin: 1.5rem 0 0.75rem 0;
+            font-size: 1.1rem;
+        }
+        
+        .test-category {
+            margin-bottom: 2rem;
+        }
+        
+        .test-category h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-api {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .badge-unit {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .badge-integration {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-repository {
+            background-color: #f3e8ff;
+            color: #7c3aed;
+        }
+        
+        .test-file {
+            background: var(--bg-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .test-file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .test-file-name {
+            font-weight: 600;
+            color: var(--text-color);
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .test-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .test-list {
+            list-style: none;
+        }
+        
+        .test-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .test-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .test-list li::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+        }
+        
+        .file-path {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            margin-bottom: 0.5rem;
+        }
+        
+        .coverage-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .coverage-table th,
+        .coverage-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .coverage-table th {
+            background: var(--bg-color);
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .coverage-table tr:hover {
+            background: var(--bg-color);
+        }
+        
+        .description {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .layer-diagram {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .layer-box {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .layer-box h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .layer-box p {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .layer-diagram {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            header h1 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Test Coverage Report</h1>
+            <p>Spring Boot RealWorld Example App - Comprehensive Test Analysis</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="number">23</div>
+                <div class="label">Test Files</div>
+            </div>
+            <div class="summary-card">
+                <div class="number">61</div>
+                <div class="label">Test Methods</div>
+            </div>
+            <div class="summary-card">
+                <div class="number">5</div>
+                <div class="label">Test Categories</div>
+            </div>
+            <div class="summary-card">
+                <div class="number">4</div>
+                <div class="label">Layers Covered</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Architecture Overview</h2>
+            <p class="description">The test suite covers all four layers of the application following Domain-Driven Design (DDD) principles:</p>
+            <div class="layer-diagram">
+                <div class="layer-box">
+                    <h4>API Layer</h4>
+                    <p>REST Controllers</p>
+                </div>
+                <div class="layer-box">
+                    <h4>Application Layer</h4>
+                    <p>Query Services</p>
+                </div>
+                <div class="layer-box">
+                    <h4>Core Layer</h4>
+                    <p>Domain Model</p>
+                </div>
+                <div class="layer-box">
+                    <h4>Infrastructure</h4>
+                    <p>Repositories</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Test Coverage Summary</h2>
+            <table class="coverage-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Test Files</th>
+                        <th>Test Methods</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>API/Controller Tests</td>
+                        <td>8</td>
+                        <td>35</td>
+                        <td><span class="badge badge-api">API</span></td>
+                    </tr>
+                    <tr>
+                        <td>Application/Query Service Tests</td>
+                        <td>4</td>
+                        <td>14</td>
+                        <td><span class="badge badge-integration">Integration</span></td>
+                    </tr>
+                    <tr>
+                        <td>Repository Tests</td>
+                        <td>5</td>
+                        <td>11</td>
+                        <td><span class="badge badge-repository">Repository</span></td>
+                    </tr>
+                    <tr>
+                        <td>Core/Domain Tests</td>
+                        <td>1</td>
+                        <td>5</td>
+                        <td><span class="badge badge-unit">Unit</span></td>
+                    </tr>
+                    <tr>
+                        <td>Service Tests</td>
+                        <td>1</td>
+                        <td>3</td>
+                        <td><span class="badge badge-unit">Unit</span></td>
+                    </tr>
+                    <tr>
+                        <td>Application Context Test</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td><span class="badge badge-integration">Integration</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>API/Controller Tests</h2>
+            <p class="description">REST API endpoint tests using Spring's @WebMvcTest with MockMvc and RestAssured. These tests verify HTTP request/response handling, validation, authentication, and authorization.</p>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">UsersApiTest</span>
+                    <span class="test-count">7 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/api/UsersApiTest.java</div>
+                <ul class="test-list">
+                    <li>should_create_user_success</li>
+                    <li>should_show_error_message_for_blank_username</li>
+                    <li>should_show_error_message_for_invalid_email</li>
+                    <li>should_show_error_for_duplicated_username</li>
+                    <li>should_show_error_for_duplicated_email</li>
+                    <li>should_login_success</li>
+                    <li>should_fail_login_with_wrong_password</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">CurrentUserApiTest</span>
+                    <span class="test-count">6 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/api/CurrentUserApiTest.java</div>
+                <ul class="test-list">
+                    <li>should_get_current_user_with_token</li>
+                    <li>should_get_401_without_token</li>
+                    <li>should_get_401_with_invalid_token</li>
+                    <li>should_update_current_user_profile</li>
+                    <li>should_get_error_if_email_exists_when_update_user_profile</li>
+                    <li>should_get_401_if_not_login</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">ArticleApiTest</span>
+                    <span class="test-count">6 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/api/ArticleApiTest.java</div>
+                <ul class="test-list">
+                    <li>should_read_article_success</li>
+                    <li>should_404_if_article_not_found</li>
+                    <li>should_update_article_content_success</li>
+                    <li>should_get_403_if_not_author_to_update_article</li>
+                    <li>should_delete_article_success</li>
+                    <li>should_403_if_not_author_delete_article</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">CommentsApiTest</span>
+                    <span class="test-count">5 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/api/CommentsApiTest.java</div>
+                <ul class="test-list">
+                    <li>should_create_comment_success</li>
+                    <li>should_get_422_with_empty_body</li>
+                    <li>should_get_comments_of_article_success</li>
+                    <li>should_delete_comment_success</li>
+                    <li>should_get_403_if_not_author_of_article_or_author_of_comment_when_delete_comment</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">ArticlesApiTest</span>
+                    <span class="test-count">3 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/api/ArticlesApiTest.java</div>
+                <ul class="test-list">
+                    <li>should_create_article_success</li>
+                    <li>should_get_error_message_with_wrong_parameter</li>
+                    <li>should_get_error_message_with_duplicated_title</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">ListArticleApiTest</span>
+                    <span class="test-count">3 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/api/ListArticleApiTest.java</div>
+                <ul class="test-list">
+                    <li>should_get_default_article_list</li>
+                    <li>should_get_feeds_401_without_login</li>
+                    <li>should_get_feeds_success</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">ProfileApiTest</span>
+                    <span class="test-count">3 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/api/ProfileApiTest.java</div>
+                <ul class="test-list">
+                    <li>should_get_user_profile_success</li>
+                    <li>should_follow_user_success</li>
+                    <li>should_unfollow_user_success</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">ArticleFavoriteApiTest</span>
+                    <span class="test-count">2 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/api/ArticleFavoriteApiTest.java</div>
+                <ul class="test-list">
+                    <li>should_favorite_an_article_success</li>
+                    <li>should_unfavorite_an_article_success</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Application/Query Service Tests</h2>
+            <p class="description">Integration tests for application services using @MybatisTest. These tests verify business logic and data retrieval with actual database interactions.</p>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">ArticleQueryServiceTest</span>
+                    <span class="test-count">10 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/application/article/ArticleQueryServiceTest.java</div>
+                <ul class="test-list">
+                    <li>should_fetch_article_success</li>
+                    <li>should_get_article_with_right_favorite_and_favorite_count</li>
+                    <li>should_get_default_article_list</li>
+                    <li>should_get_default_article_list_by_cursor</li>
+                    <li>should_query_article_by_author</li>
+                    <li>should_query_article_by_favorite</li>
+                    <li>should_query_article_by_tag</li>
+                    <li>should_show_following_if_user_followed_author</li>
+                    <li>should_get_user_feed</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">CommentQueryServiceTest</span>
+                    <span class="test-count">2 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/application/comment/CommentQueryServiceTest.java</div>
+                <ul class="test-list">
+                    <li>should_read_comment_success</li>
+                    <li>should_read_comments_of_article</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">ProfileQueryServiceTest</span>
+                    <span class="test-count">1 test</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/application/profile/ProfileQueryServiceTest.java</div>
+                <ul class="test-list">
+                    <li>should_fetch_profile_success</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">TagsQueryServiceTest</span>
+                    <span class="test-count">1 test</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/application/tag/TagsQueryServiceTest.java</div>
+                <ul class="test-list">
+                    <li>should_get_all_tags</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Repository/Infrastructure Tests</h2>
+            <p class="description">Database layer tests using @MybatisTest and @SpringBootTest. These tests verify MyBatis repository implementations and database operations.</p>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">MyBatisUserRepositoryTest</span>
+                    <span class="test-count">4 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/infrastructure/user/MyBatisUserRepositoryTest.java</div>
+                <ul class="test-list">
+                    <li>should_save_and_fetch_user_success</li>
+                    <li>should_update_user_success</li>
+                    <li>should_create_new_user_follow_success</li>
+                    <li>should_unfollow_user_success</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">MyBatisArticleRepositoryTest</span>
+                    <span class="test-count">3 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/infrastructure/article/MyBatisArticleRepositoryTest.java</div>
+                <ul class="test-list">
+                    <li>should_create_and_fetch_article_success</li>
+                    <li>should_update_and_fetch_article_success</li>
+                    <li>should_delete_article</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">MyBatisArticleFavoriteRepositoryTest</span>
+                    <span class="test-count">2 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/infrastructure/favorite/MyBatisArticleFavoriteRepositoryTest.java</div>
+                <ul class="test-list">
+                    <li>should_save_and_fetch_articleFavorite_success</li>
+                    <li>should_remove_favorite_success</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">MyBatisCommentRepositoryTest</span>
+                    <span class="test-count">1 test</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/infrastructure/comment/MyBatisCommentRepositoryTest.java</div>
+                <ul class="test-list">
+                    <li>should_create_and_fetch_comment_success</li>
+                </ul>
+            </div>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">ArticleRepositoryTransactionTest</span>
+                    <span class="test-count">1 test</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/infrastructure/article/ArticleRepositoryTransactionTest.java</div>
+                <ul class="test-list">
+                    <li>transactional_test</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Core/Domain Tests</h2>
+            <p class="description">Unit tests for domain model classes. These tests verify core business logic without external dependencies.</p>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">ArticleTest</span>
+                    <span class="test-count">5 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/core/article/ArticleTest.java</div>
+                <ul class="test-list">
+                    <li>should_get_right_slug</li>
+                    <li>should_get_right_slug_with_number_in_title</li>
+                    <li>should_get_lower_case_slug</li>
+                    <li>should_handle_other_language</li>
+                    <li>should_handle_commas</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Service Tests</h2>
+            <p class="description">Unit tests for infrastructure services like JWT token handling.</p>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">DefaultJwtServiceTest</span>
+                    <span class="test-count">3 tests</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/infrastructure/service/DefaultJwtServiceTest.java</div>
+                <ul class="test-list">
+                    <li>should_generate_and_parse_token</li>
+                    <li>should_get_null_with_wrong_jwt</li>
+                    <li>should_get_null_with_expired_jwt</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Application Context Test</h2>
+            <p class="description">Spring Boot application context loading test to verify the application starts correctly.</p>
+            
+            <div class="test-file">
+                <div class="test-file-header">
+                    <span class="test-file-name">RealworldApplicationTests</span>
+                    <span class="test-count">1 test</span>
+                </div>
+                <div class="file-path">src/test/java/io/spring/RealworldApplicationTests.java</div>
+                <ul class="test-list">
+                    <li>contextLoads</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Test Utilities</h2>
+            <p class="description">Helper classes and base test classes that support the test suite.</p>
+            
+            <table class="coverage-table">
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Purpose</th>
+                        <th>Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>TestHelper</strong></td>
+                        <td>Provides fixture methods for creating test data (ArticleData, ProfileData)</td>
+                        <td>src/test/java/io/spring/TestHelper.java</td>
+                    </tr>
+                    <tr>
+                        <td><strong>TestWithCurrentUser</strong></td>
+                        <td>Abstract base class for API tests requiring authenticated user context</td>
+                        <td>src/test/java/io/spring/api/TestWithCurrentUser.java</td>
+                    </tr>
+                    <tr>
+                        <td><strong>DbTestBase</strong></td>
+                        <td>Abstract base class for database tests with @MybatisTest configuration</td>
+                        <td>src/test/java/io/spring/infrastructure/DbTestBase.java</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>Testing Technologies Used</h2>
+            <table class="coverage-table">
+                <thead>
+                    <tr>
+                        <th>Technology</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>JUnit 5</strong></td>
+                        <td>Test framework for writing and running tests</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Spring Boot Test</strong></td>
+                        <td>Integration testing support with @SpringBootTest</td>
+                    </tr>
+                    <tr>
+                        <td><strong>@WebMvcTest</strong></td>
+                        <td>Slice testing for Spring MVC controllers</td>
+                    </tr>
+                    <tr>
+                        <td><strong>@MybatisTest</strong></td>
+                        <td>Slice testing for MyBatis repositories</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mockito</strong></td>
+                        <td>Mocking framework for unit tests</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RestAssured MockMvc</strong></td>
+                        <td>Fluent API for testing REST endpoints</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hamcrest</strong></td>
+                        <td>Matcher library for assertions</td>
+                    </tr>
+                    <tr>
+                        <td><strong>H2 Database</strong></td>
+                        <td>In-memory database for integration tests</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>Feature Coverage Matrix</h2>
+            <table class="coverage-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>API Tests</th>
+                        <th>Service Tests</th>
+                        <th>Repository Tests</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>User Registration</td>
+                        <td>Yes</td>
+                        <td>-</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td>User Login</td>
+                        <td>Yes</td>
+                        <td>Yes (JWT)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>User Profile</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td>Follow/Unfollow</td>
+                        <td>Yes</td>
+                        <td>-</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td>Article CRUD</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td>Article Listing</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Article Feed</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Article Favorites</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td>Comments</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td>Tags</td>
+                        <td>-</td>
+                        <td>Yes</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Slug Generation</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>Yes (Domain)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Generated for COG-GTM/spring-boot-realworld-example-app</p>
+        <p>Test Coverage Analysis Report</p>
+    </footer>
+</body>
+</html>
