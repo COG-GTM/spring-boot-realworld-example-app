@@ -2,6 +2,8 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +23,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+  @Autowired private RateLimitingFilter rateLimitingFilter;
+
+  @Value("${cors.allowed-origins:http://localhost:3000}")
+  private String allowedOrigins;
 
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
@@ -50,24 +57,30 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .permitAll()
         .antMatchers("/graphiql")
         .permitAll()
+        // GraphQL endpoint security is enforced at resolver level
+        // All GraphQL mutations and sensitive queries should verify authentication in their resolvers
         .antMatchers("/graphql")
-        .permitAll()
+        .authenticated()
         .antMatchers(HttpMethod.GET, "/articles/feed")
         .authenticated()
-        .antMatchers(HttpMethod.POST, "/users", "/users/login")
+        .antMatchers(HttpMethod.POST, "/users", "/users/login", "/users/token/refresh")
         .permitAll()
+        .antMatchers(HttpMethod.POST, "/users/logout")
+        .authenticated()
         .antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
         .permitAll()
         .anyRequest()
         .authenticated();
 
+    http.addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class);
     http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
   }
 
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     final CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(asList("*"));
+    // Use configurable allowed origins instead of wildcard
+    configuration.setAllowedOrigins(asList(allowedOrigins.split(",")));
     configuration.setAllowedMethods(asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
     // The value of the 'Access-Control-Allow-Origin' header in the response must not be the

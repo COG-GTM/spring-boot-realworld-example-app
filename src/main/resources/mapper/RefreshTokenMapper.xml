@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.RefreshTokenMapper">
+    <resultMap id="refreshToken" type="io.spring.core.user.RefreshToken">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="token" property="token"/>
+        <result column="expiry_date" property="expiryDate"/>
+        <result column="revoked" property="revoked"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert">
+        insert into refresh_tokens (id, user_id, token, expiry_date, revoked, created_at)
+        values (
+            #{refreshToken.id},
+            #{refreshToken.userId},
+            #{refreshToken.token},
+            #{refreshToken.expiryDate},
+            #{refreshToken.revoked},
+            #{refreshToken.createdAt}
+        )
+    </insert>
+
+    <select id="findByToken" resultMap="refreshToken">
+        select id, user_id, token, expiry_date, revoked, created_at
+        from refresh_tokens
+        where token = #{token}
+    </select>
+
+    <update id="revokeAllByUserId">
+        update refresh_tokens set revoked = true where user_id = #{userId}
+    </update>
+
+    <delete id="deleteExpired">
+        delete from refresh_tokens where expiry_date &lt; datetime('now')
+    </delete>
+</mapper>

@@ -14,6 +14,7 @@ import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
 import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
+import io.spring.core.user.RefreshTokenRepository;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.mybatis.readservice.UserReadService;
@@ -47,6 +48,8 @@ public class UsersApiTest {
   @MockBean private UserReadService userReadService;
 
   @MockBean private UserService userService;
+
+  @MockBean private RefreshTokenRepository refreshTokenRepository;
 
   @Autowired private PasswordEncoder passwordEncoder;
 
@@ -181,7 +184,7 @@ public class UsersApiTest {
             new HashMap<String, Object>() {
               {
                 put("email", email);
-                put("password", "johnnyjacob");
+                put("password", "johnnyjacob1");
                 put("username", username);
               }
             });
