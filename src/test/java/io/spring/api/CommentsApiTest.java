@@ -162,4 +162,86 @@ public class CommentsApiTest extends TestWithCurrentUser {
         .then()
         .statusCode(403);
   }
+
+  @Test
+  public void should_get_404_when_create_comment_for_non_existent_article() throws Exception {
+    when(articleRepository.findBySlug(eq("non-existent-slug"))).thenReturn(Optional.empty());
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "comment",
+                new HashMap<String, Object>() {
+                  {
+                    put("body", "comment content");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles/{slug}/comments", "non-existent-slug")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_404_when_get_comments_for_non_existent_article() throws Exception {
+    when(articleRepository.findBySlug(eq("non-existent-slug"))).thenReturn(Optional.empty());
+
+    RestAssuredMockMvc.when()
+        .get("/articles/{slug}/comments", "non-existent-slug")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_404_when_delete_non_existent_comment() throws Exception {
+    when(commentRepository.findById(eq(article.getId()), eq("non-existent-comment-id")))
+        .thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/articles/{slug}/comments/{id}", article.getSlug(), "non-existent-comment-id")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_401_when_create_comment_without_authentication() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "comment",
+                new HashMap<String, Object>() {
+                  {
+                    put("body", "comment content");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/articles/{slug}/comments", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_delete_comment_without_authentication() throws Exception {
+    RestAssuredMockMvc.when()
+        .delete("/articles/{slug}/comments/{id}", article.getSlug(), comment.getId())
+        .then()
+        .statusCode(401);
+  }
 }

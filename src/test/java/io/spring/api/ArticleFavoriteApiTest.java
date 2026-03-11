@@ -100,4 +100,44 @@ public class ArticleFavoriteApiTest extends TestWithCurrentUser {
         .body("article.id", equalTo(article.getId()));
     verify(articleFavoriteRepository).remove(new ArticleFavorite(article.getId(), user.getId()));
   }
+
+  @Test
+  public void should_get_404_when_favorite_article_not_found() throws Exception {
+    when(articleRepository.findBySlug(eq("non-existent-slug"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/articles/{slug}/favorite", "non-existent-slug")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_404_when_unfavorite_article_not_found() throws Exception {
+    when(articleRepository.findBySlug(eq("non-existent-slug"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/articles/{slug}/favorite", "non-existent-slug")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_401_when_favorite_without_authentication() throws Exception {
+    RestAssuredMockMvc.when()
+        .post("/articles/{slug}/favorite", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_401_when_unfavorite_without_authentication() throws Exception {
+    RestAssuredMockMvc.when()
+        .delete("/articles/{slug}/favorite", article.getSlug())
+        .then()
+        .statusCode(401);
+  }
 }
