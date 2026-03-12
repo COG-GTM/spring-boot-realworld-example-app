@@ -21,7 +21,7 @@ import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.Arrays;
 import java.util.Optional;
-import org.joda.time.DateTime;
+import java.time.Instant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,12 @@ public class ArticleQueryServiceTest extends DbTestBase {
     userRepository.save(user);
     article =
         new Article(
-            "test", "desc", "body", Arrays.asList("java", "spring"), user.getId(), new DateTime());
+            "test",
+            "desc",
+            "body",
+            Arrays.asList("java", "spring"),
+            user.getId(),
+            Instant.now());
     articleRepository.save(article);
   }
 
@@ -92,11 +97,17 @@ public class ArticleQueryServiceTest extends DbTestBase {
             "body",
             Arrays.asList("test"),
             user.getId(),
-            new DateTime().minusHours(1));
+            Instant.now().minusSeconds(
+                3600));
     articleRepository.save(anotherArticle);
 
     ArticleDataList recentArticles =
-        queryService.findRecentArticles(null, null, null, new Page(), user);
+        queryService.findRecentArticles(
+            null,
+            null,
+            null,
+            new Page(),
+            user);
     Assertions.assertEquals(recentArticles.getCount(), 2);
     Assertions.assertEquals(recentArticles.getArticleDatas().size(), 2);
     Assertions.assertEquals(recentArticles.getArticleDatas().get(0).getId(), article.getId());
@@ -116,7 +127,8 @@ public class ArticleQueryServiceTest extends DbTestBase {
             "body",
             Arrays.asList("test"),
             user.getId(),
-            new DateTime().minusHours(1));
+            Instant.now().minusSeconds(
+                3600));
     articleRepository.save(anotherArticle);
 
     CursorPager<ArticleData> recentArticles =
@@ -130,8 +142,13 @@ public class ArticleQueryServiceTest extends DbTestBase {
             null,
             null,
             null,
-            new CursorPageParameter<DateTime>(
-                DateTimeCursor.parse(recentArticles.getEndCursor().toString()), 20, Direction.NEXT),
+            new CursorPageParameter<Instant>(
+                DateTimeCursor.parse(
+                    recentArticles
+                        .getEndCursor()
+                        .toString()),
+                20,
+                Direction.NEXT),
             user);
     Assertions.assertEquals(nodata.getData().size(), 0);
     Assertions.assertEquals(nodata.getStartCursor(), null);
