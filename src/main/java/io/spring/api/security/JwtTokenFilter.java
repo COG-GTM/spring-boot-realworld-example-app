@@ -54,9 +54,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
       String[] split = header.split(" ");
       if (split.length < 2) {
         return Optional.empty();
-      } else {
-        return Optional.ofNullable(split[1]);
       }
+      String prefix = split[0];
+      if (!prefix.equalsIgnoreCase("Token") && !prefix.equalsIgnoreCase("Bearer")) {
+        return Optional.empty();
+      }
+      return Optional.ofNullable(split[1]);
     }
   }
 }

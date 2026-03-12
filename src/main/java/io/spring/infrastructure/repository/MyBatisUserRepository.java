@@ -6,6 +6,8 @@ import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.mybatis.mapper.UserMapper;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -18,6 +20,7 @@ public class MyBatisUserRepository implements UserRepository {
   }
 
   @Override
+  @CacheEvict(value = "users", key = "#user.id")
   public void save(User user) {
     if (userMapper.findById(user.getId()) == null) {
       userMapper.insert(user);
@@ -27,6 +30,7 @@ public class MyBatisUserRepository implements UserRepository {
   }
 
   @Override
+  @Cacheable(value = "users", key = "#id")
   public Optional<User> findById(String id) {
     return Optional.ofNullable(userMapper.findById(id));
   }
