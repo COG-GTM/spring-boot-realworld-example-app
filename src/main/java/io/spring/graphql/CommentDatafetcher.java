@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.joda.time.format.ISODateTimeFormat;
 
 @DgsComponent
 @AllArgsConstructor
@@ -115,8 +114,10 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
-        .createdAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
+        .updatedAt(
+            comment.getCreatedAt().toString())
+        .createdAt(
+            comment.getCreatedAt().toString())
         .build();
   }
 }
