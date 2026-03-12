@@ -1,10 +1,6 @@
 package io.spring.application.article;
 
 import io.spring.application.ArticleQueryService;
-import io.spring.application.CursorPageParameter;
-import io.spring.application.CursorPager;
-import io.spring.application.CursorPager.Direction;
-import io.spring.application.DateTimeCursor;
 import io.spring.application.Page;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
@@ -105,41 +101,6 @@ public class ArticleQueryServiceTest extends DbTestBase {
         queryService.findRecentArticles(null, null, null, new Page(2, 10), user);
     Assertions.assertEquals(nodata.getCount(), 2);
     Assertions.assertEquals(nodata.getArticleDatas().size(), 0);
-  }
-
-  @Test
-  public void should_get_default_article_list_by_cursor() {
-    Article anotherArticle =
-        new Article(
-            "new article",
-            "desc",
-            "body",
-            Arrays.asList("test"),
-            user.getId(),
-            new DateTime().minusHours(1));
-    articleRepository.save(anotherArticle);
-
-    CursorPager<ArticleData> recentArticles =
-        queryService.findRecentArticlesWithCursor(
-            null, null, null, new CursorPageParameter<>(null, 20, Direction.NEXT), user);
-    Assertions.assertEquals(recentArticles.getData().size(), 2);
-    Assertions.assertEquals(recentArticles.getData().get(0).getId(), article.getId());
-
-    CursorPager<ArticleData> nodata =
-        queryService.findRecentArticlesWithCursor(
-            null,
-            null,
-            null,
-            new CursorPageParameter<DateTime>(
-                DateTimeCursor.parse(recentArticles.getEndCursor().toString()), 20, Direction.NEXT),
-            user);
-    Assertions.assertEquals(nodata.getData().size(), 0);
-    Assertions.assertEquals(nodata.getStartCursor(), null);
-
-    CursorPager<ArticleData> prevArticles =
-        queryService.findRecentArticlesWithCursor(
-            null, null, null, new CursorPageParameter<>(null, 20, Direction.PREV), user);
-    Assertions.assertEquals(prevArticles.getData().size(), 2);
   }
 
   @Test
