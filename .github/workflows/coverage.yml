@@ -41,9 +41,10 @@ jobs:
       - name: Extract PR branch coverage percentage
         id: pr_coverage
         run: |
-          # Parse line coverage from JaCoCo XML (sum all counter type="LINE")
-          missed=$(grep -oP 'type="LINE" missed="\K[0-9]+' pr-coverage.xml | awk '{s+=$1} END {print s}')
-          covered=$(grep -oP 'type="LINE" covered="\K[0-9]+' pr-coverage.xml | awk '{s+=$1} END {print s}')
+          # Extract the report-level LINE counter (last occurrence in the XML)
+          line=$(grep -oP 'counter type="LINE" missed="\d+" covered="\d+"' pr-coverage.xml | tail -1)
+          missed=$(echo "$line" | grep -oP 'missed="\K\d+')
+          covered=$(echo "$line" | grep -oP 'covered="\K\d+')
           total=$((missed + covered))
           if [ "$total" -gt 0 ]; then
             pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$total)*100}")
@@ -51,7 +52,7 @@ jobs:
             pct="0.00"
           fi
           echo "coverage=$pct" >> "$GITHUB_OUTPUT"
-          echo "PR branch line coverage: $pct%"
+          echo "PR branch line coverage: $pct% (missed=$missed, covered=$covered)"
 
       - name: Checkout base branch
         run: git checkout ${{ github.base_ref }}
@@ -65,8 +66,9 @@ jobs:
         id: base_coverage
         run: |
           if [ -f build/reports/jacoco/test/jacocoTestReport.xml ]; then
-            missed=$(grep -oP 'type="LINE" missed="\K[0-9]+' build/reports/jacoco/test/jacocoTestReport.xml | awk '{s+=$1} END {print s}')
-            covered=$(grep -oP 'type="LINE" covered="\K[0-9]+' build/reports/jacoco/test/jacocoTestReport.xml | awk '{s+=$1} END {print s}')
+            line=$(grep -oP 'counter type="LINE" missed="\d+" covered="\d+"' build/reports/jacoco/test/jacocoTestReport.xml | tail -1)
+            missed=$(echo "$line" | grep -oP 'missed="\K\d+')
+            covered=$(echo "$line" | grep -oP 'covered="\K\d+')
             total=$((missed + covered))
             if [ "$total" -gt 0 ]; then
               pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$total)*100}")
@@ -75,7 +77,7 @@ jobs:
             fi
             echo "coverage=$pct" >> "$GITHUB_OUTPUT"
             echo "has_base=true" >> "$GITHUB_OUTPUT"
-            echo "Base branch line coverage: $pct%"
+            echo "Base branch line coverage: $pct% (missed=$missed, covered=$covered)"
           else
             echo "coverage=N/A" >> "$GITHUB_OUTPUT"
             echo "has_base=false" >> "$GITHUB_OUTPUT"
