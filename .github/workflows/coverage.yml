@@ -38,6 +38,21 @@ jobs:
       - name: Save PR branch coverage report
         run: cp build/reports/jacoco/test/jacocoTestReport.xml pr-coverage.xml
 
+      - name: Extract PR branch coverage percentage
+        id: pr_coverage
+        run: |
+          # Parse line coverage from JaCoCo XML (sum all counter type="LINE")
+          missed=$(grep -oP 'type="LINE" missed="\K[0-9]+' pr-coverage.xml | awk '{s+=$1} END {print s}')
+          covered=$(grep -oP 'type="LINE" covered="\K[0-9]+' pr-coverage.xml | awk '{s+=$1} END {print s}')
+          total=$((missed + covered))
+          if [ "$total" -gt 0 ]; then
+            pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$total)*100}")
+          else
+            pct="0.00"
+          fi
+          echo "coverage=$pct" >> "$GITHUB_OUTPUT"
+          echo "PR branch line coverage: $pct%"
+
       - name: Checkout base branch
         run: git checkout ${{ github.base_ref }}
 
@@ -46,10 +61,25 @@ jobs:
           # Base branch may not have JaCoCo configured yet; skip gracefully
           ./gradlew clean test jacocoTestReport || true
 
-      - name: Save base branch coverage report
+      - name: Extract base branch coverage percentage
+        id: base_coverage
         run: |
           if [ -f build/reports/jacoco/test/jacocoTestReport.xml ]; then
-            cp build/reports/jacoco/test/jacocoTestReport.xml base-coverage.xml
+            missed=$(grep -oP 'type="LINE" missed="\K[0-9]+' build/reports/jacoco/test/jacocoTestReport.xml | awk '{s+=$1} END {print s}')
+            covered=$(grep -oP 'type="LINE" covered="\K[0-9]+' build/reports/jacoco/test/jacocoTestReport.xml | awk '{s+=$1} END {print s}')
+            total=$((missed + covered))
+            if [ "$total" -gt 0 ]; then
+              pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$total)*100}")
+            else
+              pct="0.00"
+            fi
+            echo "coverage=$pct" >> "$GITHUB_OUTPUT"
+            echo "has_base=true" >> "$GITHUB_OUTPUT"
+            echo "Base branch line coverage: $pct%"
+          else
+            echo "coverage=N/A" >> "$GITHUB_OUTPUT"
+            echo "has_base=false" >> "$GITHUB_OUTPUT"
+            echo "No JaCoCo report found on base branch"
           fi
 
       - name: Checkout PR branch again
@@ -60,14 +90,78 @@ jobs:
           mkdir -p build/reports/jacoco/test
           cp pr-coverage.xml build/reports/jacoco/test/jacocoTestReport.xml
 
-      - name: Post coverage report on PR
+      - name: Post coverage comparison comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prCoverage = '${{ steps.pr_coverage.outputs.coverage }}';
+            const baseCoverage = '${{ steps.base_coverage.outputs.coverage }}';
+            const hasBase = '${{ steps.base_coverage.outputs.has_base }}' === 'true';
+
+            let diff = '';
+            let emoji = '';
+            if (hasBase && baseCoverage !== 'N/A') {
+              const delta = (parseFloat(prCoverage) - parseFloat(baseCoverage)).toFixed(2);
+              if (delta > 0) {
+                emoji = '🟢';
+                diff = `+${delta}%`;
+              } else if (delta < 0) {
+                emoji = '🔴';
+                diff = `${delta}%`;
+              } else {
+                emoji = '⚪';
+                diff = `±0.00%`;
+              }
+            }
+
+            let body = `## Test Coverage Report\n\n`;
+            body += `| Metric | Coverage |\n`;
+            body += `|--------|----------|\n`;
+            if (hasBase) {
+              body += `| **Base branch** (\`${{ github.base_ref }}\`) | ${baseCoverage}% |\n`;
+            } else {
+              body += `| **Base branch** (\`${{ github.base_ref }}\`) | _No JaCoCo configured_ |\n`;
+            }
+            body += `| **PR branch** (\`${{ github.head_ref }}\`) | ${prCoverage}% |\n`;
+            if (hasBase && baseCoverage !== 'N/A') {
+              body += `| **Diff** | ${emoji} ${diff} |\n`;
+            }
+
+            // Find and update existing comment or create new one
+            const marker = '<!-- coverage-report -->';
+            body = marker + '\n' + body;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Post per-file coverage details
         uses: madrapps/jacoco-report@v1.6.1
         with:
           paths: build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 34
           min-coverage-changed-files: 60
-          title: "Test Coverage Report"
+          title: "Per-File Coverage Details"
           update-comment: true
           pass-emoji: ':green_circle:'
           fail-emoji: ':red_circle:'
