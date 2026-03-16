@@ -6,7 +6,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 import javax.crypto.SecretKey;
@@ -25,7 +24,7 @@ public class DefaultJwtService implements JwtService {
     this.sessionTime = sessionTime;
     byte[] keyBytes = secret.getBytes();
     if (keyBytes.length < 64) {
-      keyBytes = Arrays.copyOf(keyBytes, 64);
+      throw new IllegalArgumentException("JWT secret must be at least 64 bytes for HS512");
     }
     this.signingKey = Keys.hmacShaKeyFor(keyBytes);
   }
