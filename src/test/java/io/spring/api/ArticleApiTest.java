@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest({ArticleApi.class})
@@ -39,11 +39,11 @@ import org.springframework.test.web.servlet.MockMvc;
 public class ArticleApiTest extends TestWithCurrentUser {
   @Autowired private MockMvc mvc;
 
-  @MockitoBean private ArticleQueryService articleQueryService;
+  @MockBean private ArticleQueryService articleQueryService;
 
-  @MockitoBean private ArticleRepository articleRepository;
+  @MockBean private ArticleRepository articleRepository;
 
-  @MockitoBean ArticleCommandService articleCommandService;
+  @MockBean ArticleCommandService articleCommandService;
 
   @Override
   @BeforeEach

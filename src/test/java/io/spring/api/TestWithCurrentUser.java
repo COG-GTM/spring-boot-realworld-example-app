@@ -10,12 +10,12 @@ import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.mybatis.readservice.UserReadService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 abstract class TestWithCurrentUser {
-  @MockitoBean protected UserRepository userRepository;
+  @MockBean protected UserRepository userRepository;
 
-  @MockitoBean protected UserReadService userReadService;
+  @MockBean protected UserReadService userReadService;
 
   protected User user;
   protected UserData userData;
@@ -24,7 +24,7 @@ abstract class TestWithCurrentUser {
   protected String username;
   protected String defaultAvatar;
 
-  @MockitoBean protected JwtService jwtService;
+  @MockBean protected JwtService jwtService;
 
   protected void userFixture() {
     email = "john@jacob.com";

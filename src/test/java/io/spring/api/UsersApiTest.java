@@ -27,7 +27,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UsersApi.class)
@@ -40,13 +40,13 @@ import org.springframework.test.web.servlet.MockMvc;
 public class UsersApiTest {
   @Autowired private MockMvc mvc;
 
-  @MockitoBean private UserRepository userRepository;
+  @MockBean private UserRepository userRepository;
 
-  @MockitoBean private JwtService jwtService;
+  @MockBean private JwtService jwtService;
 
-  @MockitoBean private UserReadService userReadService;
+  @MockBean private UserReadService userReadService;
 
-  @MockitoBean private UserService userService;
+  @MockBean private UserService userService;
 
   @Autowired private PasswordEncoder passwordEncoder;
 

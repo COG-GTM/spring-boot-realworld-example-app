@@ -19,17 +19,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(ArticlesApi.class)
 @Import({WebSecurityConfig.class, JacksonCustomizations.class})
 public class ListArticleApiTest extends TestWithCurrentUser {
-  @MockitoBean private ArticleRepository articleRepository;
+  @MockBean private ArticleRepository articleRepository;
 
-  @MockitoBean private ArticleQueryService articleQueryService;
+  @MockBean private ArticleQueryService articleQueryService;
 
-  @MockitoBean private ArticleCommandService articleCommandService;
+  @MockBean private ArticleCommandService articleCommandService;
 
   @Autowired private MockMvc mvc;
 
