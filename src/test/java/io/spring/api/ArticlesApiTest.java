@@ -16,17 +16,18 @@ import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest({ArticlesApi.class})
@@ -34,9 +35,9 @@ import org.springframework.test.web.servlet.MockMvc;
 public class ArticlesApiTest extends TestWithCurrentUser {
   @Autowired private MockMvc mvc;
 
-  @MockBean private ArticleQueryService articleQueryService;
+  @MockitoBean private ArticleQueryService articleQueryService;
 
-  @MockBean private ArticleCommandService articleCommandService;
+  @MockitoBean private ArticleCommandService articleCommandService;
 
   @Override
   @BeforeEach
@@ -63,8 +64,8 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             body,
             false,
             0,
-            new DateTime(),
-            new DateTime(),
+            OffsetDateTime.now(ZoneOffset.UTC),
+            OffsetDateTime.now(ZoneOffset.UTC),
             tagList,
             new ProfileData("userid", user.getUsername(), user.getBio(), user.getImage(), false));
 
@@ -132,8 +133,8 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             body,
             false,
             0,
-            new DateTime(),
-            new DateTime(),
+            OffsetDateTime.now(ZoneOffset.UTC),
+            OffsetDateTime.now(ZoneOffset.UTC),
             asList(tagList),
             new ProfileData("userid", user.getUsername(), user.getBio(), user.getImage(), false));
 

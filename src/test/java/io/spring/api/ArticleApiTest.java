@@ -19,19 +19,20 @@ import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.user.User;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest({ArticleApi.class})
@@ -39,11 +40,11 @@ import org.springframework.test.web.servlet.MockMvc;
 public class ArticleApiTest extends TestWithCurrentUser {
   @Autowired private MockMvc mvc;
 
-  @MockBean private ArticleQueryService articleQueryService;
+  @MockitoBean private ArticleQueryService articleQueryService;
 
-  @MockBean private ArticleRepository articleRepository;
+  @MockitoBean private ArticleRepository articleRepository;
 
-  @MockBean ArticleCommandService articleCommandService;
+  @MockitoBean ArticleCommandService articleCommandService;
 
   @Override
   @BeforeEach
@@ -55,7 +56,7 @@ public class ArticleApiTest extends TestWithCurrentUser {
   @Test
   public void should_read_article_success() throws Exception {
     String slug = "test-new-article";
-    DateTime time = new DateTime();
+    OffsetDateTime time = OffsetDateTime.now(ZoneOffset.UTC);
     Article article =
         new Article(
             "Test New Article",
@@ -74,7 +75,7 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .statusCode(200)
         .body("article.slug", equalTo(slug))
         .body("article.body", equalTo(articleData.getBody()))
-        .body("article.createdAt", equalTo(ISODateTimeFormat.dateTime().withZoneUTC().print(time)));
+        .body("article.createdAt", equalTo(time.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
   }
 
   @Test
@@ -131,7 +132,7 @@ public class ArticleApiTest extends TestWithCurrentUser {
         new Article(
             title, description, body, Arrays.asList("java", "spring", "jpg"), anotherUser.getId());
 
-    DateTime time = new DateTime();
+    OffsetDateTime time = OffsetDateTime.now(ZoneOffset.UTC);
     ArticleData articleData =
         new ArticleData(
             article.getId(),
