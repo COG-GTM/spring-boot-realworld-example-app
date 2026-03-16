@@ -9,9 +9,9 @@ type Query {
         authoredBy: String
         favoritedBy: String
         withTag: String
-    ): ArticlesConnection
+    ): ArticleConnection
     me: User
-    feed(first: Int, after: String, last: Int, before: String): ArticlesConnection
+    feed(first: Int, after: String, last: Int, before: String): ArticleConnection
     profile(username: String!): ProfilePayload
     tags: [String]
 }
@@ -47,7 +47,7 @@ schema {
 type Article {
     author: Profile!
     body: String!
-    comments(first: Int, after: String, last: Int, before: String): CommentsConnection
+    comments(first: Int, after: String, last: Int, before: String): CommentConnection
     createdAt: String!
     description: String!
     favorited: Boolean!
@@ -63,7 +63,7 @@ type ArticleEdge {
     node: Article
 }
 
-type ArticlesConnection {
+type ArticleConnection {
     edges: [ArticleEdge]
     pageInfo: PageInfo!
 }
@@ -83,7 +83,7 @@ type CommentEdge {
     node: Comment
 }
 
-type CommentsConnection {
+type CommentConnection {
     edges: [CommentEdge]
     pageInfo: PageInfo!
 }
@@ -105,9 +105,9 @@ type Profile {
     bio: String
     following: Boolean!
     image: String
-    articles(first: Int, after: String, last: Int, before: String): ArticlesConnection
-    favorites(first: Int, after: String, last: Int, before: String): ArticlesConnection
-    feed(first: Int, after: String, last: Int, before: String): ArticlesConnection
+    articles(first: Int, after: String, last: Int, before: String): ArticleConnection
+    favorites(first: Int, after: String, last: Int, before: String): ArticleConnection
+    feed(first: Int, after: String, last: Int, before: String): ArticleConnection
 }
 
 ### User
