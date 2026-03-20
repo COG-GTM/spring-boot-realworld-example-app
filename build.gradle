@@ -1,27 +1,36 @@
 plugins {
-    id 'org.springframework.boot' version '2.6.3'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '2.7.18'
+    id 'io.spring.dependency-management' version '1.1.4'
     id 'java'
-    id "com.netflix.dgs.codegen" version "5.0.6"
-    id "com.diffplug.spotless" version "6.2.1"
+    id "com.netflix.dgs.codegen" version "6.0.3"
+    id "com.diffplug.spotless" version "6.25.0"
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-targetCompatibility = '11'
+sourceCompatibility = '17'
+targetCompatibility = '17'
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
+        target fileTree('src') {
             include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
         }
         googleJavaFormat()
     }
 }
 
+ext {
+    set('springBootVersion', '2.6.3')
+}
+
 repositories {
     mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+    }
 }
 
 configurations {
@@ -44,8 +53,8 @@ dependencies {
     implementation 'joda-time:joda-time:2.10.13'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
     testImplementation 'io.rest-assured:rest-assured:4.5.1'
     testImplementation 'io.rest-assured:json-path:4.5.1'
