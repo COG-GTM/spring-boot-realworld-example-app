@@ -6,8 +6,6 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.DgsQuery;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
-import graphql.relay.DefaultConnectionCursor;
-import graphql.relay.DefaultPageInfo;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
@@ -26,6 +24,7 @@ import io.spring.graphql.DgsConstants.QUERY;
 import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
+import io.spring.graphql.types.PageInfo;
 import io.spring.graphql.types.Profile;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -64,7 +63,8 @@ public class ArticleDatafetcher {
               current,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo =
+        buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -73,15 +73,25 @@ public class ArticleDatafetcher {
                     .map(
                         a ->
                             ArticleEdge.newBuilder()
-                                .cursor(a.getCursor().toString())
-                                .node(buildArticleResult(a))
+                                .cursor(
+                                    a.getCursor()
+                                        .toString())
+                                .node(
+                                    buildArticleResult(
+                                        a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .collect(
+                        Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult
+        .<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream()
+                .collect(
+                    Collectors.toMap(
+                        ArticleData::getSlug,
+                        a -> a)))
         .build();
   }
 
@@ -114,7 +124,8 @@ public class ArticleDatafetcher {
               target,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo =
+        buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -123,15 +134,25 @@ public class ArticleDatafetcher {
                     .map(
                         a ->
                             ArticleEdge.newBuilder()
-                                .cursor(a.getCursor().toString())
-                                .node(buildArticleResult(a))
+                                .cursor(
+                                    a.getCursor()
+                                        .toString())
+                                .node(
+                                    buildArticleResult(
+                                        a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .collect(
+                        Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult
+        .<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream()
+                .collect(
+                    Collectors.toMap(
+                        ArticleData::getSlug,
+                        a -> a)))
         .build();
   }
 
@@ -167,8 +188,8 @@ public class ArticleDatafetcher {
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
-
+    PageInfo pageInfo =
+        buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -177,15 +198,25 @@ public class ArticleDatafetcher {
                     .map(
                         a ->
                             ArticleEdge.newBuilder()
-                                .cursor(a.getCursor().toString())
-                                .node(buildArticleResult(a))
+                                .cursor(
+                                    a.getCursor()
+                                        .toString())
+                                .node(
+                                    buildArticleResult(
+                                        a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .collect(
+                        Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult
+        .<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream()
+                .collect(
+                    Collectors.toMap(
+                        ArticleData::getSlug,
+                        a -> a)))
         .build();
   }
 
@@ -221,7 +252,8 @@ public class ArticleDatafetcher {
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo =
+        buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -230,15 +262,25 @@ public class ArticleDatafetcher {
                     .map(
                         a ->
                             ArticleEdge.newBuilder()
-                                .cursor(a.getCursor().toString())
-                                .node(buildArticleResult(a))
+                                .cursor(
+                                    a.getCursor()
+                                        .toString())
+                                .node(
+                                    buildArticleResult(
+                                        a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .collect(
+                        Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult
+        .<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream()
+                .collect(
+                    Collectors.toMap(
+                        ArticleData::getSlug,
+                        a -> a)))
         .build();
   }
 
@@ -276,7 +318,8 @@ public class ArticleDatafetcher {
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV),
               current);
     }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    PageInfo pageInfo =
+        buildArticlePageInfo(articles);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -285,15 +328,25 @@ public class ArticleDatafetcher {
                     .map(
                         a ->
                             ArticleEdge.newBuilder()
-                                .cursor(a.getCursor().toString())
-                                .node(buildArticleResult(a))
+                                .cursor(
+                                    a.getCursor()
+                                        .toString())
+                                .node(
+                                    buildArticleResult(
+                                        a))
                                 .build())
-                    .collect(Collectors.toList()))
+                    .collect(
+                        Collectors.toList()))
             .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
+    return DataFetcherResult
+        .<ArticlesConnection>newResult()
         .data(articlesConnection)
         .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+            articles.getData().stream()
+                .collect(
+                    Collectors.toMap(
+                        ArticleData::getSlug,
+                        a -> a)))
         .build();
   }
 
@@ -356,16 +409,22 @@ public class ArticleDatafetcher {
         .build();
   }
 
-  private DefaultPageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
-    return new DefaultPageInfo(
-        articles.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getStartCursor().toString()),
-        articles.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getEndCursor().toString()),
-        articles.hasPrevious(),
-        articles.hasNext());
+  private PageInfo buildArticlePageInfo(
+      CursorPager<ArticleData> articles) {
+    return PageInfo.newBuilder()
+        .startCursor(
+            articles.getStartCursor() == null
+                ? null
+                : articles.getStartCursor()
+                    .toString())
+        .endCursor(
+            articles.getEndCursor() == null
+                ? null
+                : articles.getEndCursor()
+                    .toString())
+        .hasPreviousPage(articles.hasPrevious())
+        .hasNextPage(articles.hasNext())
+        .build();
   }
 
   private Article buildArticleResult(ArticleData articleData) {
