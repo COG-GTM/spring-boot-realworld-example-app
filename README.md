@@ -64,6 +64,29 @@ You'll need Docker installed.
 
 The entry point address of the backend API is at http://localhost:8080, **not** http://localhost:8080/api as some of the frontend documentation suggests.
 
+## Pairing with an Angular Frontend
+
+This backend is compatible with the [Angular RealWorld Example App](https://github.com/gothinkster/angular-realworld-example-app). CORS is configured to allow requests from `http://localhost:4200` (Angular's default dev server port) by default.
+
+To run both together:
+
+1. Clone the Angular frontend:
+
+       git clone https://github.com/gothinkster/angular-realworld-example-app.git
+       cd angular-realworld-example-app
+
+2. Install dependencies:
+
+       npm install
+
+3. Update the API URL in the Angular app's environment config (e.g., `src/environments/environment.ts`) to point to this backend:
+
+       api_url: 'http://localhost:8080'
+
+   **Note:** Use `http://localhost:8080` (root), not `http://localhost:8080/api`.
+
+4. Start this backend (`./gradlew bootRun`) and the Angular frontend (`ng serve`) in separate terminals. The backend runs on port 8080 and the frontend on port 4200.
+
 # Run test
 
 The repository contains a lot of test cases to cover both api test and repository test.
