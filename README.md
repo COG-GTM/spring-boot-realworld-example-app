@@ -66,7 +66,7 @@ The entry point address of the backend API is at http://localhost:8080, **not** 
 
 ## Pairing with an Angular Frontend
 
-This backend is compatible with the [Angular RealWorld Example App](https://github.com/gothinkster/angular-realworld-example-app). CORS is configured to allow requests from `http://localhost:4200` (Angular's default dev server port) by default.
+This backend is compatible with the [Angular RealWorld Example App](https://github.com/gothinkster/angular-realworld-example-app). CORS is configured to allow requests from any origin with credentials support, so it works out of the box with Angular's default dev server on `http://localhost:4200` as well as any other RealWorld frontend.
 
 To run both together:
 

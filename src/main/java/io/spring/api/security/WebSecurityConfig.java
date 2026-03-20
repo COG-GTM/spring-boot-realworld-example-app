@@ -67,9 +67,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     final CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(asList("http://localhost:4200"));
+    configuration.setAllowedOriginPatterns(asList("*"));
     configuration.setAllowedMethods(
-        asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        asList("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
     // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
     // wildcard '*' when the request's credentials mode is 'include'.
