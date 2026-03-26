@@ -13,7 +13,11 @@ public class DefaultJwtServiceTest {
 
   @BeforeEach
   public void setUp() {
-    jwtService = new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+    jwtService =
+        new DefaultJwtService(
+            "test-secret-key-that-is-long-enough-for-hs512-algorithm-"
+                + "validation-needs-sixty-four-bytes-at-minimum-for-jjwt",
+            3600);
   }
 
   @Test
