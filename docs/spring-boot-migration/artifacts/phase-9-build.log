@@ -1,0 +1,13 @@
+> Task :clean
+> Task :generateJava
+
+> Task :compileJava
+Note: /home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/exception/GraphQLCustomizeExceptionHandler.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :processResources
+> Task :classes
+> Task :compileTestJava
+
+BUILD SUCCESSFUL in 4s
+5 actionable tasks: 5 executed
