@@ -1,0 +1,7 @@
+Attempting OpenRewrite for Gradle project...
+Project uses Gradle build system. Adding OpenRewrite plugin temporarily.
+
+Attempting: ./gradlew rewriteRun with init script
+ERROR: OpenRewrite plugin (org.openrewrite.rewrite) is not configured in this project's build.gradle
+Adding plugin temporarily would require modifying build.gradle and adding recipe dependencies.
+BUILD FAILURE - OpenRewrite not available without significant build configuration changes

@@ -1,0 +1,33 @@
+> Task :generateJava UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources NO-SOURCE
+> Task :testClasses UP-TO-DATE
+
+> Task :test
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-04-01T04:08:36.821Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-04-01T04:08:36.823Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-04-01T04:08:36.832Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-04-01T04:08:36.832Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-04-01T04:08:36.833Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+2026-04-01T04:08:36.834Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
+2026-04-01T04:08:36.834Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown initiated...
+2026-04-01T04:08:36.835Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown completed.
+2026-04-01T04:08:36.835Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown initiated...
+2026-04-01T04:08:36.836Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown completed.
+2026-04-01T04:08:36.838Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown initiated...
+2026-04-01T04:08:36.839Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown completed.
+2026-04-01T04:08:36.839Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Shutdown initiated...
+2026-04-01T04:08:36.840Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Shutdown completed.
+2026-04-01T04:08:36.841Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Shutdown initiated...
+2026-04-01T04:08:36.841Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Shutdown completed.
+2026-04-01T04:08:36.842Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-9 - Shutdown initiated...
+2026-04-01T04:08:36.842Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-9 - Shutdown completed.
+2026-04-01T04:08:36.843Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-10 - Shutdown initiated...
+2026-04-01T04:08:36.849Z  INFO 15571 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-10 - Shutdown completed.
+
+BUILD SUCCESSFUL in 18s
+5 actionable tasks: 1 executed, 4 up-to-date

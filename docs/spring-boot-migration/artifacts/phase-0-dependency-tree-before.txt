@@ -1,0 +1,236 @@
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+> Configure project :
+DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:5.0.6] to the implementation dependencies.
+
+> Task :dependencies
+
+------------------------------------------------------------
+Root project 'spring-boot-realworld-example-app'
+------------------------------------------------------------
+
+compileClasspath - Compile classpath for source set 'main'.
++--- org.projectlombok:lombok -> 1.18.22
++--- org.springframework.boot:spring-boot-starter-web -> 2.6.3
+|    +--- org.springframework.boot:spring-boot-starter:2.6.3
+|    |    +--- org.springframework.boot:spring-boot:2.6.3
+|    |    |    +--- org.springframework:spring-core:5.3.15
+|    |    |    |    \--- org.springframework:spring-jcl:5.3.15
+|    |    |    \--- org.springframework:spring-context:5.3.15
+|    |    |         +--- org.springframework:spring-aop:5.3.15
+|    |    |         |    +--- org.springframework:spring-beans:5.3.15
+|    |    |         |    |    \--- org.springframework:spring-core:5.3.15 (*)
+|    |    |         |    \--- org.springframework:spring-core:5.3.15 (*)
+|    |    |         +--- org.springframework:spring-beans:5.3.15 (*)
+|    |    |         +--- org.springframework:spring-core:5.3.15 (*)
+|    |    |         \--- org.springframework:spring-expression:5.3.15
+|    |    |              \--- org.springframework:spring-core:5.3.15 (*)
+|    |    +--- org.springframework.boot:spring-boot-autoconfigure:2.6.3
+|    |    |    \--- org.springframework.boot:spring-boot:2.6.3 (*)
+|    |    +--- org.springframework.boot:spring-boot-starter-logging:2.6.3
+|    |    |    +--- ch.qos.logback:logback-classic:1.2.10
+|    |    |    |    +--- ch.qos.logback:logback-core:1.2.10
+|    |    |    |    \--- org.slf4j:slf4j-api:1.7.32 -> 1.7.33
+|    |    |    +--- org.apache.logging.log4j:log4j-to-slf4j:2.17.1
+|    |    |    |    +--- org.slf4j:slf4j-api:1.7.25 -> 1.7.33
+|    |    |    |    \--- org.apache.logging.log4j:log4j-api:2.17.1
+|    |    |    \--- org.slf4j:jul-to-slf4j:1.7.33
+|    |    |         \--- org.slf4j:slf4j-api:1.7.33
+|    |    +--- jakarta.annotation:jakarta.annotation-api:1.3.5
+|    |    +--- org.springframework:spring-core:5.3.15 (*)
+|    |    \--- org.yaml:snakeyaml:1.29
+|    +--- org.springframework.boot:spring-boot-starter-json:2.6.3
+|    |    +--- org.springframework.boot:spring-boot-starter:2.6.3 (*)
+|    |    +--- org.springframework:spring-web:5.3.15
+|    |    |    +--- org.springframework:spring-beans:5.3.15 (*)
+|    |    |    \--- org.springframework:spring-core:5.3.15 (*)
+|    |    +--- com.fasterxml.jackson.core:jackson-databind:2.13.1
+|    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.13.1
+|    |    |    |    \--- com.fasterxml.jackson:jackson-bom:2.13.1
+|    |    |    |         +--- com.fasterxml.jackson.core:jackson-annotations:2.13.1 (c)
+|    |    |    |         +--- com.fasterxml.jackson.core:jackson-core:2.13.1 (c)
+|    |    |    |         +--- com.fasterxml.jackson.core:jackson-databind:2.13.1 (c)
+|    |    |    |         +--- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.13.1 (c)
+|    |    |    |         +--- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1 (c)
+|    |    |    |         \--- com.fasterxml.jackson.module:jackson-module-parameter-names:2.13.1 (c)
+|    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.13.1
+|    |    |    |    \--- com.fasterxml.jackson:jackson-bom:2.13.1 (*)
+|    |    |    \--- com.fasterxml.jackson:jackson-bom:2.13.1 (*)
+|    |    +--- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.13.1
+|    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.13.1 (*)
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.13.1 (*)
+|    |    |    \--- com.fasterxml.jackson:jackson-bom:2.13.1 (*)
+|    |    +--- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1
+|    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.13.1 (*)
+|    |    |    +--- com.fasterxml.jackson.core:jackson-core:2.13.1 (*)
+|    |    |    +--- com.fasterxml.jackson.core:jackson-databind:2.13.1 (*)
+|    |    |    \--- com.fasterxml.jackson:jackson-bom:2.13.1 (*)
+|    |    \--- com.fasterxml.jackson.module:jackson-module-parameter-names:2.13.1
+|    |         +--- com.fasterxml.jackson.core:jackson-core:2.13.1 (*)
+|    |         +--- com.fasterxml.jackson.core:jackson-databind:2.13.1 (*)
+|    |         \--- com.fasterxml.jackson:jackson-bom:2.13.1 (*)
+|    +--- org.springframework.boot:spring-boot-starter-tomcat:2.6.3
+|    |    +--- jakarta.annotation:jakarta.annotation-api:1.3.5
+|    |    +--- org.apache.tomcat.embed:tomcat-embed-core:9.0.56
+|    |    +--- org.apache.tomcat.embed:tomcat-embed-el:9.0.56
+|    |    \--- org.apache.tomcat.embed:tomcat-embed-websocket:9.0.56
+|    |         \--- org.apache.tomcat.embed:tomcat-embed-core:9.0.56
+|    +--- org.springframework:spring-web:5.3.15 (*)
+|    \--- org.springframework:spring-webmvc:5.3.15
+|         +--- org.springframework:spring-aop:5.3.15 (*)
+|         +--- org.springframework:spring-beans:5.3.15 (*)
+|         +--- org.springframework:spring-context:5.3.15 (*)
+|         +--- org.springframework:spring-core:5.3.15 (*)
+|         +--- org.springframework:spring-expression:5.3.15 (*)
+|         \--- org.springframework:spring-web:5.3.15 (*)
++--- org.springframework.boot:spring-boot-starter-validation -> 2.6.3
+|    +--- org.springframework.boot:spring-boot-starter:2.6.3 (*)
+|    +--- org.apache.tomcat.embed:tomcat-embed-el:9.0.56
+|    \--- org.hibernate.validator:hibernate-validator:6.2.0.Final
+|         +--- jakarta.validation:jakarta.validation-api:2.0.2
+|         +--- org.jboss.logging:jboss-logging:3.4.1.Final -> 3.4.3.Final
+|         \--- com.fasterxml:classmate:1.5.1
++--- org.springframework.boot:spring-boot-starter-hateoas -> 2.6.3
+|    +--- org.springframework.boot:spring-boot-starter-web:2.6.3 (*)
+|    \--- org.springframework.hateoas:spring-hateoas:1.4.1
+|         +--- org.springframework:spring-aop:5.3.15 (*)
+|         +--- org.springframework:spring-beans:5.3.15 (*)
+|         +--- org.springframework:spring-context:5.3.15 (*)
+|         +--- org.springframework:spring-core:5.3.15 (*)
+|         +--- org.springframework:spring-web:5.3.15 (*)
+|         +--- org.springframework.plugin:spring-plugin-core:2.0.0.RELEASE
+|         |    +--- org.springframework:spring-beans:5.2.0.RELEASE -> 5.3.15 (*)
+|         |    +--- org.springframework:spring-context:5.2.0.RELEASE -> 5.3.15 (*)
+|         |    +--- org.springframework:spring-aop:5.2.0.RELEASE -> 5.3.15 (*)
+|         |    \--- org.slf4j:slf4j-api:1.7.25 -> 1.7.33
+|         +--- com.jayway.jsonpath:json-path:2.6.0
+|         |    +--- net.minidev:json-smart:2.4.7
+|         |    |    \--- net.minidev:accessors-smart:2.4.7
+|         |    |         \--- org.ow2.asm:asm:9.1
+|         |    \--- org.slf4j:slf4j-api:1.7.30 -> 1.7.33
+|         \--- org.slf4j:slf4j-api:1.7.32 -> 1.7.33
++--- org.springframework.boot:spring-boot-starter-security -> 2.6.3
+|    +--- org.springframework.boot:spring-boot-starter:2.6.3 (*)
+|    +--- org.springframework:spring-aop:5.3.15 (*)
+|    +--- org.springframework.security:spring-security-config:5.6.1
+|    |    +--- org.springframework.security:spring-security-core:5.6.1
+|    |    |    +--- org.springframework.security:spring-security-crypto:5.6.1
+|    |    |    +--- org.springframework:spring-aop:5.3.14 -> 5.3.15 (*)
+|    |    |    +--- org.springframework:spring-beans:5.3.14 -> 5.3.15 (*)
+|    |    |    +--- org.springframework:spring-context:5.3.14 -> 5.3.15 (*)
+|    |    |    +--- org.springframework:spring-core:5.3.14 -> 5.3.15 (*)
+|    |    |    \--- org.springframework:spring-expression:5.3.14 -> 5.3.15 (*)
+|    |    +--- org.springframework:spring-aop:5.3.14 -> 5.3.15 (*)
+|    |    +--- org.springframework:spring-beans:5.3.14 -> 5.3.15 (*)
+|    |    +--- org.springframework:spring-context:5.3.14 -> 5.3.15 (*)
+|    |    \--- org.springframework:spring-core:5.3.14 -> 5.3.15 (*)
+|    \--- org.springframework.security:spring-security-web:5.6.1
+|         +--- org.springframework.security:spring-security-core:5.6.1 (*)
+|         +--- org.springframework:spring-core:5.3.14 -> 5.3.15 (*)
+|         +--- org.springframework:spring-aop:5.3.14 -> 5.3.15 (*)
+|         +--- org.springframework:spring-beans:5.3.14 -> 5.3.15 (*)
+|         +--- org.springframework:spring-context:5.3.14 -> 5.3.15 (*)
+|         +--- org.springframework:spring-expression:5.3.14 -> 5.3.15 (*)
+|         \--- org.springframework:spring-web:5.3.14 -> 5.3.15 (*)
++--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2
+|    +--- org.springframework.boot:spring-boot-starter:2.6.3 (*)
+|    +--- org.springframework.boot:spring-boot-starter-jdbc:2.6.3
+|    |    +--- org.springframework.boot:spring-boot-starter:2.6.3 (*)
+|    |    +--- com.zaxxer:HikariCP:4.0.3
+|    |    |    \--- org.slf4j:slf4j-api:1.7.30 -> 1.7.33
+|    |    \--- org.springframework:spring-jdbc:5.3.15
+|    |         +--- org.springframework:spring-beans:5.3.15 (*)
+|    |         +--- org.springframework:spring-core:5.3.15 (*)
+|    |         \--- org.springframework:spring-tx:5.3.15
+|    |              +--- org.springframework:spring-beans:5.3.15 (*)
+|    |              \--- org.springframework:spring-core:5.3.15 (*)
+|    +--- org.mybatis.spring.boot:mybatis-spring-boot-autoconfigure:2.2.2
+|    |    \--- org.springframework.boot:spring-boot-autoconfigure:2.6.3 (*)
+|    +--- org.mybatis:mybatis:3.5.9
+|    \--- org.mybatis:mybatis-spring:2.0.7
++--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21
+|    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21
+|    |    +--- com.jayway.jsonpath:json-path:2.6.0 (c)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-client:4.9.21 (c)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21 (c)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (c)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc-autoconfigure:4.9.21 (c)
+|    |    +--- com.netflix.graphql.dgs:graphql-error-types:4.9.21 (c)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21 (c)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc:4.9.21 (c)
+|    |    +--- io.projectreactor:reactor-core:3.4.10 -> 3.4.14 (c)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-subscription-types:4.9.21 (c)
+|    |    +--- com.graphql-java:graphql-java:17.3 (c)
+|    |    +--- org.apache.logging.log4j:log4j-to-slf4j:2.17.1 (c)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-mocking:4.9.21 (c)
+|    |    \--- org.apache.logging.log4j:log4j-api:2.17.1 (c)
+|    +--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21
+|    |    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    |    +--- com.netflix.graphql.dgs:graphql-error-types:4.9.21
+|    |    |    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    |    |    +--- com.graphql-java:graphql-java:17.3
+|    |    |    |    |    +--- com.graphql-java:java-dataloader:3.1.0
+|    |    |    |    |    |    \--- org.slf4j:slf4j-api:1.7.30 -> 1.7.33
+|    |    |    |    |    +--- org.reactivestreams:reactive-streams:1.0.2 -> 1.0.3
+|    |    |    |    |    \--- org.antlr:antlr4:4.9.2
+|    |    |    |    |         +--- org.antlr:antlr4-runtime:4.9.2
+|    |    |    |    |         +--- org.antlr:antlr-runtime:3.5.2
+|    |    |    |    |         +--- org.antlr:ST4:4.3
+|    |    |    |    |         |    \--- org.antlr:antlr-runtime:3.5.2
+|    |    |    |    |         +--- org.abego.treelayout:org.abego.treelayout.core:1.0.3
+|    |    |    |    |         +--- org.glassfish:javax.json:1.0.4
+|    |    |    |    |         \--- com.ibm.icu:icu4j:61.1
+|    |    |    |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32 -> 1.6.10
+|    |    |    |         +--- org.jetbrains.kotlin:kotlin-stdlib:1.6.10
+|    |    |    |         |    +--- org.jetbrains:annotations:13.0
+|    |    |    |         |    \--- org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10
+|    |    |    |         \--- org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10
+|    |    |    |              \--- org.jetbrains.kotlin:kotlin-stdlib:1.6.10 (*)
+|    |    |    +--- com.netflix.graphql.dgs:graphql-dgs-mocking:4.9.21
+|    |    |    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    |    |    +--- com.graphql-java:graphql-java:17.3 (*)
+|    |    |    |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32 -> 1.6.10 (*)
+|    |    |    +--- com.graphql-java:graphql-java:17.3 (*)
+|    |    |    +--- com.jayway.jsonpath:json-path:2.6.0 (*)
+|    |    |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32 -> 1.6.10 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc:4.9.21
+|    |    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    |    +--- com.netflix.graphql.dgs:graphql-error-types:4.9.21 (*)
+|    |    |    +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21 (*)
+|    |    |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32 -> 1.6.10 (*)
+|    |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32 -> 1.6.10 (*)
+|    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc-autoconfigure:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc:4.9.21 (*)
+|    |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32 -> 1.6.10 (*)
+|    +--- com.netflix.graphql.dgs:graphql-dgs-client:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    +--- com.jayway.jsonpath:json-path:2.6.0 (*)
+|    |    +--- io.projectreactor:reactor-core:3.4.10 -> 3.4.14
+|    |    |    \--- org.reactivestreams:reactive-streams:1.0.3
+|    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.12.5 -> 2.13.1 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-subscription-types:4.9.21
+|    |    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    |    +--- com.graphql-java:graphql-java:17.3 (*)
+|    |    |    +--- com.fasterxml.jackson.core:jackson-annotations:2.12.5 -> 2.13.1 (*)
+|    |    |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32 -> 1.6.10 (*)
+|    |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32 -> 1.6.10 (*)
+|    +--- com.netflix.graphql.dgs:graphql-error-types:4.9.21 (*)
+|    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.32 -> 1.6.10 (*)
++--- org.flywaydb:flyway-core -> 8.0.5
++--- io.jsonwebtoken:jjwt-api:0.11.2
++--- joda-time:joda-time:2.10.13
++--- org.xerial:sqlite-jdbc:3.36.0.3
+\--- com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:5.0.6
+     \--- org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.32 -> 1.6.10 (*)
+
+(c) - dependency constraint
+(*) - dependencies omitted (listed previously)
+
+A web-based, searchable dependency report is available by adding the --scan option.
+
+BUILD SUCCESSFUL in 27s
+1 actionable task: 1 executed

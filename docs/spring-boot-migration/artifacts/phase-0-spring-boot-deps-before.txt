@@ -1,0 +1,397 @@
+
+> Configure project :
+DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:5.0.6] to the implementation dependencies.
+
+> Task :dependencyInsight
+com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21 (by constraint)
+   variant "apiElements" [
+      org.gradle.category                 = library
+      org.gradle.dependency.bundling      = external
+      org.gradle.jvm.version              = 8 (compatible with: 11)
+      org.gradle.libraryelements          = jar (compatible with: classes)
+      org.gradle.usage                    = java-api
+      org.jetbrains.kotlin.localToProject = public (not requested)
+      org.jetbrains.kotlin.platform.type  = jvm (not requested)
+      org.gradle.status                   = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment          = standard-jvm
+   ]
+
+com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21
++--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21
+|    +--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21 (*)
+|    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc-autoconfigure:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    \--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21
+|    |         +--- compileClasspath
+|    |         \--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    +--- com.netflix.graphql.dgs:graphql-dgs-client:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    \--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (*)
+|    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc-autoconfigure:4.9.21 (*)
+|    |    \--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc-autoconfigure:4.9.21 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc:4.9.21 (*)
+|    |    \--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    +--- com.netflix.graphql.dgs:graphql-error-types:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc:4.9.21 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21 (*)
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    |    \--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (*)
+|    +--- com.netflix.graphql.dgs:graphql-dgs-subscription-types:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs-client:4.9.21 (*)
+|    |    \--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    +--- com.netflix.graphql.dgs:graphql-dgs-mocking:4.9.21
+|    |    +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21 (*)
+|    |    \--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+|    \--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (*)
+\--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (*)
+
+com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21
+   variant "apiElements" [
+      org.gradle.category                 = library
+      org.gradle.dependency.bundling      = external
+      org.gradle.jvm.version              = 8 (compatible with: 11)
+      org.gradle.libraryelements          = jar (compatible with: classes)
+      org.gradle.usage                    = java-api
+      org.jetbrains.kotlin.localToProject = public (not requested)
+      org.jetbrains.kotlin.platform.type  = jvm (not requested)
+      org.gradle.status                   = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment          = standard-jvm
+   ]
+   Selection reasons:
+      - Selected by rule
+      - By constraint
+
+com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21
++--- compileClasspath
+\--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21
+     +--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+     |    \--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (*)
+     +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc-autoconfigure:4.9.21
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+     |    \--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (*)
+     +--- com.netflix.graphql.dgs:graphql-dgs-client:4.9.21
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+     |    \--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (*)
+     +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc:4.9.21
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21 (*)
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc-autoconfigure:4.9.21 (*)
+     |    \--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+     +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-oss-autoconfigure:4.9.21 (*)
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc-autoconfigure:4.9.21 (*)
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc:4.9.21 (*)
+     |    \--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+     +--- com.netflix.graphql.dgs:graphql-error-types:4.9.21
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-spring-webmvc:4.9.21 (*)
+     |    +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21 (*)
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+     |    \--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (*)
+     +--- com.netflix.graphql.dgs:graphql-dgs-subscription-types:4.9.21
+     |    +--- com.netflix.graphql.dgs:graphql-dgs-client:4.9.21 (*)
+     |    \--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+     +--- com.netflix.graphql.dgs:graphql-dgs-mocking:4.9.21
+     |    +--- com.netflix.graphql.dgs:graphql-dgs:4.9.21 (*)
+     |    \--- com.netflix.graphql.dgs:graphql-dgs-platform:4.9.21 (*)
+     \--- com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21 (*)
+
+org.mybatis.spring.boot:mybatis-spring-boot-autoconfigure:2.2.2
+   variant "compile" [
+      org.gradle.status              = release (not requested)
+      org.gradle.usage               = java-api
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.category            = library
+
+      Requested attributes not found in the selected variant:
+         org.gradle.dependency.bundling = external
+         org.gradle.jvm.environment     = standard-jvm
+         org.gradle.jvm.version         = 11
+   ]
+
+org.mybatis.spring.boot:mybatis-spring-boot-autoconfigure:2.2.2
+\--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2
+     \--- compileClasspath
+
+org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2 (selected by rule)
+   variant "compile" [
+      org.gradle.status              = release (not requested)
+      org.gradle.usage               = java-api
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.category            = library
+
+      Requested attributes not found in the selected variant:
+         org.gradle.dependency.bundling = external
+         org.gradle.jvm.environment     = standard-jvm
+         org.gradle.jvm.version         = 11
+   ]
+
+org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2
+\--- compileClasspath
+
+org.springframework.boot:spring-boot:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category                 = library
+      org.gradle.dependency.bundling      = external
+      org.gradle.jvm.version              = 8 (compatible with: 11)
+      org.gradle.libraryelements          = jar (compatible with: classes)
+      org.gradle.usage                    = java-api
+      org.jetbrains.kotlin.localToProject = public (not requested)
+      org.jetbrains.kotlin.platform.type  = jvm (not requested)
+      org.gradle.status                   = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment          = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot:2.6.3
++--- org.springframework.boot:spring-boot-autoconfigure:2.6.3
+|    +--- org.springframework.boot:spring-boot-starter:2.6.3
+|    |    +--- org.springframework.boot:spring-boot-starter-web:2.6.3
+|    |    |    +--- compileClasspath (requested org.springframework.boot:spring-boot-starter-web)
+|    |    |    \--- org.springframework.boot:spring-boot-starter-hateoas:2.6.3
+|    |    |         \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-hateoas)
+|    |    +--- org.springframework.boot:spring-boot-starter-validation:2.6.3
+|    |    |    \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-validation)
+|    |    +--- org.springframework.boot:spring-boot-starter-security:2.6.3
+|    |    |    \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-security)
+|    |    +--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2
+|    |    |    \--- compileClasspath
+|    |    +--- org.springframework.boot:spring-boot-starter-json:2.6.3
+|    |    |    \--- org.springframework.boot:spring-boot-starter-web:2.6.3 (*)
+|    |    \--- org.springframework.boot:spring-boot-starter-jdbc:2.6.3
+|    |         \--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2 (*)
+|    \--- org.mybatis.spring.boot:mybatis-spring-boot-autoconfigure:2.2.2
+|         \--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2 (*)
+\--- org.springframework.boot:spring-boot-starter:2.6.3 (*)
+
+org.springframework.boot:spring-boot-autoconfigure:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category                 = library
+      org.gradle.dependency.bundling      = external
+      org.gradle.jvm.version              = 8 (compatible with: 11)
+      org.gradle.libraryelements          = jar (compatible with: classes)
+      org.gradle.usage                    = java-api
+      org.jetbrains.kotlin.localToProject = public (not requested)
+      org.jetbrains.kotlin.platform.type  = jvm (not requested)
+      org.gradle.status                   = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment          = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-autoconfigure:2.6.3
++--- org.mybatis.spring.boot:mybatis-spring-boot-autoconfigure:2.2.2
+|    \--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2
+|         \--- compileClasspath
+\--- org.springframework.boot:spring-boot-starter:2.6.3
+     +--- org.springframework.boot:spring-boot-starter-web:2.6.3
+     |    +--- compileClasspath (requested org.springframework.boot:spring-boot-starter-web)
+     |    \--- org.springframework.boot:spring-boot-starter-hateoas:2.6.3
+     |         \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-hateoas)
+     +--- org.springframework.boot:spring-boot-starter-validation:2.6.3
+     |    \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-validation)
+     +--- org.springframework.boot:spring-boot-starter-security:2.6.3
+     |    \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-security)
+     +--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2 (*)
+     +--- org.springframework.boot:spring-boot-starter-json:2.6.3
+     |    \--- org.springframework.boot:spring-boot-starter-web:2.6.3 (*)
+     \--- org.springframework.boot:spring-boot-starter-jdbc:2.6.3
+          \--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2 (*)
+
+org.springframework.boot:spring-boot-starter:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category            = library
+      org.gradle.dependency.bundling = external
+      org.gradle.jvm.version         = 8 (compatible with: 11)
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.usage               = java-api
+      org.gradle.status              = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment     = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-starter:2.6.3
++--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2
+|    \--- compileClasspath
++--- org.springframework.boot:spring-boot-starter-jdbc:2.6.3
+|    \--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2 (*)
++--- org.springframework.boot:spring-boot-starter-json:2.6.3
+|    \--- org.springframework.boot:spring-boot-starter-web:2.6.3
+|         +--- compileClasspath (requested org.springframework.boot:spring-boot-starter-web)
+|         \--- org.springframework.boot:spring-boot-starter-hateoas:2.6.3
+|              \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-hateoas)
++--- org.springframework.boot:spring-boot-starter-security:2.6.3
+|    \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-security)
++--- org.springframework.boot:spring-boot-starter-validation:2.6.3
+|    \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-validation)
+\--- org.springframework.boot:spring-boot-starter-web:2.6.3 (*)
+
+org.springframework.boot:spring-boot-starter-hateoas:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category            = library
+      org.gradle.dependency.bundling = external
+      org.gradle.jvm.version         = 8 (compatible with: 11)
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.usage               = java-api
+      org.gradle.status              = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment     = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-starter-hateoas -> 2.6.3
+\--- compileClasspath
+
+org.springframework.boot:spring-boot-starter-jdbc:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category            = library
+      org.gradle.dependency.bundling = external
+      org.gradle.jvm.version         = 8 (compatible with: 11)
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.usage               = java-api
+      org.gradle.status              = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment     = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-starter-jdbc:2.6.3
+\--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2
+     \--- compileClasspath
+
+org.springframework.boot:spring-boot-starter-json:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category            = library
+      org.gradle.dependency.bundling = external
+      org.gradle.jvm.version         = 8 (compatible with: 11)
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.usage               = java-api
+      org.gradle.status              = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment     = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-starter-json:2.6.3
+\--- org.springframework.boot:spring-boot-starter-web:2.6.3
+     +--- compileClasspath (requested org.springframework.boot:spring-boot-starter-web)
+     \--- org.springframework.boot:spring-boot-starter-hateoas:2.6.3
+          \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-hateoas)
+
+org.springframework.boot:spring-boot-starter-logging:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category            = library
+      org.gradle.dependency.bundling = external
+      org.gradle.jvm.version         = 8 (compatible with: 11)
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.usage               = java-api
+      org.gradle.status              = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment     = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-starter-logging:2.6.3
+\--- org.springframework.boot:spring-boot-starter:2.6.3
+     +--- org.springframework.boot:spring-boot-starter-web:2.6.3
+     |    +--- compileClasspath (requested org.springframework.boot:spring-boot-starter-web)
+     |    \--- org.springframework.boot:spring-boot-starter-hateoas:2.6.3
+     |         \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-hateoas)
+     +--- org.springframework.boot:spring-boot-starter-validation:2.6.3
+     |    \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-validation)
+     +--- org.springframework.boot:spring-boot-starter-security:2.6.3
+     |    \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-security)
+     +--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2
+     |    \--- compileClasspath
+     +--- org.springframework.boot:spring-boot-starter-json:2.6.3
+     |    \--- org.springframework.boot:spring-boot-starter-web:2.6.3 (*)
+     \--- org.springframework.boot:spring-boot-starter-jdbc:2.6.3
+          \--- org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2 (*)
+
+org.springframework.boot:spring-boot-starter-security:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category            = library
+      org.gradle.dependency.bundling = external
+      org.gradle.jvm.version         = 8 (compatible with: 11)
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.usage               = java-api
+      org.gradle.status              = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment     = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-starter-security -> 2.6.3
+\--- compileClasspath
+
+org.springframework.boot:spring-boot-starter-tomcat:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category            = library
+      org.gradle.dependency.bundling = external
+      org.gradle.jvm.version         = 8 (compatible with: 11)
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.usage               = java-api
+      org.gradle.status              = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment     = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-starter-tomcat:2.6.3
+\--- org.springframework.boot:spring-boot-starter-web:2.6.3
+     +--- compileClasspath (requested org.springframework.boot:spring-boot-starter-web)
+     \--- org.springframework.boot:spring-boot-starter-hateoas:2.6.3
+          \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-hateoas)
+
+org.springframework.boot:spring-boot-starter-validation:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category            = library
+      org.gradle.dependency.bundling = external
+      org.gradle.jvm.version         = 8 (compatible with: 11)
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.usage               = java-api
+      org.gradle.status              = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment     = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-starter-validation -> 2.6.3
+\--- compileClasspath
+
+org.springframework.boot:spring-boot-starter-web:2.6.3 (selected by rule)
+   variant "apiElements" [
+      org.gradle.category            = library
+      org.gradle.dependency.bundling = external
+      org.gradle.jvm.version         = 8 (compatible with: 11)
+      org.gradle.libraryelements     = jar (compatible with: classes)
+      org.gradle.usage               = java-api
+      org.gradle.status              = release (not requested)
+
+      Requested attributes not found in the selected variant:
+         org.gradle.jvm.environment     = standard-jvm
+   ]
+
+org.springframework.boot:spring-boot-starter-web:2.6.3
+\--- org.springframework.boot:spring-boot-starter-hateoas:2.6.3
+     \--- compileClasspath (requested org.springframework.boot:spring-boot-starter-hateoas)
+
+org.springframework.boot:spring-boot-starter-web -> 2.6.3
+\--- compileClasspath
+
+(*) - dependencies omitted (listed previously)
+
+A web-based, searchable dependency report is available by adding the --scan option.
+
+BUILD SUCCESSFUL in 989ms
+1 actionable task: 1 executed
