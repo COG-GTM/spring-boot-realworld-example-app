@@ -1,0 +1,4 @@
+OpenRewrite unavailable due to:
+- Project uses Gradle (not Maven) - OpenRewrite plugin not pre-configured
+- Adding OpenRewrite plugin requires build.gradle modifications and recipe dependency resolution
+- Falling back to manual namespace migration per REQ-P6-1.2
