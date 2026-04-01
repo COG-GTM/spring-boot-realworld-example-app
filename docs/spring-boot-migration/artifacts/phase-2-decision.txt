@@ -1,0 +1,2 @@
+EXECUTE_PHASE_2=true
+Phase 2 REQUIRED: Current version 2.6.3 < 2.7.0. Target: Spring Boot 2.7.18
