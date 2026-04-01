@@ -1,0 +1,359 @@
+
+> Configure project :
+DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:5.0.6] to the implementation dependencies.
+
+> Task :generateJava
+
+> Task :compileJava FAILED
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/exception/GraphQLCustomizeExceptionHandler.java:20: error: package javax.validation does not exist
+import javax.validation.ConstraintViolation;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/exception/GraphQLCustomizeExceptionHandler.java:21: error: package javax.validation does not exist
+import javax.validation.ConstraintViolationException;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/exception/GraphQLCustomizeExceptionHandler.java:70: error: cannot find symbol
+  public static Error getErrorsAsData(ConstraintViolationException cve) {
+                                      ^
+  symbol:   class ConstraintViolationException
+  location: class GraphQLCustomizeExceptionHandler
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/ArticleCommandService.java:6: error: package javax.validation does not exist
+import javax.validation.Valid;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/NewArticleParam.java:5: error: package javax.validation.constraints does not exist
+import javax.validation.constraints.NotBlank;
+                                   ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/UserMutation.java:21: error: package javax.validation does not exist
+import javax.validation.ConstraintViolationException;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UserService.java:7: error: package javax.validation does not exist
+import javax.validation.Constraint;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UserService.java:8: error: package javax.validation does not exist
+import javax.validation.ConstraintValidator;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UserService.java:9: error: package javax.validation does not exist
+import javax.validation.ConstraintValidatorContext;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UserService.java:10: error: package javax.validation does not exist
+import javax.validation.Valid;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/RegisterParam.java:4: error: package javax.validation.constraints does not exist
+import javax.validation.constraints.Email;
+                                   ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/RegisterParam.java:5: error: package javax.validation.constraints does not exist
+import javax.validation.constraints.NotBlank;
+                                   ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UserService.java:59: error: cannot find symbol
+@Constraint(validatedBy = UpdateUserValidator.class)
+ ^
+  symbol: class Constraint
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UpdateUserParam.java:4: error: package javax.validation.constraints does not exist
+import javax.validation.constraints.Email;
+                                   ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/CurrentUserApi.java:12: error: package javax.validation does not exist
+import javax.validation.Valid;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/CommentsApi.java:17: error: package javax.validation does not exist
+import javax.validation.Valid;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/CommentsApi.java:18: error: package javax.validation.constraints does not exist
+import javax.validation.constraints.NotBlank;
+                                   ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/exception/CustomizeExceptionHandler.java:10: error: package javax.validation does not exist
+import javax.validation.ConstraintViolation;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/exception/CustomizeExceptionHandler.java:11: error: package javax.validation does not exist
+import javax.validation.ConstraintViolationException;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/exception/CustomizeExceptionHandler.java:86: error: cannot find symbol
+      ConstraintViolationException ex, WebRequest request) {
+      ^
+  symbol:   class ConstraintViolationException
+  location: class CustomizeExceptionHandler
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/ArticlesApi.java:10: error: package javax.validation does not exist
+import javax.validation.Valid;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/UsersApi.java:18: error: package javax.validation does not exist
+import javax.validation.Valid;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/UsersApi.java:19: error: package javax.validation.constraints does not exist
+import javax.validation.constraints.Email;
+                                   ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/UsersApi.java:20: error: package javax.validation.constraints does not exist
+import javax.validation.constraints.NotBlank;
+                                   ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/WebSecurityConfig.java:11: error: cannot find symbol
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+                                                                       ^
+  symbol:   class WebSecurityConfigurerAdapter
+  location: package org.springframework.security.config.annotation.web.configuration
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/WebSecurityConfig.java:23: error: cannot find symbol
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+                                       ^
+  symbol: class WebSecurityConfigurerAdapter
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/JwtTokenFilter.java:8: error: package javax.servlet does not exist
+import javax.servlet.FilterChain;
+                    ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/JwtTokenFilter.java:9: error: package javax.servlet does not exist
+import javax.servlet.ServletException;
+                    ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/JwtTokenFilter.java:10: error: package javax.servlet.http does not exist
+import javax.servlet.http.HttpServletRequest;
+                         ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/JwtTokenFilter.java:11: error: package javax.servlet.http does not exist
+import javax.servlet.http.HttpServletResponse;
+                         ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/JwtTokenFilter.java:26: error: cannot find symbol
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      ^
+  symbol:   class HttpServletRequest
+  location: class JwtTokenFilter
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/JwtTokenFilter.java:26: error: cannot find symbol
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+                                  ^
+  symbol:   class HttpServletResponse
+  location: class JwtTokenFilter
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/JwtTokenFilter.java:26: error: cannot find symbol
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+                                                                ^
+  symbol:   class FilterChain
+  location: class JwtTokenFilter
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/security/JwtTokenFilter.java:27: error: cannot find symbol
+      throws ServletException, IOException {
+             ^
+  symbol:   class ServletException
+  location: class JwtTokenFilter
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/ArticleApi.java:15: error: package javax.validation does not exist
+import javax.validation.Valid;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UserService.java:70: error: cannot find symbol
+class UpdateUserValidator implements ConstraintValidator<UpdateUserConstraint, UpdateUserCommand> {
+                                     ^
+  symbol: class ConstraintValidator
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UserService.java:75: error: cannot find symbol
+  public boolean isValid(UpdateUserCommand value, ConstraintValidatorContext context) {
+                                                  ^
+  symbol:   class ConstraintValidatorContext
+  location: class UpdateUserValidator
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedEmailConstraint.java:5: error: package javax.validation does not exist
+import javax.validation.Constraint;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedEmailConstraint.java:6: error: package javax.validation does not exist
+import javax.validation.Payload;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedEmailConstraint.java:8: error: cannot find symbol
+@Constraint(validatedBy = DuplicatedEmailValidator.class)
+ ^
+  symbol: class Constraint
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedEmailConstraint.java:15: error: cannot find symbol
+  Class<? extends Payload>[] payload() default {};
+                  ^
+  symbol:   class Payload
+  location: @interface DuplicatedEmailConstraint
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedUsernameConstraint.java:5: error: package javax.validation does not exist
+import javax.validation.Constraint;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedUsernameConstraint.java:6: error: package javax.validation does not exist
+import javax.validation.Payload;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedUsernameConstraint.java:8: error: cannot find symbol
+@Constraint(validatedBy = DuplicatedUsernameValidator.class)
+ ^
+  symbol: class Constraint
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedUsernameConstraint.java:15: error: cannot find symbol
+  Class<? extends Payload>[] payload() default {};
+                  ^
+  symbol:   class Payload
+  location: @interface DuplicatedUsernameConstraint
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedEmailValidator.java:4: error: package javax.validation does not exist
+import javax.validation.ConstraintValidator;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedEmailValidator.java:5: error: package javax.validation does not exist
+import javax.validation.ConstraintValidatorContext;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedEmailValidator.java:9: error: cannot find symbol
+    implements ConstraintValidator<DuplicatedEmailConstraint, String> {
+               ^
+  symbol: class ConstraintValidator
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedEmailValidator.java:14: error: cannot find symbol
+  public boolean isValid(String value, ConstraintValidatorContext context) {
+                                       ^
+  symbol:   class ConstraintValidatorContext
+  location: class DuplicatedEmailValidator
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedUsernameValidator.java:4: error: package javax.validation does not exist
+import javax.validation.ConstraintValidator;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedUsernameValidator.java:5: error: package javax.validation does not exist
+import javax.validation.ConstraintValidatorContext;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedUsernameValidator.java:9: error: cannot find symbol
+    implements ConstraintValidator<DuplicatedUsernameConstraint, String> {
+               ^
+  symbol: class ConstraintValidator
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/DuplicatedUsernameValidator.java:14: error: cannot find symbol
+  public boolean isValid(String value, ConstraintValidatorContext context) {
+                                       ^
+  symbol:   class ConstraintValidatorContext
+  location: class DuplicatedUsernameValidator
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/DuplicatedArticleValidator.java:5: error: package javax.validation does not exist
+import javax.validation.ConstraintValidator;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/DuplicatedArticleValidator.java:6: error: package javax.validation does not exist
+import javax.validation.ConstraintValidatorContext;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/DuplicatedArticleValidator.java:10: error: cannot find symbol
+    implements ConstraintValidator<DuplicatedArticleConstraint, String> {
+               ^
+  symbol: class ConstraintValidator
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/DuplicatedArticleConstraint.java:8: error: package javax.validation does not exist
+import javax.validation.Constraint;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/DuplicatedArticleConstraint.java:9: error: package javax.validation does not exist
+import javax.validation.Payload;
+                       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/DuplicatedArticleConstraint.java:12: error: cannot find symbol
+@Constraint(validatedBy = DuplicatedArticleValidator.class)
+ ^
+  symbol: class Constraint
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/DuplicatedArticleValidator.java:15: error: cannot find symbol
+  public boolean isValid(String value, ConstraintValidatorContext context) {
+                                       ^
+  symbol:   class ConstraintValidatorContext
+  location: class DuplicatedArticleValidator
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/DuplicatedArticleConstraint.java:20: error: cannot find symbol
+  Class<? extends Payload>[] payload() default {};
+                  ^
+  symbol:   class Payload
+  location: @interface DuplicatedArticleConstraint
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/ArticleCommandService.java:18: error: cannot find symbol
+  public Article createArticle(@Valid NewArticleParam newArticleParam, User creator) {
+                                ^
+  symbol:   class Valid
+  location: class ArticleCommandService
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/ArticleCommandService.java:30: error: cannot find symbol
+  public Article updateArticle(Article article, @Valid UpdateArticleParam updateArticleParam) {
+                                                 ^
+  symbol:   class Valid
+  location: class ArticleCommandService
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/NewArticleParam.java:17: error: cannot find symbol
+  @NotBlank(message = "can't be empty")
+   ^
+  symbol:   class NotBlank
+  location: class NewArticleParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/NewArticleParam.java:21: error: cannot find symbol
+  @NotBlank(message = "can't be empty")
+   ^
+  symbol:   class NotBlank
+  location: class NewArticleParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/article/NewArticleParam.java:24: error: cannot find symbol
+  @NotBlank(message = "can't be empty")
+   ^
+  symbol:   class NotBlank
+  location: class NewArticleParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UserService.java:34: error: cannot find symbol
+  public User createUser(@Valid RegisterParam registerParam) {
+                          ^
+  symbol:   class Valid
+  location: class UserService
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UserService.java:46: error: cannot find symbol
+  public void updateUser(@Valid UpdateUserCommand command) {
+                          ^
+  symbol:   class Valid
+  location: class UserService
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/UpdateUserParam.java:18: error: cannot find symbol
+  @Email(message = "should be an email")
+   ^
+  symbol:   class Email
+  location: class UpdateUserParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/RegisterParam.java:15: error: cannot find symbol
+  @NotBlank(message = "can't be empty")
+   ^
+  symbol:   class NotBlank
+  location: class RegisterParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/RegisterParam.java:16: error: cannot find symbol
+  @Email(message = "should be an email")
+   ^
+  symbol:   class Email
+  location: class RegisterParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/RegisterParam.java:20: error: cannot find symbol
+  @NotBlank(message = "can't be empty")
+   ^
+  symbol:   class NotBlank
+  location: class RegisterParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/application/user/RegisterParam.java:24: error: cannot find symbol
+  @NotBlank(message = "can't be empty")
+   ^
+  symbol:   class NotBlank
+  location: class RegisterParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/CurrentUserApi.java:44: error: cannot find symbol
+      @Valid @RequestBody UpdateUserParam updateUserParam) {
+       ^
+  symbol:   class Valid
+  location: class CurrentUserApi
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/CommentsApi.java:44: error: cannot find symbol
+      @Valid @RequestBody NewCommentParam newCommentParam) {
+       ^
+  symbol:   class Valid
+  location: class CommentsApi
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/CommentsApi.java:100: error: cannot find symbol
+  @NotBlank(message = "can't be empty")
+   ^
+  symbol:   class NotBlank
+  location: class NewCommentParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/exception/CustomizeExceptionHandler.java:82: error: cannot find symbol
+  @ExceptionHandler({ConstraintViolationException.class})
+                     ^
+  symbol:   class ConstraintViolationException
+  location: class CustomizeExceptionHandler
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/ArticlesApi.java:30: error: cannot find symbol
+      @Valid @RequestBody NewArticleParam newArticleParam, @AuthenticationPrincipal User user) {
+       ^
+  symbol:   class Valid
+  location: class ArticlesApi
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/UsersApi.java:40: error: cannot find symbol
+  public ResponseEntity createUser(@Valid @RequestBody RegisterParam registerParam) {
+                                    ^
+  symbol:   class Valid
+  location: class UsersApi
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/UsersApi.java:48: error: cannot find symbol
+  public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
+                                   ^
+  symbol:   class Valid
+  location: class UsersApi
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/UsersApi.java:73: error: cannot find symbol
+  @NotBlank(message = "can't be empty")
+   ^
+  symbol:   class NotBlank
+  location: class LoginParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/UsersApi.java:74: error: cannot find symbol
+  @Email(message = "should be an email")
+   ^
+  symbol:   class Email
+  location: class LoginParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/UsersApi.java:77: error: cannot find symbol
+  @NotBlank(message = "can't be empty")
+   ^
+  symbol:   class NotBlank
+  location: class LoginParam
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/ArticleApi.java:48: error: cannot find symbol
+      @Valid @RequestBody UpdateArticleParam updateArticleParam) {
+       ^
+  symbol:   class Valid
+  location: class ArticleApi
+84 errors
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 14s
+2 actionable tasks: 2 executed
