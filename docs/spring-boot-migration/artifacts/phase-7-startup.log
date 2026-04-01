@@ -1,0 +1,57 @@
+> Task :generateJava UP-TO-DATE
+
+> Task :compileJava FAILED
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/CommentDatafetcher.java:84: error: incompatible types: graphql.relay.PageInfo cannot be converted to io.spring.graphql.types.PageInfo
+            .pageInfo(pageInfo)
+                      ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/exception/GraphQLCustomizeExceptionHandler.java:25: error: GraphQLCustomizeExceptionHandler is not abstract and does not override abstract method handleException(DataFetcherExceptionHandlerParameters) in DataFetcherExceptionHandler
+public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHandler {
+       ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/exception/GraphQLCustomizeExceptionHandler.java:30: error: method does not override or implement a method from a supertype
+  @Override
+  ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/ArticleDatafetcher.java:70: error: incompatible types: graphql.relay.PageInfo cannot be converted to io.spring.graphql.types.PageInfo
+            .pageInfo(pageInfo)
+                      ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/ArticleDatafetcher.java:120: error: incompatible types: graphql.relay.PageInfo cannot be converted to io.spring.graphql.types.PageInfo
+            .pageInfo(pageInfo)
+                      ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/ArticleDatafetcher.java:174: error: incompatible types: graphql.relay.PageInfo cannot be converted to io.spring.graphql.types.PageInfo
+            .pageInfo(pageInfo)
+                      ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/ArticleDatafetcher.java:227: error: incompatible types: graphql.relay.PageInfo cannot be converted to io.spring.graphql.types.PageInfo
+            .pageInfo(pageInfo)
+                      ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/ArticleDatafetcher.java:282: error: incompatible types: graphql.relay.PageInfo cannot be converted to io.spring.graphql.types.PageInfo
+            .pageInfo(pageInfo)
+                      ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/api/exception/CustomizeExceptionHandler.java:62: error: method does not override or implement a method from a supertype
+  @Override
+  ^
+/home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/infrastructure/service/DefaultJwtService.java:44: error: cannot find symbol
+          Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
+              ^
+  symbol:   method parserBuilder()
+  location: class Jwts
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /home/ubuntu/repos/spring-boot-realworld-example-app/src/main/java/io/spring/graphql/exception/GraphQLCustomizeExceptionHandler.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+10 errors
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 1s
+2 actionable tasks: 1 executed, 1 up-to-date

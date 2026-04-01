@@ -37,13 +37,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
     implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.2.0')
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-graphql-starter'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:8.2.0'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5',
                 'io.jsonwebtoken:jjwt-jackson:0.12.5'
     implementation 'joda-time:joda-time:2.12.7'
     implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
+    runtimeOnly 'org.springframework.boot:spring-boot-properties-migrator'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
