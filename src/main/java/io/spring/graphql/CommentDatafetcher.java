@@ -115,7 +115,7 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(comment.getCreatedAt().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+        .updatedAt(comment.getUpdatedAt().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
         .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
         .build();
   }
