@@ -3,6 +3,7 @@ package io.spring.infrastructure.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import java.util.Date;
@@ -21,7 +22,7 @@ public class DefaultJwtService implements JwtService {
   public DefaultJwtService(
       @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
     this.sessionTime = sessionTime;
-    this.signingKey = Jwts.SIG.HS512.key().build();
+    this.signingKey = Keys.hmacShaKeyFor(secret.getBytes());
   }
 
   @Override
@@ -29,7 +30,7 @@ public class DefaultJwtService implements JwtService {
     return Jwts.builder()
         .subject(user.getId())
         .expiration(expireTimeFromNow())
-        .signWith(signingKey, Jwts.SIG.HS512)
+        .signWith(signingKey)
         .compact();
   }
 
