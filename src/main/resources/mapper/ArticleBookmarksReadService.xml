@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.readservice.ArticleBookmarksReadService">
+    <select id="isUserBookmark" resultType="java.lang.Boolean">
+        select count(1) from article_bookmarks where user_id = #{userId} and article_id = #{articleId}
+    </select>
+    <select id="userBookmarks" resultType="java.lang.String">
+        select article_id from article_bookmarks
+        where user_id = #{currentUser.id}
+        and article_id in
+        <foreach collection="ids" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="userBookmarkArticleIds" resultType="java.lang.String">
+        select article_id from article_bookmarks where user_id = #{userId} order by created_at desc limit #{limit} offset #{offset}
+    </select>
+    <select id="countUserBookmarks" resultType="java.lang.Integer">
+        select count(1) from article_bookmarks where user_id = #{userId}
+    </select>
+</mapper>
