@@ -83,6 +83,21 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_get_422_with_malformed_authorization_header() throws Exception {
+    String malformedToken = "malformed_value";
+    when(jwtService.getSubFromToken(eq(malformedToken))).thenReturn(Optional.of(user.getId()));
+    when(userQueryService.findById(any())).thenReturn(Optional.of(userData));
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Bearer " + malformedToken)
+        .when()
+        .get("/user")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
   public void should_update_current_user_profile() throws Exception {
     String newEmail = "newemail@example.com";
     String newBio = "updated";

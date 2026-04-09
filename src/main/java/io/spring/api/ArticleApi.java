@@ -13,9 +13,11 @@ import io.spring.core.user.User;
 import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/articles/{slug}")
 @AllArgsConstructor
+@Validated
 public class ArticleApi {
   private ArticleQueryService articleQueryService;
   private ArticleRepository articleRepository;
@@ -34,7 +37,7 @@ public class ArticleApi {
 
   @GetMapping
   public ResponseEntity<?> article(
-      @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+      @NotBlank @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleQueryService
         .findBySlug(slug, user)
         .map(articleData -> ResponseEntity.ok(articleResponse(articleData)))
@@ -43,7 +46,7 @@ public class ArticleApi {
 
   @PutMapping
   public ResponseEntity<?> updateArticle(
-      @PathVariable("slug") String slug,
+      @NotBlank @PathVariable("slug") String slug,
       @AuthenticationPrincipal User user,
       @Valid @RequestBody UpdateArticleParam updateArticleParam) {
     return articleRepository
@@ -64,7 +67,7 @@ public class ArticleApi {
 
   @DeleteMapping
   public ResponseEntity deleteArticle(
-      @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+      @NotBlank @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleRepository
         .findBySlug(slug)
         .map(

@@ -117,6 +117,35 @@ public class CommentsApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_get_422_with_overly_long_comment_body() throws Exception {
+    StringBuilder longBody = new StringBuilder();
+    for (int i = 0; i < 65536; i++) {
+      longBody.append("a");
+    }
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "comment",
+                new HashMap<String, Object>() {
+                  {
+                    put("body", longBody.toString());
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles/{slug}/comments", article.getSlug())
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
   public void should_get_comments_of_article_success() throws Exception {
     when(commentQueryService.findByArticleId(anyString(), eq(null)))
         .thenReturn(Arrays.asList(commentData));

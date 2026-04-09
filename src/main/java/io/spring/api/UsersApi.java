@@ -18,17 +18,20 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
+@Validated
 public class UsersApi {
   private UserRepository userRepository;
   private UserQueryService userQueryService;
@@ -72,8 +75,10 @@ public class UsersApi {
 class LoginParam {
   @NotBlank(message = "can't be empty")
   @Email(message = "should be an email")
+  @Size(max = 255)
   private String email;
 
   @NotBlank(message = "can't be empty")
+  @Size(max = 72)
   private String password;
 }
