@@ -8,9 +8,11 @@ import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import java.util.HashMap;
 import java.util.Optional;
+import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,13 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "profiles/{username}")
 @AllArgsConstructor
+@Validated
 public class ProfileApi {
   private ProfileQueryService profileQueryService;
   private UserRepository userRepository;
 
   @GetMapping
   public ResponseEntity getProfile(
-      @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+      @NotBlank @PathVariable("username") String username, @AuthenticationPrincipal User user) {
     return profileQueryService
         .findByUsername(username, user)
         .map(this::profileResponse)
@@ -36,7 +39,7 @@ public class ProfileApi {
 
   @PostMapping(path = "follow")
   public ResponseEntity follow(
-      @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+      @NotBlank @PathVariable("username") String username, @AuthenticationPrincipal User user) {
     return userRepository
         .findByUsername(username)
         .map(
@@ -50,7 +53,7 @@ public class ProfileApi {
 
   @DeleteMapping(path = "follow")
   public ResponseEntity unfollow(
-      @PathVariable("username") String username, @AuthenticationPrincipal User user) {
+      @NotBlank @PathVariable("username") String username, @AuthenticationPrincipal User user) {
     Optional<User> userOptional = userRepository.findByUsername(username);
     if (userOptional.isPresent()) {
       User target = userOptional.get();

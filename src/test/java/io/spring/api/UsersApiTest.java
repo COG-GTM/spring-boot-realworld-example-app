@@ -190,6 +190,49 @@ public class UsersApiTest {
   }
 
   @Test
+  public void should_get_422_with_short_password() throws Exception {
+    String email = "john@jacob.com";
+    String username = "johnjacob";
+
+    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", email);
+                    put("password", "short");
+                    put("username", username);
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void should_get_422_with_malformed_json_body() throws Exception {
+    given()
+        .contentType("application/json")
+        .body("{invalid json")
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
   public void should_login_success() throws Exception {
     String email = "john@jacob.com";
     String username = "johnjacob2";

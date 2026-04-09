@@ -16,11 +16,13 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/articles/{slug}/comments")
 @AllArgsConstructor
+@Validated
 public class CommentsApi {
   private ArticleRepository articleRepository;
   private CommentRepository commentRepository;
@@ -39,7 +42,7 @@ public class CommentsApi {
 
   @PostMapping
   public ResponseEntity<?> createComment(
-      @PathVariable("slug") String slug,
+      @NotBlank @PathVariable("slug") String slug,
       @AuthenticationPrincipal User user,
       @Valid @RequestBody NewCommentParam newCommentParam) {
     Article article =
@@ -52,7 +55,7 @@ public class CommentsApi {
 
   @GetMapping
   public ResponseEntity getComments(
-      @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+      @NotBlank @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     Article article =
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
     List<CommentData> comments = commentQueryService.findByArticleId(article.getId(), user);
@@ -66,8 +69,8 @@ public class CommentsApi {
 
   @RequestMapping(path = "{id}", method = RequestMethod.DELETE)
   public ResponseEntity deleteComment(
-      @PathVariable("slug") String slug,
-      @PathVariable("id") String commentId,
+      @NotBlank @PathVariable("slug") String slug,
+      @NotBlank @PathVariable("id") String commentId,
       @AuthenticationPrincipal User user) {
     Article article =
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
@@ -98,5 +101,6 @@ public class CommentsApi {
 @JsonRootName("comment")
 class NewCommentParam {
   @NotBlank(message = "can't be empty")
+  @Size(max = 65535)
   private String body;
 }
