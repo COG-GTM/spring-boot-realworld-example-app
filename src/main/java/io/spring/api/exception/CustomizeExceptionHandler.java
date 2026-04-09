@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -96,6 +97,64 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     return new ErrorResource(errors);
+  }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<Object> handleResourceNotFound(
+      ResourceNotFoundException ex, WebRequest request) {
+    HashMap<String, Object> body = new HashMap<>();
+    body.put(
+        "errors",
+        new HashMap<String, Object>() {
+          {
+            put("resource", Arrays.asList("not found"));
+          }
+        });
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+  }
+
+  @ExceptionHandler(NoAuthorizationException.class)
+  public ResponseEntity<Object> handleNoAuthorization(
+      NoAuthorizationException ex, WebRequest request) {
+    HashMap<String, Object> body = new HashMap<>();
+    body.put(
+        "errors",
+        new HashMap<String, Object>() {
+          {
+            put("authorization", Arrays.asList("forbidden"));
+          }
+        });
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+  }
+
+  @Override
+  protected ResponseEntity<Object> handleHttpMessageNotReadable(
+      HttpMessageNotReadableException ex,
+      HttpHeaders headers,
+      HttpStatus status,
+      WebRequest request) {
+    HashMap<String, Object> body = new HashMap<>();
+    body.put(
+        "errors",
+        new HashMap<String, Object>() {
+          {
+            put("body", Arrays.asList("malformed request body"));
+          }
+        });
+    return ResponseEntity.status(UNPROCESSABLE_ENTITY).body(body);
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<Object> handleGenericException(Exception ex, WebRequest request) {
+    HashMap<String, Object> body = new HashMap<>();
+    body.put(
+        "errors",
+        new HashMap<String, Object>() {
+          {
+            put("server", Arrays.asList("internal server error"));
+          }
+        });
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
   }
 
   private String getParam(String s) {
