@@ -153,6 +153,31 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .statusCode(422);
   }
 
+  @Test
+  public void should_get_422_with_negative_offset() throws Exception {
+    given()
+        .contentType("application/json")
+        .when()
+        .get("/articles?offset=-1")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void should_get_422_with_excessive_limit() throws Exception {
+    given()
+        .contentType("application/json")
+        .when()
+        .get("/articles?limit=101")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void should_get_422_with_zero_limit() throws Exception {
+    given().contentType("application/json").when().get("/articles?limit=0").then().statusCode(422);
+  }
+
   private HashMap<String, Object> prepareParam(
       final String title, final String description, final String body, final List<String> tagList) {
     return new HashMap<String, Object>() {
