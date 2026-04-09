@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -98,5 +99,6 @@ public class CommentsApi {
 @JsonRootName("comment")
 class NewCommentParam {
   @NotBlank(message = "can't be empty")
+  @Size(max = 65535)
   private String body;
 }

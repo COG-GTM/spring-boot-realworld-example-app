@@ -18,6 +18,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -72,8 +73,10 @@ public class UsersApi {
 class LoginParam {
   @NotBlank(message = "can't be empty")
   @Email(message = "should be an email")
+  @Size(max = 255)
   private String email;
 
   @NotBlank(message = "can't be empty")
+  @Size(max = 72)
   private String password;
 }
