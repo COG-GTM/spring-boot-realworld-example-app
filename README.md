@@ -79,3 +79,5 @@ Use spotless for code format.
 # Help
 
 Please fork and PR to improve the project.
+
+<!-- Integration test: validated Devin push access 2026-04-09T00:56:59Z -->
