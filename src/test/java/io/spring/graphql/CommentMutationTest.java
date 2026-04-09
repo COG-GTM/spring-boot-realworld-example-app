@@ -124,7 +124,8 @@ public class CommentMutationTest {
 
   @Test
   public void should_remove_comment_successfully_by_article_author() {
-    Comment comment = new Comment("comment body", user.getId(), article.getId());
+    User commentAuthor = new User("other@test.com", "other", "123", "", "");
+    Comment comment = new Comment("comment body", commentAuthor.getId(), article.getId());
     when(articleRepository.findBySlug(eq(article.getSlug()))).thenReturn(Optional.of(article));
     when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
         .thenReturn(Optional.of(comment));
