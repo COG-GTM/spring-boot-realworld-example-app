@@ -53,7 +53,7 @@ public class CurrentUserApi {
 
   private String extractToken(String authorization) {
     if (authorization == null || !authorization.startsWith("Token ")) {
-      throw new InvalidAuthenticationException();
+      throw new InvalidAuthenticationException("Authorization header must use Token scheme");
     }
     return authorization.substring("Token ".length());
   }
