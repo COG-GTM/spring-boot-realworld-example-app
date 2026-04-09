@@ -33,6 +33,6 @@ public class UpdateUserParam {
   private String bio = "";
 
   @Builder.Default
-  @Size(max = 512)
+  @Size(max = 511)
   private String image = "";
 }
