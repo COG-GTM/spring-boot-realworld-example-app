@@ -100,8 +100,8 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
 
   private String getParam(String s) {
     String[] splits = s.split("\\.");
-    if (splits.length == 1) {
-      return s;
+    if (splits.length <= 2) {
+      return splits[splits.length - 1];
     } else {
       return String.join(".", Arrays.copyOfRange(splits, 2, splits.length));
     }
