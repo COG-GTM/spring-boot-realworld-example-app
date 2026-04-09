@@ -1,5 +1,6 @@
 package io.spring.api;
 
+import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
 import io.spring.application.data.UserWithToken;
@@ -36,7 +37,7 @@ public class CurrentUserApi {
       @RequestHeader(value = "Authorization") String authorization) {
     UserData userData = userQueryService.findById(currentUser.getId()).get();
     return ResponseEntity.ok(
-        userResponse(new UserWithToken(userData, authorization.split(" ")[1])));
+        userResponse(new UserWithToken(userData, extractToken(authorization))));
   }
 
   @PutMapping
@@ -47,7 +48,14 @@ public class CurrentUserApi {
 
     userService.updateUser(new UpdateUserCommand(currentUser, updateUserParam));
     UserData userData = userQueryService.findById(currentUser.getId()).get();
-    return ResponseEntity.ok(userResponse(new UserWithToken(userData, token.split(" ")[1])));
+    return ResponseEntity.ok(userResponse(new UserWithToken(userData, extractToken(token))));
+  }
+
+  private String extractToken(String authorization) {
+    if (authorization == null || !authorization.startsWith("Token ")) {
+      throw new InvalidAuthenticationException();
+    }
+    return authorization.substring("Token ".length());
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {
