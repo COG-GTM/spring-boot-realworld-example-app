@@ -6,7 +6,9 @@ import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.NewArticleParam;
 import io.spring.core.article.Article;
 import io.spring.core.user.User;
+import io.spring.application.data.ArticleDataList;
 import java.util.HashMap;
+import java.util.Map;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +28,7 @@ public class ArticlesApi {
   private ArticleQueryService articleQueryService;
 
   @PostMapping
-  public ResponseEntity createArticle(
+  public ResponseEntity<Map<String, Object>> createArticle(
       @Valid @RequestBody NewArticleParam newArticleParam, @AuthenticationPrincipal User user) {
     Article article = articleCommandService.createArticle(newArticleParam, user);
     return ResponseEntity.ok(
@@ -38,7 +40,7 @@ public class ArticlesApi {
   }
 
   @GetMapping(path = "feed")
-  public ResponseEntity getFeed(
+  public ResponseEntity<ArticleDataList> getFeed(
       @RequestParam(value = "offset", defaultValue = "0") int offset,
       @RequestParam(value = "limit", defaultValue = "20") int limit,
       @AuthenticationPrincipal User user) {
@@ -46,7 +48,7 @@ public class ArticlesApi {
   }
 
   @GetMapping
-  public ResponseEntity getArticles(
+  public ResponseEntity<ArticleDataList> getArticles(
       @RequestParam(value = "offset", defaultValue = "0") int offset,
       @RequestParam(value = "limit", defaultValue = "20") int limit,
       @RequestParam(value = "tag", required = false) String tag,
