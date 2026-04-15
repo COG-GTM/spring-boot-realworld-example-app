@@ -39,10 +39,10 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
     } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
+      ConstraintViolationException cve =
+          (ConstraintViolationException) handlerParameters.getException();
       List<FieldErrorResource> errors = new ArrayList<>();
-      for (ConstraintViolation<?> violation :
-          ((ConstraintViolationException) handlerParameters.getException())
-              .getConstraintViolations()) {
+      for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
         FieldErrorResource fieldErrorResource =
             new FieldErrorResource(
                 violation.getRootBeanClass().getName(),
@@ -57,7 +57,7 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
       }
       GraphQLError graphqlError =
           TypedGraphQLError.newBadRequestBuilder()
-              .message(handlerParameters.getException().getMessage())
+              .message(cve.getMessage())
               .path(handlerParameters.getPath())
               .extensions(errorsToMap(errors))
               .build();
@@ -80,10 +80,9 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
     }
     Map<String, List<String>> errorMap = new HashMap<>();
     for (FieldErrorResource fieldErrorResource : errors) {
-      if (!errorMap.containsKey(fieldErrorResource.getField())) {
-        errorMap.put(fieldErrorResource.getField(), new ArrayList<>());
-      }
-      errorMap.get(fieldErrorResource.getField()).add(fieldErrorResource.getMessage());
+      errorMap
+          .computeIfAbsent(fieldErrorResource.getField(), k -> new ArrayList<>())
+          .add(fieldErrorResource.getMessage());
     }
     List<ErrorItem> errorItems =
         errorMap.entrySet().stream()
@@ -101,13 +100,13 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
     }
   }
 
+  @SuppressWarnings("unchecked")
   private static Map<String, Object> errorsToMap(List<FieldErrorResource> errors) {
     Map<String, Object> json = new HashMap<>();
     for (FieldErrorResource fieldErrorResource : errors) {
-      if (!json.containsKey(fieldErrorResource.getField())) {
-        json.put(fieldErrorResource.getField(), new ArrayList<>());
-      }
-      ((List) json.get(fieldErrorResource.getField())).add(fieldErrorResource.getMessage());
+      ((List<String>)
+              json.computeIfAbsent(fieldErrorResource.getField(), k -> new ArrayList<String>()))
+          .add(fieldErrorResource.getMessage());
     }
     return json;
   }
