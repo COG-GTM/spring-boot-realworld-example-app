@@ -17,7 +17,6 @@ import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.mybatis.readservice.UserReadService;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -172,21 +171,10 @@ public class UsersApiTest {
         .body("errors.email[0]", equalTo("duplicated email"));
   }
 
-  private HashMap<String, Object> prepareRegisterParameter(
+  private Map<String, Object> prepareRegisterParameter(
       final String email, final String username) {
-    return new HashMap<String, Object>() {
-      {
-        put(
-            "user",
-            new HashMap<String, Object>() {
-              {
-                put("email", email);
-                put("password", "johnnyjacob");
-                put("username", username);
-              }
-            });
-      }
-    };
+    return Map.of(
+        "user", Map.of("email", email, "password", "johnnyjacob", "username", username));
   }
 
   @Test
@@ -203,19 +191,7 @@ public class UsersApiTest {
     when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
     when(jwtService.toToken(any())).thenReturn("123");
 
-    Map<String, Object> param =
-        new HashMap<String, Object>() {
-          {
-            put(
-                "user",
-                new HashMap<String, Object>() {
-                  {
-                    put("email", email);
-                    put("password", password);
-                  }
-                });
-          }
-        };
+    Map<String, Object> param = Map.of("user", Map.of("email", email, "password", password));
 
     given()
         .contentType("application/json")
@@ -244,19 +220,7 @@ public class UsersApiTest {
     when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
     when(userReadService.findByUsername(eq(username))).thenReturn(userData);
 
-    Map<String, Object> param =
-        new HashMap<String, Object>() {
-          {
-            put(
-                "user",
-                new HashMap<String, Object>() {
-                  {
-                    put("email", email);
-                    put("password", "123123");
-                  }
-                });
-          }
-        };
+    Map<String, Object> param = Map.of("user", Map.of("email", email, "password", "123123"));
 
     given()
         .contentType("application/json")
