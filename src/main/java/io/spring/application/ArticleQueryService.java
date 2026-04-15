@@ -150,10 +150,7 @@ public class ArticleQueryService {
         articleFavoritesReadService.articlesFavoriteCount(
             articles.stream().map(ArticleData::getId).collect(toList()));
     Map<String, Integer> countMap = new HashMap<>();
-    favoritesCounts.forEach(
-        item -> {
-          countMap.put(item.getId(), item.getCount());
-        });
+    favoritesCounts.forEach(item -> countMap.put(item.id(), item.count()));
     articles.forEach(
         articleData -> articleData.setFavoritesCount(countMap.get(articleData.getId())));
   }

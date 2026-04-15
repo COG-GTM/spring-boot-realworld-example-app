@@ -30,10 +30,9 @@ public class MeDatafetcher {
       DataFetchingEnvironment dataFetchingEnvironment) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof AnonymousAuthenticationToken
-        || authentication.getPrincipal() == null) {
+        || !(authentication.getPrincipal() instanceof io.spring.core.user.User user)) {
       return null;
     }
-    io.spring.core.user.User user = (io.spring.core.user.User) authentication.getPrincipal();
     UserData userData =
         userQueryService.findById(user.getId()).orElseThrow(ResourceNotFoundException::new);
     UserWithToken userWithToken = new UserWithToken(userData, authorization.split(" ")[1]);
