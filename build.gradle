@@ -12,9 +12,8 @@ targetCompatibility = '21'
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
+        target project.fileTree(project.projectDir) {
+            include 'src/**/*.java'
         }
         googleJavaFormat()
     }
