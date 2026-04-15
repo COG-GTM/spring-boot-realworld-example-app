@@ -16,7 +16,6 @@ import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -153,21 +152,9 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .statusCode(422);
   }
 
-  private HashMap<String, Object> prepareParam(
+  private Map<String, Object> prepareParam(
       final String title, final String description, final String body, final List<String> tagList) {
-    return new HashMap<String, Object>() {
-      {
-        put(
-            "article",
-            new HashMap<String, Object>() {
-              {
-                put("title", title);
-                put("description", description);
-                put("body", body);
-                put("tagList", tagList);
-              }
-            });
-      }
-    };
+    return Map.of(
+        "article", Map.of("title", title, "description", description, "body", body, "tagList", tagList));
   }
 }
