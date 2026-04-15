@@ -2,8 +2,8 @@ package io.spring.application.user;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import jakarta.validation.Constraint;
-import jakarta.validation.Payload;
+import javax.validation.Constraint;
+import javax.validation.Payload;
 
 @Constraint(validatedBy = DuplicatedUsernameValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
