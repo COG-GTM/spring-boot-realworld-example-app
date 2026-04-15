@@ -5,8 +5,6 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Optional;
 import javax.crypto.SecretKey;
@@ -24,16 +22,7 @@ public class DefaultJwtService implements JwtService {
   public DefaultJwtService(
       @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
     this.sessionTime = sessionTime;
-    this.signingKey = new SecretKeySpec(hashSecret(secret), "HmacSHA512");
-  }
-
-  private static byte[] hashSecret(String secret) {
-    try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-512");
-      return digest.digest(secret.getBytes());
-    } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException("SHA-512 algorithm not available", e);
-    }
+    this.signingKey = new SecretKeySpec(secret.getBytes(), "HmacSHA512");
   }
 
   @Override
