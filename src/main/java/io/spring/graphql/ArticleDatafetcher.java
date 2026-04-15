@@ -27,7 +27,7 @@ import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
 import io.spring.graphql.types.Profile;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.joda.time.format.ISODateTimeFormat;
@@ -308,12 +308,7 @@ public class ArticleDatafetcher {
             .orElseThrow(ResourceNotFoundException::new);
     Article articleResult = buildArticleResult(articleData);
     return DataFetcherResult.<Article>newResult()
-        .localContext(
-            new HashMap<String, Object>() {
-              {
-                put(articleData.getSlug(), articleData);
-              }
-            })
+        .localContext(Map.<String, Object>of(articleData.getSlug(), articleData))
         .data(articleResult)
         .build();
   }
@@ -329,12 +324,7 @@ public class ArticleDatafetcher {
             .orElseThrow(ResourceNotFoundException::new);
     Article articleResult = buildArticleResult(articleData);
     return DataFetcherResult.<Article>newResult()
-        .localContext(
-            new HashMap<String, Object>() {
-              {
-                put(articleData.getSlug(), articleData);
-              }
-            })
+        .localContext(Map.<String, Object>of(articleData.getSlug(), articleData))
         .data(articleResult)
         .build();
   }
@@ -346,12 +336,7 @@ public class ArticleDatafetcher {
         articleQueryService.findBySlug(slug, current).orElseThrow(ResourceNotFoundException::new);
     Article articleResult = buildArticleResult(articleData);
     return DataFetcherResult.<Article>newResult()
-        .localContext(
-            new HashMap<String, Object>() {
-              {
-                put(articleData.getSlug(), articleData);
-              }
-            })
+        .localContext(Map.<String, Object>of(articleData.getSlug(), articleData))
         .data(articleResult)
         .build();
   }
