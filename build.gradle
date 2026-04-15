@@ -56,8 +56,19 @@ dependencies {
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
 }
 
+def jvmOpenArgs = [
+    '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+    '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED',
+    '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+]
+
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+    jvmArgs jvmOpenArgs
+}
+
+bootRun {
+    jvmArgs jvmOpenArgs
 }
 
 tasks.named('clean') {
