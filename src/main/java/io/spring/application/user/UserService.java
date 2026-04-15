@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import javax.validation.Payload;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,9 +63,9 @@ public class UserService {
 
   String message() default "invalid update param";
 
-  Class[] groups() default {};
+  Class<?>[] groups() default {};
 
-  Class[] payload() default {};
+  Class<? extends Payload>[] payload() default {};
 }
 
 class UpdateUserValidator implements ConstraintValidator<UpdateUserConstraint, UpdateUserCommand> {
