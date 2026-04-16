@@ -1,0 +1,5 @@
+.gradle/
+build/
+dev.db
+*.md
+.git/
