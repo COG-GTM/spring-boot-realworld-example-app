@@ -5,6 +5,7 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -18,6 +19,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
+  private static final int MAX_BUCKETS = 10_000;
+
   private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
   @Override
@@ -26,6 +29,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     if (shouldRateLimit(request)) {
       String clientIp = getClientIp(request);
+      evictIfNeeded();
       Bucket bucket = buckets.computeIfAbsent(clientIp, k -> createBucket());
       if (!bucket.tryConsume(1)) {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
@@ -36,6 +40,20 @@ public class RateLimitFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
+  private void evictIfNeeded() {
+    if (buckets.size() > MAX_BUCKETS) {
+      int toRemove = buckets.size() - MAX_BUCKETS + MAX_BUCKETS / 10;
+      int removed = 0;
+      for (Map.Entry<String, Bucket> entry : buckets.entrySet()) {
+        if (removed >= toRemove) {
+          break;
+        }
+        buckets.remove(entry.getKey());
+        removed++;
+      }
+    }
+  }
+
   private boolean shouldRateLimit(HttpServletRequest request) {
     String method = request.getMethod();
     String uri = request.getRequestURI();
@@ -43,10 +61,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
   }
 
   private String getClientIp(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-      return xForwardedFor.split(",")[0].trim();
-    }
     return request.getRemoteAddr();
   }
 
