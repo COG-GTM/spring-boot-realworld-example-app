@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 @Mapper
-public interface ArticleReadService {
+public interface MyBatisArticleReadServiceMapper {
   ArticleData findById(@Param("id") String id);
 
   ArticleData findBySlug(@Param("slug") String slug);
