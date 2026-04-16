@@ -1,0 +1,27 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+jwt:
+  secret: ${JWT_SECRET:a-default-dev-secret-that-is-at-least-64-bytes-long-for-hs512-algorithm-security}
+  sessionTime: ${JWT_SESSION_TIME:86400}
+
+image:
+  default: https://static.productionready.io/images/smiley-cyrus.jpg
+
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:4200}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    io.spring: INFO
+    org.springframework.security: WARN

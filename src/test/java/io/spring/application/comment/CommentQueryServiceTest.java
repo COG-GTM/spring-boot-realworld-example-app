@@ -10,6 +10,8 @@ import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.DbTestBase;
+import io.spring.infrastructure.mybatis.readservice.CommentReadServiceImpl;
+import io.spring.infrastructure.mybatis.readservice.UserRelationshipQueryServiceImpl;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisCommentRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
@@ -26,7 +28,9 @@ import org.springframework.context.annotation.Import;
   MyBatisCommentRepository.class,
   MyBatisUserRepository.class,
   CommentQueryService.class,
-  MyBatisArticleRepository.class
+  MyBatisArticleRepository.class,
+  CommentReadServiceImpl.class,
+  UserRelationshipQueryServiceImpl.class
 })
 public class CommentQueryServiceTest extends DbTestBase {
   @Autowired private CommentRepository commentRepository;

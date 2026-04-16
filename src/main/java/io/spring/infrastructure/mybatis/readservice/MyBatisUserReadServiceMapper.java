@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 @Mapper
-public interface UserReadService {
+public interface MyBatisUserReadServiceMapper {
 
   UserData findByUsername(@Param("username") String username);
 

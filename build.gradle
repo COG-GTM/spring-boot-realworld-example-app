@@ -41,7 +41,11 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
                 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+    implementation 'com.bucket4j:bucket4j-core:8.1.1'
     implementation 'joda-time:joda-time:2.10.13'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.3'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
 
     compileOnly 'org.projectlombok:lombok'

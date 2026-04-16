@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 @Mapper
-public interface UserRelationshipQueryService {
+public interface MyBatisUserRelationshipQueryServiceMapper {
   boolean isUserFollowing(
       @Param("userId") String userId, @Param("anotherUserId") String anotherUserId);
 

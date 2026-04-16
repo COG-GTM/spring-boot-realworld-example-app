@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.joda.time.DateTime;
 
 @Mapper
-public interface CommentReadService {
+public interface MyBatisCommentReadServiceMapper {
   CommentData findById(@Param("id") String id);
 
   List<CommentData> findByArticleId(@Param("articleId") String articleId);
