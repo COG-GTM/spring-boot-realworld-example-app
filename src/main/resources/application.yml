@@ -11,3 +11,17 @@ image:
 
 cors:
   allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:4200}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    io.spring: INFO
+    org.springframework.security: WARN

@@ -66,6 +66,8 @@ public class WebSecurityConfig {
         .permitAll()
         .antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
         .permitAll()
+        .antMatchers("/actuator/**")
+        .permitAll()
         .anyRequest()
         .authenticated();
 
