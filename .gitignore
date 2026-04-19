@@ -24,3 +24,11 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+
+### Frontend ###
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
