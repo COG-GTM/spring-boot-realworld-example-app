@@ -12,7 +12,6 @@ import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.UserQueryService;
 import io.spring.application.user.UserService;
 import io.spring.core.user.User;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,19 +88,7 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
     String newUsername = "newusernamee";
 
     Map<String, Object> param =
-        new HashMap<String, Object>() {
-          {
-            put(
-                "user",
-                new HashMap<String, Object>() {
-                  {
-                    put("email", newEmail);
-                    put("bio", newBio);
-                    put("username", newUsername);
-                  }
-                });
-          }
-        };
+        Map.of("user", Map.of("email", newEmail, "bio", newBio, "username", newUsername));
 
     when(userRepository.findByUsername(eq(newUsername))).thenReturn(Optional.empty());
     when(userRepository.findByEmail(eq(newEmail))).thenReturn(Optional.empty());
@@ -144,33 +131,16 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .body("errors.email[0]", equalTo("email already exist"));
   }
 
-  private HashMap<String, Object> prepareUpdateParam(
+  private Map<String, Object> prepareUpdateParam(
       final String newEmail, final String newBio, final String newUsername) {
-    return new HashMap<String, Object>() {
-      {
-        put(
-            "user",
-            new HashMap<String, Object>() {
-              {
-                put("email", newEmail);
-                put("bio", newBio);
-                put("username", newUsername);
-              }
-            });
-      }
-    };
+    return Map.of("user", Map.of("email", newEmail, "bio", newBio, "username", newUsername));
   }
 
   @Test
   public void should_get_401_if_not_login() throws Exception {
     given()
         .contentType("application/json")
-        .body(
-            new HashMap<String, Object>() {
-              {
-                put("user", new HashMap<String, Object>());
-              }
-            })
+        .body(Map.of("user", Map.of()))
         .when()
         .put("/user")
         .then()

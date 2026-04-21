@@ -17,8 +17,8 @@ import io.spring.graphql.types.CreateUserInput;
 import io.spring.graphql.types.UpdateUserInput;
 import io.spring.graphql.types.UserPayload;
 import io.spring.graphql.types.UserResult;
+import jakarta.validation.ConstraintViolationException;
 import java.util.Optional;
-import javax.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -74,7 +74,9 @@ public class UserMutation {
         || authentication.getPrincipal() == null) {
       return null;
     }
-    io.spring.core.user.User currentUser = (io.spring.core.user.User) authentication.getPrincipal();
+    if (!(authentication.getPrincipal() instanceof io.spring.core.user.User currentUser)) {
+      return null;
+    }
     UpdateUserParam param =
         UpdateUserParam.builder()
             .username(updateUserInput.getUsername())
