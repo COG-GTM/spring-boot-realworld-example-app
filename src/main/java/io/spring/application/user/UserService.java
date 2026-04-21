@@ -2,12 +2,12 @@ package io.spring.application.user;
 
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Valid;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import javax.validation.Constraint;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,8 +44,8 @@ public class UserService {
   }
 
   public void updateUser(@Valid UpdateUserCommand command) {
-    User user = command.getTargetUser();
-    UpdateUserParam updateUserParam = command.getParam();
+    User user = command.targetUser();
+    UpdateUserParam updateUserParam = command.param();
     user.update(
         updateUserParam.getEmail(),
         updateUserParam.getUsername(),
@@ -73,9 +73,9 @@ class UpdateUserValidator implements ConstraintValidator<UpdateUserConstraint, U
 
   @Override
   public boolean isValid(UpdateUserCommand value, ConstraintValidatorContext context) {
-    String inputEmail = value.getParam().getEmail();
-    String inputUsername = value.getParam().getUsername();
-    final User targetUser = value.getTargetUser();
+    String inputEmail = value.param().getEmail();
+    String inputUsername = value.param().getUsername();
+    final User targetUser = value.targetUser();
 
     boolean isEmailValid =
         userRepository.findByEmail(inputEmail).map(user -> user.equals(targetUser)).orElse(true);

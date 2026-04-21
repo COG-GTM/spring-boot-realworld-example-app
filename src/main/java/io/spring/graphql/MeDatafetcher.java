@@ -33,15 +33,17 @@ public class MeDatafetcher {
         || authentication.getPrincipal() == null) {
       return null;
     }
-    io.spring.core.user.User user = (io.spring.core.user.User) authentication.getPrincipal();
+    if (!(authentication.getPrincipal() instanceof io.spring.core.user.User user)) {
+      return null;
+    }
     UserData userData =
         userQueryService.findById(user.getId()).orElseThrow(ResourceNotFoundException::new);
     UserWithToken userWithToken = new UserWithToken(userData, authorization.split(" ")[1]);
     User result =
         User.newBuilder()
-            .email(userWithToken.getEmail())
-            .username(userWithToken.getUsername())
-            .token(userWithToken.getToken())
+            .email(userWithToken.email())
+            .username(userWithToken.username())
+            .token(userWithToken.token())
             .build();
     return DataFetcherResult.<User>newResult().data(result).localContext(user).build();
   }
