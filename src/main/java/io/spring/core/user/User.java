@@ -10,12 +10,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 public class User {
+  public static final String ROLE_USER = "USER";
+  public static final String ROLE_ADMIN = "ADMIN";
+
   private String id;
   private String email;
   private String username;
   private String password;
   private String bio;
   private String image;
+  private String role = ROLE_USER;
 
   public User(String email, String username, String password, String bio, String image) {
     this.id = UUID.randomUUID().toString();
@@ -24,6 +28,17 @@ public class User {
     this.password = password;
     this.bio = bio;
     this.image = image;
+    this.role = ROLE_USER;
+  }
+
+  public User(
+      String email, String username, String password, String bio, String image, String role) {
+    this(email, username, password, bio, image);
+    this.role = (role == null || role.isEmpty()) ? ROLE_USER : role;
+  }
+
+  public boolean isAdmin() {
+    return ROLE_ADMIN.equals(role);
   }
 
   public void update(String email, String username, String password, String bio, String image) {

@@ -38,17 +38,18 @@
 
     <select id="findById" resultMap="transfer.data.articleData">
         <include refid="selectArticleData"/>
-        where A.id = #{id}
+        where A.id = #{id} and A.deleted_at is null
     </select>
     <select id="findBySlug" resultMap="transfer.data.articleData">
         <include refid="selectArticleData"/>
-        where A.slug = #{slug}
+        where A.slug = #{slug} and A.deleted_at is null
     </select>
     <select id="queryArticles" resultMap="articleId">
         <include refid="selectArticleIds" />
         <where>
+            A.deleted_at is null
             <if test="tag != null">
-                T.name = #{tag}
+                AND T.name = #{tag}
             </if>
             <if test="author != null">
                 AND AU.username = #{author}
@@ -71,8 +72,9 @@
         left join users AU on AU.id = A.user_id
         left join users AFU on AFU.id = AF.user_id
         <where>
+            A.deleted_at is null
             <if test="tag != null">
-                T.name = #{tag}
+                AND T.name = #{tag}
             </if>
             <if test="author != null">
                 AND AU.username = #{author}
@@ -84,7 +86,7 @@
     </select>
     <select id="findArticles" resultMap="transfer.data.articleData">
         <include refid="selectArticleData"/>
-        where A.id in
+        where A.deleted_at is null and A.id in
         <foreach index="index" collection="articleIds" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
@@ -92,14 +94,14 @@
     </select>
     <select id="findArticlesOfAuthors" resultMap="transfer.data.articleData">
         <include refid="selectArticleData"/>
-        where A.user_id in
+        where A.deleted_at is null and A.user_id in
         <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
         limit #{page.offset}, #{page.limit}
     </select>
     <select id="countFeedSize" resultType="java.lang.Integer">
-        select count(1) from articles A where A.user_id in
+        select count(1) from articles A where A.deleted_at is null and A.user_id in
         <foreach collection="authors" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
@@ -107,8 +109,9 @@
     <select id="findArticlesWithCursor" resultType="java.lang.String">
         <include refid="selectArticleIds" />
         <where>
+            A.deleted_at is null
             <if test="tag != null">
-                T.name = #{tag}
+                AND T.name = #{tag}
             </if>
             <if test="author != null">
                 AND AU.username = #{author}
@@ -134,6 +137,7 @@
     <select id="findArticlesOfAuthorsWithCursor" resultMap="transfer.data.articleData">
         <include refid="selectArticleData"/>
         <where>
+        A.deleted_at is null and
         A.user_id in
         <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
             #{id}

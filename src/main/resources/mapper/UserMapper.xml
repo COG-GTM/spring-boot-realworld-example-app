@@ -2,13 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.spring.infrastructure.mybatis.mapper.UserMapper">
     <insert id="insert">
-        insert into users (id, username, email, password, bio, image) values(
+        insert into users (id, username, email, password, bio, image, role) values(
           #{user.id},
           #{user.username},
           #{user.email},
           #{user.password},
           #{user.bio},
-          #{user.image}
+          #{user.image},
+          #{user.role}
         )
     </insert>
     <insert id="saveRelation">
@@ -29,13 +30,13 @@
         delete from follows where user_id = #{followRelation.userId} and follow_id = #{followRelation.targetId}
     </delete>
     <select id="findByUsername" resultMap="user">
-        select * from users where username = #{username}
+        select id, username, email, password, bio, image, role from users where username = #{username}
     </select>
     <select id="findByEmail" resultMap="user">
-        select id, username, email, password, bio, image from users where email = #{email}
+        select id, username, email, password, bio, image, role from users where email = #{email}
     </select>
     <select id="findById" resultMap="user">
-        select id, username, email, password, bio, image from users where id = #{id}
+        select id, username, email, password, bio, image, role from users where id = #{id}
     </select>
     <select id="findRelation" resultMap="follow">
         SELECT
@@ -57,5 +58,6 @@
         <result column="password" property="password"/>
         <result column="bio" property="bio"/>
         <result column="image" property="image"/>
+        <result column="role" property="role"/>
     </resultMap>
 </mapper>

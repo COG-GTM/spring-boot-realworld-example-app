@@ -24,6 +24,7 @@ public class Article {
   private List<Tag> tags;
   private DateTime createdAt;
   private DateTime updatedAt;
+  private DateTime deletedAt;
 
   public Article(
       String title, String description, String body, List<String> tagList, String userId) {
