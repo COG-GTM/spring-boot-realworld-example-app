@@ -11,9 +11,12 @@ public class DefaultJwtServiceTest {
 
   private JwtService jwtService;
 
+  private static final String SECRET =
+      "1231231231231231231231231231231231231231231231231231231231231234";
+
   @BeforeEach
   public void setUp() {
-    jwtService = new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+    jwtService = new DefaultJwtService(SECRET, 3600);
   }
 
   @Test
@@ -33,9 +36,11 @@ public class DefaultJwtServiceTest {
   }
 
   @Test
-  public void should_get_null_with_expired_jwt() {
-    String token =
-        "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhaXNlbnNpeSIsImV4cCI6MTUwMjE2MTIwNH0.SJB-U60WzxLYNomqLo4G3v3LzFxJKuVrIud8D8Lz3-mgpo9pN1i7C8ikU_jQPJGm8HsC1CquGMI-rSuM7j6LDA";
-    Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
+  public void should_get_null_with_expired_jwt() throws InterruptedException {
+    JwtService shortLivedJwtService = new DefaultJwtService(SECRET, 1);
+    User user = new User("email@email.com", "username", "123", "", "");
+    String token = shortLivedJwtService.toToken(user);
+    Thread.sleep(1100);
+    Assertions.assertFalse(shortLivedJwtService.getSubFromToken(token).isPresent());
   }
 }
