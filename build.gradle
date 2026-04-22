@@ -1,14 +1,14 @@
 plugins {
-    id 'org.springframework.boot' version '2.6.3'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '2.7.18'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
     id 'java'
-    id "com.netflix.dgs.codegen" version "5.0.6"
-    id "com.diffplug.spotless" version "6.2.1"
+    id "com.netflix.dgs.codegen" version "5.12.4"
+    id "com.diffplug.spotless" version "6.22.0"
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-targetCompatibility = '11'
+sourceCompatibility = '17'
+targetCompatibility = '17'
 
 spotless {
     java {
@@ -28,6 +28,16 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'io.rest-assured') {
+                details.useVersion '5.3.2'
+            }
+            if (details.requested.group == 'com.graphql-java' && details.requested.name == 'graphql-java') {
+                details.useVersion '19.2'
+            }
+        }
+    }
 }
 
 dependencies {
@@ -35,29 +45,31 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:5.5.1'
     implementation 'org.flywaydb:flyway-core'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
-                'io.jsonwebtoken:jjwt-jackson:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
+                'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:4.5.1'
-    testImplementation 'io.rest-assured:json-path:4.5.1'
-    testImplementation 'io.rest-assured:xml-path:4.5.1'
-    testImplementation 'io.rest-assured:spring-mock-mvc:4.5.1'
+    testImplementation 'io.rest-assured:rest-assured:5.3.2'
+    testImplementation 'io.rest-assured:json-path:5.3.2'
+    testImplementation 'io.rest-assured:xml-path:5.3.2'
+    testImplementation 'io.rest-assured:spring-mock-mvc:5.3.2'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.3.2'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+	jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+			'--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED'
 }
 
 tasks.named('clean') {
@@ -69,4 +81,5 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
+    typeMapping = ["PageInfo": "graphql.relay.PageInfo"]
 }
