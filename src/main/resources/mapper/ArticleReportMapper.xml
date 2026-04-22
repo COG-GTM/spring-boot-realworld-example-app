@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.ArticleReportMapper">
+    <insert id="insert">
+        insert into article_reports (
+          id, article_id, reporter_id, reason, reporter_comment,
+          status, moderator_id, moderator_note, created_at, resolved_at
+        ) values (
+          #{report.id},
+          #{report.articleId},
+          #{report.reporterId},
+          #{report.reason},
+          #{report.reporterComment},
+          #{report.status},
+          #{report.moderatorId},
+          #{report.moderatorNote},
+          #{report.createdAt},
+          #{report.resolvedAt}
+        )
+    </insert>
+
+    <update id="update">
+        update article_reports
+        set status = #{report.status},
+            moderator_id = #{report.moderatorId},
+            moderator_note = #{report.moderatorNote},
+            resolved_at = #{report.resolvedAt}
+        where id = #{report.id}
+    </update>
+
+    <update id="softDeleteArticle">
+        update articles set deleted_at = CURRENT_TIMESTAMP where id = #{articleId}
+    </update>
+
+    <select id="findById" resultMap="articleReport">
+        select id, article_id, reporter_id, reason, reporter_comment,
+               status, moderator_id, moderator_note, created_at, resolved_at
+        from article_reports
+        where id = #{id}
+    </select>
+
+    <select id="findPendingByArticleAndReporter" resultMap="articleReport">
+        select id, article_id, reporter_id, reason, reporter_comment,
+               status, moderator_id, moderator_note, created_at, resolved_at
+        from article_reports
+        where article_id = #{articleId}
+          and reporter_id = #{reporterId}
+          and status = 'PENDING'
+    </select>
+
+    <resultMap id="articleReport" type="io.spring.core.article.ArticleReport">
+        <id column="id" property="id"/>
+        <result column="article_id" property="articleId"/>
+        <result column="reporter_id" property="reporterId"/>
+        <result column="reason" property="reason"/>
+        <result column="reporter_comment" property="reporterComment"/>
+        <result column="status" property="status"/>
+        <result column="moderator_id" property="moderatorId"/>
+        <result column="moderator_note" property="moderatorNote"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="resolved_at" property="resolvedAt"/>
+    </resultMap>
+</mapper>

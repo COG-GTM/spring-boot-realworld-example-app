@@ -42,6 +42,7 @@
         A.user_id articleUserId,
         A.created_at articleCreatedAt,
         A.updated_at articleUpdatedAt,
+        A.deleted_at articleDeletedAt,
         T.id tagId,
         T.name tagName
         from articles A
@@ -60,7 +61,7 @@
 
     <select id="findBySlug" resultMap="article">
         <include refid="selectArticle"/>
-        where A.slug = #{slug}
+        where A.slug = #{slug} and A.deleted_at is null
     </select>
 
     <resultMap id="article" type="io.spring.core.article.Article">
@@ -72,6 +73,7 @@
         <result column="articleBody" property="body"/>
         <result column="articleCreatedAt" property="createdAt"/>
         <result column="articleUpdatedAt" property="updatedAt"/>
+        <result column="articleDeletedAt" property="deletedAt"/>
         <collection property="tags" ofType="arraylist" resultMap="tag"/>
     </resultMap>
 

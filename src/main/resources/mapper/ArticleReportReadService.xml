@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.readservice.ArticleReportReadService">
+    <sql id="selectReportColumns">
+        select
+          R.id reportId,
+          R.reason reportReason,
+          R.reporter_comment reportComment,
+          R.status reportStatus,
+          R.moderator_note reportModeratorNote,
+          R.created_at reportCreatedAt,
+          R.resolved_at reportResolvedAt,
+          A.slug reportArticleSlug,
+          REP.username reporterUsername,
+          REP.image reporterImage,
+          MOD.username moderatorUsername,
+          MOD.image moderatorImage
+        from article_reports R
+        left join articles A on A.id = R.article_id
+        left join users REP on REP.id = R.reporter_id
+        left join users MOD on MOD.id = R.moderator_id
+    </sql>
+
+    <select id="findById" resultMap="articleReportData">
+        <include refid="selectReportColumns"/>
+        where R.id = #{id}
+    </select>
+
+    <select id="findByStatus" resultMap="articleReportData">
+        <include refid="selectReportColumns"/>
+        where R.status = #{status}
+        order by R.created_at asc
+        limit #{page.offset}, #{page.limit}
+    </select>
+
+    <select id="countByStatus" resultType="java.lang.Integer">
+        select count(1) from article_reports where status = #{status}
+    </select>
+
+    <resultMap id="articleReportData" type="io.spring.application.data.ArticleReportData">
+        <id column="reportId" property="id"/>
+        <result column="reportArticleSlug" property="articleSlug"/>
+        <result column="reportReason" property="reason"/>
+        <result column="reportComment" property="comment"/>
+        <result column="reportStatus" property="status"/>
+        <result column="reportModeratorNote" property="moderatorNote"/>
+        <result column="reportCreatedAt" property="createdAt"/>
+        <result column="reportResolvedAt" property="resolvedAt"/>
+        <association property="reporter" javaType="io.spring.application.data.ArticleReportData$ReportActor">
+            <result column="reporterUsername" property="username"/>
+            <result column="reporterImage" property="image"/>
+        </association>
+        <association property="moderator" javaType="io.spring.application.data.ArticleReportData$ReportActor">
+            <result column="moderatorUsername" property="username"/>
+            <result column="moderatorImage" property="image"/>
+        </association>
+    </resultMap>
+</mapper>
