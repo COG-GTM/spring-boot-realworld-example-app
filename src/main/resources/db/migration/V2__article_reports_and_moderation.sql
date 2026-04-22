@@ -15,8 +15,9 @@ create table article_reports (
   resolved_at TIMESTAMP
 );
 
-create unique index ux_article_reports_article_reporter
-  on article_reports(article_id, reporter_id);
+create unique index ux_article_reports_article_reporter_pending
+  on article_reports(article_id, reporter_id)
+  where status = 'PENDING';
 
 create index ix_article_reports_status_created_at
   on article_reports(status, created_at);
