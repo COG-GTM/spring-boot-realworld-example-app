@@ -33,11 +33,11 @@ configurations {
 ext {
     set('snakeyaml.version', '2.0')
     set('graphql-java.version', '19.2')
-    set('tomcat.version', '9.0.104')
+    set('tomcat.version', '9.0.117')
     set('spring-security.version', '5.7.13')
     set('spring-framework.version', '5.3.33')
     set('logback.version', '1.2.13')
-    set('jackson-bom.version', '2.15.4')
+    set('jackson-bom.version', '2.18.6')
     set('commons-lang3.version', '3.18.0')
 }
 
