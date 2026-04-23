@@ -1,9 +1,9 @@
 plugins {
-    id 'org.springframework.boot' version '2.6.3'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '2.7.18'
+    id 'io.spring.dependency-management' version '1.1.4'
     id 'java'
-    id "com.netflix.dgs.codegen" version "5.0.6"
-    id "com.diffplug.spotless" version "6.2.1"
+    id "com.netflix.dgs.codegen" version "5.6.9"
+    id "com.diffplug.spotless" version "6.25.0"
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -30,19 +30,48 @@ configurations {
     }
 }
 
+ext {
+    set('snakeyaml.version', '2.0')
+    set('graphql-java.version', '19.2')
+    set('tomcat.version', '9.0.117')
+    set('spring-security.version', '5.7.13')
+    set('spring-framework.version', '5.3.33')
+    set('logback.version', '1.2.13')
+    set('jackson-bom.version', '2.18.6')
+    set('commons-lang3.version', '3.18.0')
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'com.graphql-java' && details.requested.name == 'graphql-java') {
+            details.useVersion '19.2'
+            details.because 'DGS 5.5.1 requires graphql-java 19.2 for RuntimeWiring.transform()'
+        }
+    }
+}
+
 dependencies {
+    constraints {
+        implementation('net.minidev:json-smart:2.4.9') {
+            because 'CVE-2023-1370: Denial of Service'
+        }
+        implementation('com.graphql-java:graphql-java:19.2') {
+            because 'Required by DGS 5.5.1 for RuntimeWiring.transform() compatibility'
+        }
+    }
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:5.5.1'
     implementation 'org.flywaydb:flyway-core'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
-                'io.jsonwebtoken:jjwt-jackson:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
+                'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
