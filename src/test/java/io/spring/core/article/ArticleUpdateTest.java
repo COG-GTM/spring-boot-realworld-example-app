@@ -97,10 +97,12 @@ public class ArticleUpdateTest {
 
   @Test
   public void should_update_updatedAt_when_title_changes() {
-    Article article = new Article("Title", "desc", "body", Arrays.asList("java"), "userId");
+    org.joda.time.DateTime pastTime = new org.joda.time.DateTime().minusHours(1);
+    Article article =
+        new Article("Title", "desc", "body", Arrays.asList("java"), "userId", pastTime);
     org.joda.time.DateTime originalUpdatedAt = article.getUpdatedAt();
     article.update("New Title", "", "");
     assertNotNull(article.getUpdatedAt());
-    assertNotEquals(originalUpdatedAt, article.getUpdatedAt());
+    assertTrue(article.getUpdatedAt().isAfter(originalUpdatedAt));
   }
 }
