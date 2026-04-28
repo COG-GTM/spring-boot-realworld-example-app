@@ -101,5 +101,6 @@ public class ArticleUpdateTest {
     org.joda.time.DateTime originalUpdatedAt = article.getUpdatedAt();
     article.update("New Title", "", "");
     assertNotNull(article.getUpdatedAt());
+    assertNotEquals(originalUpdatedAt, article.getUpdatedAt());
   }
 }
