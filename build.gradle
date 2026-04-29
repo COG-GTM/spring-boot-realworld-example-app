@@ -44,6 +44,11 @@ dependencies {
     implementation 'joda-time:joda-time:2.10.13'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
 
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'io.micrometer:micrometer-registry-datadog'
+    implementation 'com.datadoghq:dd-trace-api:1.24.2'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
