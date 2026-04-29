@@ -16,6 +16,7 @@ import io.spring.core.favorite.ArticleFavoriteRepository;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
 import io.spring.graphql.DgsConstants.MUTATION;
+import io.spring.observability.ArticleMetrics;
 import io.spring.graphql.exception.AuthenticationException;
 import io.spring.graphql.types.ArticlePayload;
 import io.spring.graphql.types.CreateArticleInput;
@@ -31,6 +32,7 @@ public class ArticleMutation {
   private ArticleCommandService articleCommandService;
   private ArticleFavoriteRepository articleFavoriteRepository;
   private ArticleRepository articleRepository;
+  private ArticleMetrics articleMetrics;
 
   @DgsMutation(field = MUTATION.CreateArticle)
   public DataFetcherResult<ArticlePayload> createArticle(
@@ -76,6 +78,7 @@ public class ArticleMutation {
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
     ArticleFavorite articleFavorite = new ArticleFavorite(article.getId(), user.getId());
     articleFavoriteRepository.save(articleFavorite);
+    articleMetrics.recordFavorited();
     return DataFetcherResult.<ArticlePayload>newResult()
         .data(ArticlePayload.newBuilder().build())
         .localContext(article)
@@ -110,6 +113,7 @@ public class ArticleMutation {
     }
 
     articleRepository.remove(article);
+    articleMetrics.recordDeleted();
     return DeletionStatus.newBuilder().success(true).build();
   }
 }
