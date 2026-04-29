@@ -5,12 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.TimeZone;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeHandler;
-import java.time.Instant;
 
 @MappedTypes(Instant.class)
 public class DateTimeHandler implements TypeHandler<Instant> {
@@ -20,8 +20,7 @@ public class DateTimeHandler implements TypeHandler<Instant> {
   @Override
   public void setParameter(PreparedStatement ps, int i, Instant parameter, JdbcType jdbcType)
       throws SQLException {
-    ps.setTimestamp(
-        i, parameter != null ? Timestamp.from(parameter) : null, UTC_CALENDAR);
+    ps.setTimestamp(i, parameter != null ? Timestamp.from(parameter) : null, UTC_CALENDAR);
   }
 
   @Override

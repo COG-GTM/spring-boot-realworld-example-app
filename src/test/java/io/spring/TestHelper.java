@@ -4,9 +4,9 @@ import io.spring.application.data.ArticleData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
 import io.spring.core.user.User;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.time.Instant;
 
 public class TestHelper {
   public static ArticleData articleDataFixture(String seed, User user) {
