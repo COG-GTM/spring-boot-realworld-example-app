@@ -1,5 +1,6 @@
 package io.spring.api;
 
+import io.micrometer.core.annotation.Timed;
 import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
@@ -10,6 +11,7 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
+import io.spring.observability.ArticleMetrics;
 import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Valid;
@@ -31,8 +33,10 @@ public class ArticleApi {
   private ArticleQueryService articleQueryService;
   private ArticleRepository articleRepository;
   private ArticleCommandService articleCommandService;
+  private ArticleMetrics articleMetrics;
 
   @GetMapping
+  @Timed(value = "api.article.get", description = "Get article by slug")
   public ResponseEntity<?> article(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleQueryService
@@ -63,6 +67,7 @@ public class ArticleApi {
   }
 
   @DeleteMapping
+  @Timed(value = "api.article.delete", description = "Delete article")
   public ResponseEntity deleteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleRepository
@@ -73,6 +78,7 @@ public class ArticleApi {
                 throw new NoAuthorizationException();
               }
               articleRepository.remove(article);
+              articleMetrics.recordDeleted();
               return ResponseEntity.noContent().build();
             })
         .orElseThrow(ResourceNotFoundException::new);

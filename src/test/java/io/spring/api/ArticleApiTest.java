@@ -45,6 +45,8 @@ public class ArticleApiTest extends TestWithCurrentUser {
 
   @MockBean ArticleCommandService articleCommandService;
 
+  @MockBean io.spring.observability.ArticleMetrics articleMetrics;
+
   @Override
   @BeforeEach
   public void setUp() throws Exception {

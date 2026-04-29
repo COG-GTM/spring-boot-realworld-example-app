@@ -41,6 +41,8 @@ public class ArticleFavoriteApiTest extends TestWithCurrentUser {
 
   @MockBean private ArticleQueryService articleQueryService;
 
+  @MockBean private io.spring.observability.ArticleMetrics articleMetrics;
+
   private Article article;
 
   @BeforeEach
