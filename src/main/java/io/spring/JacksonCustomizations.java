@@ -29,7 +29,7 @@ public class JacksonCustomizations {
   public static class DateTimeSerializer extends StdSerializer<OffsetDateTime> {
 
     public static final DateTimeFormatter ISO_FORMATTER =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx");
 
     protected DateTimeSerializer() {
       super(OffsetDateTime.class);

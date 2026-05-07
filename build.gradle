@@ -12,9 +12,8 @@ targetCompatibility = '21'
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
+        target project.fileTree(project.projectDir) {
+            include 'src/**/*.java'
         }
         googleJavaFormat()
     }
@@ -71,5 +70,8 @@ tasks.named('generateJava') {
 }
 
 tasks.matching { it.name == 'spotlessJava' }.configureEach {
-    dependsOn tasks.named('compileJava'), tasks.named('generateJava'), tasks.named('processResources')
+    dependsOn tasks.named('compileJava'),
+              tasks.named('compileTestJava'),
+              tasks.named('generateJava'),
+              tasks.named('processResources')
 }
