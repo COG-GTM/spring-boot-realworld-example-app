@@ -100,14 +100,14 @@ export const ArticleView = () => {
     if (!slug) return;
     
     const newComment = await commentsApi.addComment(slug, body);
-    setComments([newComment, ...comments]);
+    setComments(prev => [newComment, ...prev]);
   };
 
   const handleCommentDelete = async (commentId: string) => {
     if (!slug) return;
     
     await commentsApi.deleteComment(slug, commentId);
-    setComments(comments.filter(comment => comment.id !== commentId));
+    setComments(prev => prev.filter(comment => comment.id !== commentId));
   };
 
   if (isLoading) {
