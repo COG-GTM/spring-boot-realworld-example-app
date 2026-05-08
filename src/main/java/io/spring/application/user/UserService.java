@@ -46,10 +46,13 @@ public class UserService {
   public void updateUser(@Valid UpdateUserCommand command) {
     User user = command.getTargetUser();
     UpdateUserParam updateUserParam = command.getParam();
+    String password = updateUserParam.getPassword();
+    String encodedPassword =
+        (password != null && !password.isEmpty()) ? passwordEncoder.encode(password) : null;
     user.update(
         updateUserParam.getEmail(),
         updateUserParam.getUsername(),
-        updateUserParam.getPassword(),
+        encodedPassword,
         updateUserParam.getBio(),
         updateUserParam.getImage());
     userRepository.save(user);
