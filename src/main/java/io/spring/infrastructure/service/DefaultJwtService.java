@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
@@ -57,6 +58,9 @@ public class DefaultJwtService implements JwtService {
       return Optional.empty();
     } catch (SignatureException e) {
       logger.warn("Invalid JWT signature: {}", e.getMessage());
+      return Optional.empty();
+    } catch (UnsupportedJwtException e) {
+      logger.warn("Unsupported JWT token: {}", e.getMessage());
       return Optional.empty();
     } catch (IllegalArgumentException e) {
       logger.warn("JWT token compact of handler are invalid: {}", e.getMessage());
