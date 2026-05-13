@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.joda.time.DateTime;
+import java.time.Instant;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -54,7 +54,7 @@ public class CommentQueryService {
   }
 
   public CursorPager<CommentData> findByArticleIdWithCursor(
-      String articleId, User user, CursorPageParameter<DateTime> page) {
+      String articleId, User user, CursorPageParameter<Instant> page) {
     List<CommentData> comments = commentReadService.findByArticleIdWithCursor(articleId, page);
     if (comments.isEmpty()) {
       return new CursorPager<>(new ArrayList<>(), page.getDirection(), false);
