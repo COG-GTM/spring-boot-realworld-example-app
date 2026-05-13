@@ -1,10 +1,10 @@
 package io.spring.core.comment;
 
+import java.time.Instant;
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.time.Instant;
 
 @Getter
 @NoArgsConstructor

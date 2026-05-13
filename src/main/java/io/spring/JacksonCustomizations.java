@@ -38,10 +38,7 @@ public class JacksonCustomizations {
       if (value == null) {
         gen.writeNull();
       } else {
-        gen.writeString(
-            DateTimeFormatter.ISO_DATE_TIME
-                .withZone(ZoneOffset.UTC)
-                .format(value));
+        gen.writeString(DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneOffset.UTC).format(value));
       }
     }
   }

@@ -2,7 +2,7 @@ plugins {
     id 'org.springframework.boot' version '3.3.2'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'java'
-    id "com.netflix.dgs.codegen" version "6.2.1"
+    id "com.netflix.dgs.codegen" version "6.3.0"
     id "com.diffplug.spotless" version "6.25.0"
 }
 
@@ -12,10 +12,7 @@ targetCompatibility = '17'
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
-        }
+        target 'src/**/*.java'
         googleJavaFormat()
     }
 }
@@ -36,12 +33,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:8.7.1'
+    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.1.2')
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6',
                 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-    implementation 'joda-time:joda-time:2.12.7'
     implementation 'org.xerial:sqlite-jdbc:3.45.3.0'
 
     compileOnly 'org.projectlombok:lombok'
@@ -70,4 +67,8 @@ generateJava {
     schemaPaths = ["${projectDir}/src/main/resources/schema"]
     packageName = 'io.spring.graphql'
     generateClient = false
+}
+
+tasks.named('spotlessJava') {
+    dependsOn 'generateJava'
 }
