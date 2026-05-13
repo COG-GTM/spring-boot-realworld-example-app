@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface TagListProps {
   tags: string[];
   selectedTag?: string;
