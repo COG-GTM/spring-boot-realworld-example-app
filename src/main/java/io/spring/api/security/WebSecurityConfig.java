@@ -44,9 +44,7 @@ public class WebSecurityConfig {
             auth ->
                 auth.requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()
-                    .requestMatchers("/graphiql")
-                    .permitAll()
-                    .requestMatchers("/graphql")
+                    .requestMatchers("/graphiql", "/graphql")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/articles/feed")
                     .authenticated()
