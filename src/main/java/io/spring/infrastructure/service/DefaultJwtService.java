@@ -2,6 +2,7 @@ package io.spring.infrastructure.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.spring.core.service.JwtService;
@@ -43,7 +44,7 @@ public class DefaultJwtService implements JwtService {
       Jws<Claims> claimsJws =
           Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
       return Optional.ofNullable(claimsJws.getBody().getSubject());
-    } catch (Exception e) {
+    } catch (JwtException | IllegalArgumentException e) {
       return Optional.empty();
     }
   }

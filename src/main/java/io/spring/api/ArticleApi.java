@@ -10,7 +10,7 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -63,7 +63,7 @@ public class ArticleApi {
   }
 
   @DeleteMapping
-  public ResponseEntity deleteArticle(
+  public ResponseEntity<?> deleteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleRepository
         .findBySlug(slug)
@@ -79,10 +79,6 @@ public class ArticleApi {
   }
 
   private Map<String, Object> articleResponse(ArticleData articleData) {
-    return new HashMap<String, Object>() {
-      {
-        put("article", articleData);
-      }
-    };
+    return Collections.singletonMap("article", articleData);
   }
 }
