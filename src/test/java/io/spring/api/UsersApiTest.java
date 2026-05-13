@@ -17,7 +17,7 @@ import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.mybatis.readservice.UserReadService;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -172,21 +172,9 @@ public class UsersApiTest {
         .body("errors.email[0]", equalTo("duplicated email"));
   }
 
-  private HashMap<String, Object> prepareRegisterParameter(
-      final String email, final String username) {
-    return new HashMap<String, Object>() {
-      {
-        put(
-            "user",
-            new HashMap<String, Object>() {
-              {
-                put("email", email);
-                put("password", "johnnyjacob");
-                put("username", username);
-              }
-            });
-      }
-    };
+  private Map<String, Object> prepareRegisterParameter(final String email, final String username) {
+    return Collections.singletonMap(
+        "user", Map.of("email", email, "password", "johnnyjacob", "username", username));
   }
 
   @Test
@@ -204,18 +192,7 @@ public class UsersApiTest {
     when(jwtService.toToken(any())).thenReturn("123");
 
     Map<String, Object> param =
-        new HashMap<String, Object>() {
-          {
-            put(
-                "user",
-                new HashMap<String, Object>() {
-                  {
-                    put("email", email);
-                    put("password", password);
-                  }
-                });
-          }
-        };
+        Collections.singletonMap("user", Map.of("email", email, "password", password));
 
     given()
         .contentType("application/json")
@@ -245,18 +222,7 @@ public class UsersApiTest {
     when(userReadService.findByUsername(eq(username))).thenReturn(userData);
 
     Map<String, Object> param =
-        new HashMap<String, Object>() {
-          {
-            put(
-                "user",
-                new HashMap<String, Object>() {
-                  {
-                    put("email", email);
-                    put("password", "123123");
-                  }
-                });
-          }
-        };
+        Collections.singletonMap("user", Map.of("email", email, "password", "123123"));
 
     given()
         .contentType("application/json")

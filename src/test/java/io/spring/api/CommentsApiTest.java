@@ -19,7 +19,7 @@ import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
 import io.spring.core.user.User;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,17 +65,7 @@ public class CommentsApiTest extends TestWithCurrentUser {
   @Test
   public void should_create_comment_success() throws Exception {
     Map<String, Object> param =
-        new HashMap<String, Object>() {
-          {
-            put(
-                "comment",
-                new HashMap<String, Object>() {
-                  {
-                    put("body", "comment content");
-                  }
-                });
-          }
-        };
+        Collections.singletonMap("comment", Collections.singletonMap("body", "comment content"));
 
     when(commentQueryService.findById(anyString(), eq(user))).thenReturn(Optional.of(commentData));
 
@@ -93,17 +83,7 @@ public class CommentsApiTest extends TestWithCurrentUser {
   @Test
   public void should_get_422_with_empty_body() throws Exception {
     Map<String, Object> param =
-        new HashMap<String, Object>() {
-          {
-            put(
-                "comment",
-                new HashMap<String, Object>() {
-                  {
-                    put("body", "");
-                  }
-                });
-          }
-        };
+        Collections.singletonMap("comment", Collections.singletonMap("body", ""));
 
     given()
         .contentType("application/json")
