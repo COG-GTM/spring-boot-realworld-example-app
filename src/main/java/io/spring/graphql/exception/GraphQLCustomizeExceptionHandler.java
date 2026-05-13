@@ -11,14 +11,15 @@ import io.spring.api.exception.FieldErrorResource;
 import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,21 +29,20 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
       new DefaultDataFetcherExceptionHandler();
 
   @Override
-  public DataFetcherExceptionHandlerResult onException(
+  public CompletableFuture<DataFetcherExceptionHandlerResult> handleException(
       DataFetcherExceptionHandlerParameters handlerParameters) {
-    if (handlerParameters.getException() instanceof InvalidAuthenticationException) {
+    if (handlerParameters.getException() instanceof InvalidAuthenticationException iae) {
       GraphQLError graphqlError =
           TypedGraphQLError.newBuilder()
               .errorType(ErrorType.UNAUTHENTICATED)
-              .message(handlerParameters.getException().getMessage())
+              .message(iae.getMessage())
               .path(handlerParameters.getPath())
               .build();
-      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
-    } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
+      return CompletableFuture.completedFuture(
+          DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
+    } else if (handlerParameters.getException() instanceof ConstraintViolationException cve) {
       List<FieldErrorResource> errors = new ArrayList<>();
-      for (ConstraintViolation<?> violation :
-          ((ConstraintViolationException) handlerParameters.getException())
-              .getConstraintViolations()) {
+      for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
         FieldErrorResource fieldErrorResource =
             new FieldErrorResource(
                 violation.getRootBeanClass().getName(),
@@ -61,9 +61,10 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .path(handlerParameters.getPath())
               .extensions(errorsToMap(errors))
               .build();
-      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+      return CompletableFuture.completedFuture(
+          DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
     } else {
-      return defaultHandler.onException(handlerParameters);
+      return defaultHandler.handleException(handlerParameters);
     }
   }
 
@@ -101,13 +102,14 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
     }
   }
 
+  @SuppressWarnings("unchecked")
   private static Map<String, Object> errorsToMap(List<FieldErrorResource> errors) {
     Map<String, Object> json = new HashMap<>();
     for (FieldErrorResource fieldErrorResource : errors) {
       if (!json.containsKey(fieldErrorResource.getField())) {
         json.put(fieldErrorResource.getField(), new ArrayList<>());
       }
-      ((List) json.get(fieldErrorResource.getField())).add(fieldErrorResource.getMessage());
+      ((List<String>) json.get(fieldErrorResource.getField())).add(fieldErrorResource.getMessage());
     }
     return json;
   }
