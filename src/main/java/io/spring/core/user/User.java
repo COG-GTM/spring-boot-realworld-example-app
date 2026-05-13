@@ -1,6 +1,5 @@
 package io.spring.core.user;
 
-
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

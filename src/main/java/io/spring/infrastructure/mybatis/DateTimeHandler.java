@@ -20,8 +20,7 @@ public class DateTimeHandler implements TypeHandler<Instant> {
   @Override
   public void setParameter(PreparedStatement ps, int i, Instant parameter, JdbcType jdbcType)
       throws SQLException {
-    ps.setTimestamp(
-        i, parameter != null ? Timestamp.from(parameter) : null, UTC_CALENDAR);
+    ps.setTimestamp(i, parameter != null ? Timestamp.from(parameter) : null, UTC_CALENDAR);
   }
 
   @Override

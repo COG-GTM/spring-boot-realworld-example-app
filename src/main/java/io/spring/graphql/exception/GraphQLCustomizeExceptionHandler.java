@@ -11,6 +11,8 @@ import io.spring.api.exception.FieldErrorResource;
 import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -109,8 +109,7 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
       if (!json.containsKey(fieldErrorResource.getField())) {
         json.put(fieldErrorResource.getField(), new ArrayList<>());
       }
-      ((List<String>) json.get(fieldErrorResource.getField()))
-          .add(fieldErrorResource.getMessage());
+      ((List<String>) json.get(fieldErrorResource.getField())).add(fieldErrorResource.getMessage());
     }
     return json;
   }

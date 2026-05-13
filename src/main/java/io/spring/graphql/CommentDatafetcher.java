@@ -19,15 +19,20 @@ import io.spring.graphql.types.Article;
 import io.spring.graphql.types.Comment;
 import io.spring.graphql.types.CommentEdge;
 import io.spring.graphql.types.CommentsConnection;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import java.time.format.DateTimeFormatter;
 
 @DgsComponent
 @AllArgsConstructor
 public class CommentDatafetcher {
+
+  private static final DateTimeFormatter FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+
   private CommentQueryService commentQueryService;
 
   @DgsData(parentType = COMMENTPAYLOAD.TYPE_NAME, field = COMMENTPAYLOAD.Comment)
@@ -97,8 +102,7 @@ public class CommentDatafetcher {
         .build();
   }
 
-  private io.spring.graphql.types.PageInfo buildCommentPageInfo(
-      CursorPager<CommentData> comments) {
+  private io.spring.graphql.types.PageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
     return io.spring.graphql.types.PageInfo.newBuilder()
         .startCursor(
             comments.getStartCursor() == null ? null : comments.getStartCursor().toString())
@@ -112,8 +116,8 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(DateTimeFormatter.ISO_INSTANT.format(comment.getCreatedAt()))
-        .createdAt(DateTimeFormatter.ISO_INSTANT.format(comment.getCreatedAt()))
+        .updatedAt(FORMATTER.format(comment.getCreatedAt()))
+        .createdAt(FORMATTER.format(comment.getCreatedAt()))
         .build();
   }
 }

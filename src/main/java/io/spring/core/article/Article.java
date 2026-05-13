@@ -2,7 +2,6 @@ package io.spring.core.article;
 
 import static java.util.stream.Collectors.toList;
 
-
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +64,8 @@ public class Article {
   }
 
   public static String toSlug(String title) {
-    return title.toLowerCase().replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\\u2019|\\\u201D|\\s\\?\\,\\.]+", "-");
+    return title
+        .toLowerCase()
+        .replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\\u2019|\\\u201D|\\s\\?\\,\\.]+", "-");
   }
 }

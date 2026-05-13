@@ -6,7 +6,6 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.DgsQuery;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
-
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
@@ -26,15 +25,18 @@ import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
 import io.spring.graphql.types.Profile;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 
 @DgsComponent
 @AllArgsConstructor
 public class ArticleDatafetcher {
+
+  private static final DateTimeFormatter FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
 
   private ArticleQueryService articleQueryService;
   private UserRepository userRepository;
@@ -356,8 +358,7 @@ public class ArticleDatafetcher {
         .build();
   }
 
-  private io.spring.graphql.types.PageInfo buildArticlePageInfo(
-      CursorPager<ArticleData> articles) {
+  private io.spring.graphql.types.PageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
     return io.spring.graphql.types.PageInfo.newBuilder()
         .startCursor(
             articles.getStartCursor() == null ? null : articles.getStartCursor().toString())
@@ -370,14 +371,14 @@ public class ArticleDatafetcher {
   private Article buildArticleResult(ArticleData articleData) {
     return Article.newBuilder()
         .body(articleData.getBody())
-        .createdAt(DateTimeFormatter.ISO_INSTANT.format(articleData.getCreatedAt()))
+        .createdAt(FORMATTER.format(articleData.getCreatedAt()))
         .description(articleData.getDescription())
         .favorited(articleData.isFavorited())
         .favoritesCount(articleData.getFavoritesCount())
         .slug(articleData.getSlug())
         .tagList(articleData.getTagList())
         .title(articleData.getTitle())
-        .updatedAt(DateTimeFormatter.ISO_INSTANT.format(articleData.getUpdatedAt()))
+        .updatedAt(FORMATTER.format(articleData.getUpdatedAt()))
         .build();
   }
 }
