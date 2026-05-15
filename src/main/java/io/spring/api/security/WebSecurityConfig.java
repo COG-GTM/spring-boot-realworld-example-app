@@ -35,6 +35,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
 
+    // CSRF protection is disabled because this is a stateless REST API that authenticates
+    // exclusively via JWT bearer tokens in the Authorization header (not cookies).
+    // CSRF attacks exploit automatic cookie submission by browsers, which does not apply here:
+    //  - Sessions are STATELESS (no server-side session or session cookies)
+    //  - CORS is configured with allowCredentials=false (no cookies sent cross-origin)
+    //  - Authentication requires a client-supplied Authorization header per request
+    // See OWASP CSRF Prevention Cheat Sheet:
+    // https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#token-based-mitigation
     http.csrf()
         .disable()
         .cors()
