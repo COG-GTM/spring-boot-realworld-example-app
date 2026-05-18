@@ -23,6 +23,7 @@ type Mutation {
     createUser(input: CreateUserInput): UserResult
     login(password: String!, email: String!): UserPayload
     updateUser(changes: UpdateUserInput!): UserPayload
+    deleteUser: DeletionStatus
     followUser(username: String!): ProfilePayload
     unfollowUser(username: String!): ProfilePayload
 

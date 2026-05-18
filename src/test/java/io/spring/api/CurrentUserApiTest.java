@@ -162,6 +162,22 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_delete_current_user_account() throws Exception {
+    given()
+        .header("Authorization", "Token " + token)
+        .contentType("application/json")
+        .when()
+        .delete("/user")
+        .then()
+        .statusCode(204);
+  }
+
+  @Test
+  public void should_get_401_when_delete_without_token() throws Exception {
+    given().contentType("application/json").when().delete("/user").then().statusCode(401);
+  }
+
+  @Test
   public void should_get_401_if_not_login() throws Exception {
     given()
         .contentType("application/json")

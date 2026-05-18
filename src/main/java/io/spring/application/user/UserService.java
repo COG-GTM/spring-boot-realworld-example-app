@@ -54,6 +54,10 @@ public class UserService {
         updateUserParam.getImage());
     userRepository.save(user);
   }
+
+  public void removeUser(User user) {
+    userRepository.remove(user);
+  }
 }
 
 @Constraint(validatedBy = UpdateUserValidator.class)

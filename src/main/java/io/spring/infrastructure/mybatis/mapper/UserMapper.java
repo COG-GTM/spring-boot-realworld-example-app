@@ -22,4 +22,10 @@ public interface UserMapper {
   void saveRelation(@Param("followRelation") FollowRelation followRelation);
 
   void deleteRelation(@Param("followRelation") FollowRelation followRelation);
+
+  void delete(@Param("id") String id);
+
+  void deleteFollowsByUserId(@Param("userId") String userId);
+
+  void deleteFollowsTargetingUser(@Param("userId") String userId);
 }

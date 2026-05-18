@@ -32,6 +32,12 @@
     <delete id="delete">
         delete from articles where id = #{id}
     </delete>
+    <delete id="deleteArticleTagsByUserId">
+        delete from article_tags where article_id in (select id from articles where user_id = #{userId})
+    </delete>
+    <delete id="deleteByUserId">
+        delete from articles where user_id = #{userId}
+    </delete>
     <sql id="selectArticle">
         select
         A.id articleId,
