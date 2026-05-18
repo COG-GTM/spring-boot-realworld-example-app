@@ -107,10 +107,15 @@ public class MyBatisUserRepositoryTest extends DbTestBase {
     userRepository.save(other);
     userRepository.saveRelation(new FollowRelation(user.getId(), other.getId()));
 
+    Comment otherComment = new Comment("great post", other.getId(), article.getId());
+    commentRepository.save(otherComment);
+
     userRepository.remove(user);
 
     Assertions.assertFalse(userRepository.findById(user.getId()).isPresent());
     Assertions.assertFalse(articleRepository.findById(article.getId()).isPresent());
     Assertions.assertFalse(userRepository.findRelation(user.getId(), other.getId()).isPresent());
+    Assertions.assertFalse(
+        commentRepository.findById(article.getId(), otherComment.getId()).isPresent());
   }
 }

@@ -13,4 +13,6 @@ public interface CommentMapper {
   void delete(@Param("id") String id);
 
   void deleteByUserId(@Param("userId") String userId);
+
+  void deleteByArticleUserId(@Param("userId") String userId);
 }

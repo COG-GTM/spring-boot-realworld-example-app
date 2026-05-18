@@ -77,6 +77,7 @@ public class MyBatisUserRepository implements UserRepository {
   public void remove(User user) {
     String userId = user.getId();
     commentMapper.deleteByUserId(userId);
+    commentMapper.deleteByArticleUserId(userId);
     articleFavoriteMapper.deleteByUserId(userId);
     articleFavoriteMapper.deleteByArticleUserId(userId);
     articleMapper.deleteArticleTagsByUserId(userId);
