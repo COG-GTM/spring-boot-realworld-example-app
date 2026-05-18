@@ -3,18 +3,32 @@ package io.spring.infrastructure.repository;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.infrastructure.mybatis.mapper.ArticleFavoriteMapper;
+import io.spring.infrastructure.mybatis.mapper.ArticleMapper;
+import io.spring.infrastructure.mybatis.mapper.CommentMapper;
 import io.spring.infrastructure.mybatis.mapper.UserMapper;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class MyBatisUserRepository implements UserRepository {
   private final UserMapper userMapper;
+  private final ArticleMapper articleMapper;
+  private final CommentMapper commentMapper;
+  private final ArticleFavoriteMapper articleFavoriteMapper;
 
   @Autowired
-  public MyBatisUserRepository(UserMapper userMapper) {
+  public MyBatisUserRepository(
+      UserMapper userMapper,
+      ArticleMapper articleMapper,
+      CommentMapper commentMapper,
+      ArticleFavoriteMapper articleFavoriteMapper) {
     this.userMapper = userMapper;
+    this.articleMapper = articleMapper;
+    this.commentMapper = commentMapper;
+    this.articleFavoriteMapper = articleFavoriteMapper;
   }
 
   @Override
@@ -56,5 +70,19 @@ public class MyBatisUserRepository implements UserRepository {
   @Override
   public void removeRelation(FollowRelation followRelation) {
     userMapper.deleteRelation(followRelation);
+  }
+
+  @Override
+  @Transactional
+  public void remove(User user) {
+    String userId = user.getId();
+    commentMapper.deleteByUserId(userId);
+    articleFavoriteMapper.deleteByUserId(userId);
+    articleFavoriteMapper.deleteByArticleUserId(userId);
+    articleMapper.deleteArticleTagsByUserId(userId);
+    articleMapper.deleteByUserId(userId);
+    userMapper.deleteFollowsByUserId(userId);
+    userMapper.deleteFollowsTargetingUser(userId);
+    userMapper.delete(userId);
   }
 }

@@ -11,4 +11,8 @@ public interface ArticleFavoriteMapper {
   void insert(@Param("articleFavorite") ArticleFavorite articleFavorite);
 
   void delete(@Param("favorite") ArticleFavorite favorite);
+
+  void deleteByUserId(@Param("userId") String userId);
+
+  void deleteByArticleUserId(@Param("userId") String userId);
 }

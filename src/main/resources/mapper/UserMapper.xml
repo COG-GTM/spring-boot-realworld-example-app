@@ -28,6 +28,15 @@
     <delete id="deleteRelation">
         delete from follows where user_id = #{followRelation.userId} and follow_id = #{followRelation.targetId}
     </delete>
+    <delete id="delete">
+        delete from users where id = #{id}
+    </delete>
+    <delete id="deleteFollowsByUserId">
+        delete from follows where user_id = #{userId}
+    </delete>
+    <delete id="deleteFollowsTargetingUser">
+        delete from follows where follow_id = #{userId}
+    </delete>
     <select id="findByUsername" resultMap="user">
         select * from users where username = #{username}
     </select>

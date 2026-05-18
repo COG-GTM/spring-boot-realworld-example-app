@@ -13,6 +13,7 @@ import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,6 +47,12 @@ public class CurrentUserApi {
     userService.updateUser(new UpdateUserCommand(currentUser, updateUserParam));
     UserData userData = userQueryService.findById(currentUser.getId()).get();
     return ResponseEntity.ok(userResponse(new UserWithToken(userData, token.split(" ")[1])));
+  }
+
+  @DeleteMapping
+  public ResponseEntity deleteUser(@AuthenticationPrincipal User currentUser) {
+    userService.removeUser(currentUser);
+    return ResponseEntity.noContent().build();
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {

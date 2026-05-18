@@ -14,6 +14,7 @@ import io.spring.core.user.UserRepository;
 import io.spring.graphql.DgsConstants.MUTATION;
 import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import io.spring.graphql.types.CreateUserInput;
+import io.spring.graphql.types.DeletionStatus;
 import io.spring.graphql.types.UpdateUserInput;
 import io.spring.graphql.types.UserPayload;
 import io.spring.graphql.types.UserResult;
@@ -89,5 +90,17 @@ public class UserMutation {
         .data(UserPayload.newBuilder().build())
         .localContext(currentUser)
         .build();
+  }
+
+  @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.DeleteUser)
+  public DeletionStatus deleteUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken
+        || authentication.getPrincipal() == null) {
+      return DeletionStatus.newBuilder().success(false).build();
+    }
+    io.spring.core.user.User currentUser = (io.spring.core.user.User) authentication.getPrincipal();
+    userService.removeUser(currentUser);
+    return DeletionStatus.newBuilder().success(true).build();
   }
 }

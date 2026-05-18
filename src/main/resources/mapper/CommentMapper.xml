@@ -15,6 +15,9 @@
     <delete id="delete">
         delete from comments where id = #{id}
     </delete>
+    <delete id="deleteByUserId">
+        delete from comments where user_id = #{userId}
+    </delete>
     <select id="findById" resultMap="comment">
         select
           id commentId,
