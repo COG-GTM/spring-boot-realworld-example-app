@@ -9,7 +9,8 @@ import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.joda.time.DateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @Getter
 @NoArgsConstructor
@@ -22,12 +23,12 @@ public class Article {
   private String description;
   private String body;
   private List<Tag> tags;
-  private DateTime createdAt;
-  private DateTime updatedAt;
+  private OffsetDateTime createdAt;
+  private OffsetDateTime updatedAt;
 
   public Article(
       String title, String description, String body, List<String> tagList, String userId) {
-    this(title, description, body, tagList, userId, new DateTime());
+    this(title, description, body, tagList, userId, OffsetDateTime.now(ZoneOffset.UTC));
   }
 
   public Article(
@@ -36,7 +37,7 @@ public class Article {
       String body,
       List<String> tagList,
       String userId,
-      DateTime createdAt) {
+      OffsetDateTime createdAt) {
     this.id = UUID.randomUUID().toString();
     this.slug = toSlug(title);
     this.title = title;
@@ -52,15 +53,15 @@ public class Article {
     if (!Util.isEmpty(title)) {
       this.title = title;
       this.slug = toSlug(title);
-      this.updatedAt = new DateTime();
+      this.updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
     }
     if (!Util.isEmpty(description)) {
       this.description = description;
-      this.updatedAt = new DateTime();
+      this.updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
     }
     if (!Util.isEmpty(body)) {
       this.body = body;
-      this.updatedAt = new DateTime();
+      this.updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
     }
   }
 
