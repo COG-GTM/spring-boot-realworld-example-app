@@ -80,7 +80,7 @@ curl -s -X POST http://localhost:8080/graphql \
 | `GET /tags` | No |
 | `POST /users` | No |
 | `POST /users/login` | No |
-| `GET /graphql`, `/graphiql` | No |
+| `/graphql`, `/graphiql` (any method) | No |
 | `GET /articles/feed` | **Yes** |
 | `POST/PUT/DELETE /articles/**` | **Yes** |
 | Everything else | **Yes** |
@@ -94,7 +94,7 @@ curl -s -X POST http://localhost:8080/graphql \
 
 - **Port 8080 already in use**: Kill existing process with `pkill -f bootRun` or `lsof -i :8080 | awk 'NR>1{print $2}' | xargs kill -9`
 - **Stale DB state**: Delete `dev.db` and restart for clean state
-- **JJWT key size**: The app uses SHA-512 key derivation for JJWT 0.12.x. If changing jwt.secret in application.properties, any string length works (it gets hashed to 64 bytes).
+- **JJWT key size**: The app uses JJWT 0.12.6 with HS512. The secret from `jwt.secret` in application.properties is used as raw bytes (`secret.getBytes()`) to construct the signing key — it is NOT hashed. The configured secret must be at least 64 bytes for HS512.
 
 ## Devin Secrets Needed
 None — the app runs entirely locally with SQLite and no external services.
