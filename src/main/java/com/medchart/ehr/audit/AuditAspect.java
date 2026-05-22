@@ -27,14 +27,18 @@ public class AuditAspect {
               .build());
       return result;
     } catch (Throwable ex) {
-      auditService.save(
-          AuditEvent.builder()
-              .action(audited.action())
-              .patientId(patientId)
-              .success(false)
-              .errorMessage(ex.getMessage())
-              .timestamp(LocalDateTime.now())
-              .build());
+      try {
+        auditService.save(
+            AuditEvent.builder()
+                .action(audited.action())
+                .patientId(patientId)
+                .success(false)
+                .errorMessage(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build());
+      } catch (Exception auditEx) {
+        // Don't let audit failure mask the original exception
+      }
       throw ex;
     }
   }

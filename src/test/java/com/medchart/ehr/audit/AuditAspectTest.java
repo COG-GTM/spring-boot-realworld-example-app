@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -62,6 +64,19 @@ class AuditAspectTest {
                         && "UPDATE_PATIENT".equals(event.getAction())
                         && Long.valueOf(7L).equals(event.getPatientId())
                         && "DB error".equals(event.getErrorMessage())));
+  }
+
+  @Test
+  void audit_auditSaveFailsInCatchBlock_originalExceptionStillRethrown() throws Throwable {
+    when(audited.action()).thenReturn("DELETE_PATIENT");
+    when(joinPoint.getArgs()).thenReturn(new Object[] {5L});
+    when(joinPoint.proceed()).thenThrow(new RuntimeException("original error"));
+    doThrow(new RuntimeException("audit save failed")).when(auditService).save(any());
+
+    RuntimeException ex =
+        assertThrows(RuntimeException.class, () -> auditAspect.audit(joinPoint, audited));
+
+    assertEquals("original error", ex.getMessage());
   }
 
   @Test
