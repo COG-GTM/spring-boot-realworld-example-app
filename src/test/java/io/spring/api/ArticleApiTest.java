@@ -207,7 +207,7 @@ public class ArticleApiTest extends TestWithCurrentUser {
   }
 
   @Test
-  public void should_delete_article_when_article_not_found() throws Exception {
+  public void should_get_404_when_delete_article_not_found() throws Exception {
     when(articleRepository.findBySlug(eq("non-existent-slug"))).thenReturn(Optional.empty());
 
     given()
