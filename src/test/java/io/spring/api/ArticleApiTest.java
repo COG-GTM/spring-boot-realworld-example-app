@@ -206,6 +206,78 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .statusCode(403);
   }
 
+  @Test
+  public void should_get_404_when_delete_article_not_found() throws Exception {
+    when(articleRepository.findBySlug(eq("non-existent-slug"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/articles/{slug}", "non-existent-slug")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_404_when_update_article_not_found() throws Exception {
+    Map<String, Object> updateParam = prepareUpdateParam("new title", "new body", "new desc");
+
+    when(articleRepository.findBySlug(eq("non-existent-slug"))).thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(updateParam)
+        .when()
+        .put("/articles/{slug}", "non-existent-slug")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_read_article_with_authenticated_user() throws Exception {
+    String slug = "test-new-article";
+    DateTime time = new DateTime();
+    Article article =
+        new Article(
+            "Test New Article",
+            "Desc",
+            "Body",
+            Arrays.asList("java", "spring", "jpg"),
+            user.getId(),
+            time);
+    ArticleData articleData =
+        new ArticleData(
+            article.getId(),
+            article.getSlug(),
+            article.getTitle(),
+            article.getDescription(),
+            article.getBody(),
+            true,
+            5,
+            time,
+            time,
+            Arrays.asList("java", "spring", "jpg"),
+            new ProfileData(
+                user.getId(),
+                user.getUsername(),
+                user.getBio(),
+                user.getImage(),
+                false));
+
+    when(articleQueryService.findBySlug(eq(slug), eq(user))).thenReturn(Optional.of(articleData));
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .get("/articles/{slug}", slug)
+        .then()
+        .statusCode(200)
+        .body("article.slug", equalTo(slug))
+        .body("article.favorited", equalTo(true))
+        .body("article.favoritesCount", equalTo(5));
+  }
+
   private HashMap<String, Object> prepareUpdateParam(
       final String title, final String body, final String description) {
     return new HashMap<String, Object>() {
