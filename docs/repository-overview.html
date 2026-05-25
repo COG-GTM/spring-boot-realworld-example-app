@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repository Overview — spring-boot-realworld-example-app</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #dbeafe;
+      --secondary: #059669;
+      --secondary-light: #d1fae5;
+      --accent: #7c3aed;
+      --accent-light: #ede9fe;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .header {
+      background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .header h1 { font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .header .subtitle { font-size: 1.1rem; opacity: 0.9; max-width: 700px; margin: 0 auto; }
+    .header .badges { margin-top: 1.25rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: rgba(255,255,255,0.18); backdrop-filter: blur(4px);
+      padding: 0.35rem 0.85rem; border-radius: 999px;
+      font-size: 0.85rem; font-weight: 500;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .grid { display: grid; gap: 1.5rem; }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .card-title .icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+    }
+    .icon-blue { background: var(--primary-light); color: var(--primary); }
+    .icon-green { background: var(--secondary-light); color: var(--secondary); }
+    .icon-purple { background: var(--accent-light); color: var(--accent); }
+    .icon-amber { background: var(--warning-light); color: var(--warning); }
+    section { margin-bottom: 2rem; }
+    section > h2 {
+      font-size: 1.35rem; font-weight: 700; margin-bottom: 1rem;
+      padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary);
+      display: inline-block;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+    th { font-weight: 600; color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    tr:last-child td { border-bottom: none; }
+    code {
+      background: #f1f5f9; padding: 0.15rem 0.4rem;
+      border-radius: 4px; font-size: 0.85em; color: #be185d;
+    }
+    .tag {
+      display: inline-block; padding: 0.2rem 0.6rem;
+      border-radius: 999px; font-size: 0.78rem; font-weight: 500;
+    }
+    .tag-blue { background: var(--primary-light); color: var(--primary); }
+    .tag-green { background: var(--secondary-light); color: var(--secondary); }
+    .tag-purple { background: var(--accent-light); color: var(--accent); }
+    .tag-amber { background: var(--warning-light); color: var(--warning); }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem; text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .tree { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 0.85rem; line-height: 1.8; }
+    .tree .dir { color: var(--primary); font-weight: 600; }
+    .tree .file { color: var(--text-secondary); }
+    .tree .desc { color: var(--text-secondary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-style: italic; }
+    .method-get { color: var(--secondary); font-weight: 700; }
+    .method-post { color: var(--primary); font-weight: 700; }
+    .method-put { color: var(--warning); font-weight: 700; }
+    .method-delete { color: #dc2626; font-weight: 700; }
+    .auth-tag {
+      font-size: 0.7rem; padding: 0.1rem 0.45rem; border-radius: 4px;
+      font-weight: 600; text-transform: uppercase;
+    }
+    .auth-required { background: #fee2e2; color: #991b1b; }
+    .auth-optional { background: #fef3c7; color: #92400e; }
+    .auth-public { background: #d1fae5; color: #065f46; }
+    .layer-diagram {
+      display: flex; flex-direction: column; gap: 0.5rem;
+      max-width: 600px; margin: 1rem auto;
+    }
+    .layer {
+      padding: 1rem; border-radius: var(--radius); text-align: center;
+      font-weight: 600; font-size: 0.95rem; position: relative;
+    }
+    .layer small { display: block; font-weight: 400; font-size: 0.8rem; opacity: 0.85; margin-top: 0.2rem; }
+    .layer-api { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af; }
+    .layer-app { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #5b21b6; }
+    .layer-core { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; }
+    .layer-infra { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
+    .arrow-down { text-align: center; font-size: 1.25rem; color: var(--text-secondary); line-height: 1; }
+    .er-diagram { overflow-x: auto; }
+    .er-diagram table { min-width: 100%; }
+    .er-diagram th { background: #f1f5f9; }
+    .dep-list { list-style: none; padding: 0; }
+    .dep-list li {
+      padding: 0.5rem 0; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .dep-list li:last-child { border-bottom: none; }
+    .dep-name { font-weight: 600; }
+    .dep-purpose { font-size: 0.85rem; color: var(--text-secondary); }
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow); }
+    .toc h3 { font-size: 0.9rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+    .toc-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.5rem; }
+    .toc-list a { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
+    .toc-list a:hover { text-decoration: underline; }
+    .footer { text-align: center; padding: 2rem; color: var(--text-secondary); font-size: 0.85rem; border-top: 1px solid var(--border); }
+    @media (max-width: 768px) {
+      .header h1 { font-size: 1.5rem; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>spring-boot-realworld-example-app</h1>
+  <p class="subtitle">A production-ready blogging platform implementing the RealWorld spec with Spring Boot, MyBatis, and Netflix DGS GraphQL — featuring both REST and GraphQL APIs.</p>
+  <div class="badges">
+    <span class="badge">☕ Java 11</span>
+    <span class="badge">🍃 Spring Boot 2.6.3</span>
+    <span class="badge">🗄️ MyBatis + SQLite</span>
+    <span class="badge">📡 REST + GraphQL</span>
+    <span class="badge">🔐 JWT Auth</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Table of Contents -->
+  <nav class="toc">
+    <h3>Table of Contents</h3>
+    <ul class="toc-list">
+      <li><a href="#stats">Quick Stats</a></li>
+      <li><a href="#tech-stack">Tech Stack</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#project-structure">Project Structure</a></li>
+      <li><a href="#domain-model">Domain Model</a></li>
+      <li><a href="#database-schema">Database Schema</a></li>
+      <li><a href="#rest-api">REST API Endpoints</a></li>
+      <li><a href="#graphql-api">GraphQL API</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#dependencies">Dependencies</a></li>
+      <li><a href="#testing">Testing</a></li>
+      <li><a href="#getting-started">Getting Started</a></li>
+    </ul>
+  </nav>
+
+  <!-- Quick Stats -->
+  <section id="stats">
+    <h2>Quick Stats</h2>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-value">93</div>
+        <div class="stat-label">Source Files</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">23</div>
+        <div class="stat-label">Test Files</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">~5,970</div>
+        <div class="stat-label">Lines of Code</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">11</div>
+        <div class="stat-label">MyBatis Mappers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">8</div>
+        <div class="stat-label">REST Controllers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">12</div>
+        <div class="stat-label">GraphQL Resolvers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">7</div>
+        <div class="stat-label">DB Tables</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">6</div>
+        <div class="stat-label">Domain Entities</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section id="tech-stack">
+    <h2>Tech Stack</h2>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-title"><span class="icon icon-blue">🏗️</span> Runtime &amp; Framework</div>
+        <table>
+          <tr><td><strong>Java</strong></td><td>11 (LTS)</td></tr>
+          <tr><td><strong>Spring Boot</strong></td><td>2.6.3</td></tr>
+          <tr><td><strong>Spring Security</strong></td><td>Bundled</td></tr>
+          <tr><td><strong>Spring Validation</strong></td><td>JSR-303</td></tr>
+          <tr><td><strong>Spring HATEOAS</strong></td><td>Bundled</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-green">💾</span> Data &amp; Persistence</div>
+        <table>
+          <tr><td><strong>MyBatis</strong></td><td>2.2.2 (Spring Boot Starter)</td></tr>
+          <tr><td><strong>SQLite</strong></td><td>3.36.0.3</td></tr>
+          <tr><td><strong>Flyway</strong></td><td>DB Migration</td></tr>
+          <tr><td><strong>Data Mapper</strong></td><td>Pattern via XML configs</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-purple">📡</span> API Layer</div>
+        <table>
+          <tr><td><strong>REST</strong></td><td>Spring MVC</td></tr>
+          <tr><td><strong>GraphQL</strong></td><td>Netflix DGS 4.9.21</td></tr>
+          <tr><td><strong>Auth</strong></td><td>JWT (jjwt 0.11.2)</td></tr>
+          <tr><td><strong>JSON</strong></td><td>Jackson (custom serializers)</td></tr>
+          <tr><td><strong>DateTime</strong></td><td>Joda-Time 2.10.13</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section id="architecture">
+    <h2>Architecture</h2>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon icon-blue">📐</span> Layered Architecture (DDD)</div>
+        <div class="layer-diagram">
+          <div class="layer layer-api">
+            API Layer <code>io.spring.api</code> / <code>io.spring.graphql</code>
+            <small>REST controllers &amp; GraphQL data fetchers — adapters for external communication</small>
+          </div>
+          <div class="arrow-down">▼</div>
+          <div class="layer layer-app">
+            Application Layer <code>io.spring.application</code>
+            <small>Query services, command services, DTOs, validators — orchestration &amp; CQRS</small>
+          </div>
+          <div class="arrow-down">▼</div>
+          <div class="layer layer-core">
+            Core / Domain Layer <code>io.spring.core</code>
+            <small>Entities, repository interfaces, business services — pure domain logic</small>
+          </div>
+          <div class="arrow-down">▼</div>
+          <div class="layer layer-infra">
+            Infrastructure Layer <code>io.spring.infrastructure</code>
+            <small>MyBatis mappers, repository implementations, JWT service — technical details</small>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-green">🧩</span> Design Patterns</div>
+        <table>
+          <tr>
+            <td><strong>CQRS</strong></td>
+            <td>Separate read models (QueryService + DTOs) from write models (CommandService + Entities)</td>
+          </tr>
+          <tr>
+            <td><strong>Data Mapper</strong></td>
+            <td>MyBatis XML mappings decouple domain objects from DB schema</td>
+          </tr>
+          <tr>
+            <td><strong>Repository</strong></td>
+            <td>Domain interfaces in <code>core</code>, implementations in <code>infrastructure</code></td>
+          </tr>
+          <tr>
+            <td><strong>DTO Projection</strong></td>
+            <td>Dedicated data classes (<code>ArticleData</code>, <code>UserData</code>) for read operations</td>
+          </tr>
+          <tr>
+            <td><strong>Dual API</strong></td>
+            <td>REST + GraphQL share the same domain &amp; application layers</td>
+          </tr>
+          <tr>
+            <td><strong>Slug</strong></td>
+            <td>URL-friendly article identifiers derived from titles</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Project Structure -->
+  <section id="project-structure">
+    <h2>Project Structure</h2>
+    <div class="card">
+      <div class="tree">
+<span class="dir">src/main/java/io/spring/</span><br>
+├── <span class="file">RealWorldApplication.java</span> <span class="desc">— Entry point</span><br>
+├── <span class="file">JacksonCustomizations.java</span> <span class="desc">— JSON serialization config</span><br>
+├── <span class="file">MyBatisConfig.java</span> <span class="desc">— MyBatis configuration</span><br>
+├── <span class="file">Util.java</span> <span class="desc">— String utilities</span><br>
+│<br>
+├── <span class="dir">api/</span> <span class="desc">— REST Controllers</span><br>
+│   ├── <span class="file">ArticlesApi.java</span> <span class="desc">— POST /articles, GET /articles, GET /articles/feed</span><br>
+│   ├── <span class="file">ArticleApi.java</span> <span class="desc">— GET/PUT/DELETE /articles/{slug}</span><br>
+│   ├── <span class="file">ArticleFavoriteApi.java</span> <span class="desc">— POST/DELETE /articles/{slug}/favorite</span><br>
+│   ├── <span class="file">CommentsApi.java</span> <span class="desc">— CRUD /articles/{slug}/comments</span><br>
+│   ├── <span class="file">UsersApi.java</span> <span class="desc">— POST /users, POST /users/login</span><br>
+│   ├── <span class="file">CurrentUserApi.java</span> <span class="desc">— GET/PUT /user</span><br>
+│   ├── <span class="file">ProfileApi.java</span> <span class="desc">— GET/POST/DELETE /profiles/{username}</span><br>
+│   ├── <span class="file">TagsApi.java</span> <span class="desc">— GET /tags</span><br>
+│   ├── <span class="dir">exception/</span> <span class="desc">— Custom exceptions &amp; error handlers</span><br>
+│   └── <span class="dir">security/</span> <span class="desc">— JWT filter &amp; Spring Security config</span><br>
+│<br>
+├── <span class="dir">application/</span> <span class="desc">— Application Services (CQRS)</span><br>
+│   ├── <span class="file">ArticleQueryService.java</span> <span class="desc">— Article read operations</span><br>
+│   ├── <span class="file">CommentQueryService.java</span> <span class="desc">— Comment read operations</span><br>
+│   ├── <span class="file">ProfileQueryService.java</span> <span class="desc">— Profile read operations</span><br>
+│   ├── <span class="file">TagsQueryService.java</span> <span class="desc">— Tag listing</span><br>
+│   ├── <span class="file">UserQueryService.java</span> <span class="desc">— User read operations</span><br>
+│   ├── <span class="dir">article/</span> <span class="desc">— ArticleCommandService, validators, params</span><br>
+│   ├── <span class="dir">user/</span> <span class="desc">— UserService, validators, params</span><br>
+│   ├── <span class="dir">data/</span> <span class="desc">— DTO classes (ArticleData, UserData, etc.)</span><br>
+│   └── <span class="file">CursorPager.java / Page.java</span> <span class="desc">— Pagination</span><br>
+│<br>
+├── <span class="dir">core/</span> <span class="desc">— Domain Model</span><br>
+│   ├── <span class="dir">article/</span> <span class="desc">— Article, Tag, ArticleRepository</span><br>
+│   ├── <span class="dir">comment/</span> <span class="desc">— Comment, CommentRepository</span><br>
+│   ├── <span class="dir">favorite/</span> <span class="desc">— ArticleFavorite, ArticleFavoriteRepository</span><br>
+│   ├── <span class="dir">user/</span> <span class="desc">— User, FollowRelation, UserRepository</span><br>
+│   └── <span class="dir">service/</span> <span class="desc">— JwtService, AuthorizationService</span><br>
+│<br>
+├── <span class="dir">graphql/</span> <span class="desc">— GraphQL Layer (Netflix DGS)</span><br>
+│   ├── <span class="file">ArticleDatafetcher.java</span> <span class="desc">— Article queries</span><br>
+│   ├── <span class="file">ArticleMutation.java</span> <span class="desc">— Article mutations</span><br>
+│   ├── <span class="file">CommentDatafetcher.java</span> <span class="desc">— Comment queries</span><br>
+│   ├── <span class="file">CommentMutation.java</span> <span class="desc">— Comment mutations</span><br>
+│   ├── <span class="file">ProfileDatafetcher.java</span> <span class="desc">— Profile queries</span><br>
+│   ├── <span class="file">RelationMutation.java</span> <span class="desc">— Follow/unfollow mutations</span><br>
+│   ├── <span class="file">UserMutation.java</span> <span class="desc">— User create/update/login</span><br>
+│   ├── <span class="file">MeDatafetcher.java</span> <span class="desc">— Current user query</span><br>
+│   ├── <span class="file">TagDatafetcher.java</span> <span class="desc">— Tags query</span><br>
+│   ├── <span class="file">SecurityUtil.java</span> <span class="desc">— Auth helper</span><br>
+│   └── <span class="dir">exception/</span> <span class="desc">— GraphQL error handlers</span><br>
+│<br>
+└── <span class="dir">infrastructure/</span> <span class="desc">— Technical Implementations</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="dir">mybatis/</span> <span class="desc">— DateTimeHandler, mappers &amp; read services</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="dir">repository/</span> <span class="desc">— MyBatis-backed repository implementations</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="dir">service/</span> <span class="desc">— DefaultJwtService (JJWT-based)</span><br>
+<br>
+<span class="dir">src/main/resources/</span><br>
+├── <span class="file">application.properties</span> <span class="desc">— App configuration</span><br>
+├── <span class="file">application-test.properties</span> <span class="desc">— Test overrides</span><br>
+├── <span class="dir">db/migration/</span> <span class="desc">— Flyway migration (V1__create_tables.sql)</span><br>
+├── <span class="dir">mapper/</span> <span class="desc">— 11 MyBatis XML mapper files</span><br>
+└── <span class="dir">schema/</span> <span class="desc">— GraphQL schema (schema.graphqls)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Domain Model -->
+  <section id="domain-model">
+    <h2>Domain Model</h2>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-title"><span class="icon icon-blue">👤</span> User</div>
+        <table>
+          <tr><th>Field</th><th>Type</th></tr>
+          <tr><td><code>id</code></td><td>String (UUID)</td></tr>
+          <tr><td><code>email</code></td><td>String (unique)</td></tr>
+          <tr><td><code>username</code></td><td>String (unique)</td></tr>
+          <tr><td><code>password</code></td><td>String (BCrypt)</td></tr>
+          <tr><td><code>bio</code></td><td>String</td></tr>
+          <tr><td><code>image</code></td><td>String (URL)</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-green">📝</span> Article</div>
+        <table>
+          <tr><th>Field</th><th>Type</th></tr>
+          <tr><td><code>id</code></td><td>String (UUID)</td></tr>
+          <tr><td><code>userId</code></td><td>String (FK → User)</td></tr>
+          <tr><td><code>slug</code></td><td>String (unique, auto)</td></tr>
+          <tr><td><code>title</code></td><td>String</td></tr>
+          <tr><td><code>description</code></td><td>String</td></tr>
+          <tr><td><code>body</code></td><td>String</td></tr>
+          <tr><td><code>tags</code></td><td>List&lt;Tag&gt;</td></tr>
+          <tr><td><code>createdAt</code></td><td>DateTime</td></tr>
+          <tr><td><code>updatedAt</code></td><td>DateTime</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-purple">💬</span> Comment</div>
+        <table>
+          <tr><th>Field</th><th>Type</th></tr>
+          <tr><td><code>id</code></td><td>String (UUID)</td></tr>
+          <tr><td><code>body</code></td><td>String</td></tr>
+          <tr><td><code>userId</code></td><td>String (FK → User)</td></tr>
+          <tr><td><code>articleId</code></td><td>String (FK → Article)</td></tr>
+          <tr><td><code>createdAt</code></td><td>DateTime</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-amber">🏷️</span> Tag</div>
+        <table>
+          <tr><th>Field</th><th>Type</th></tr>
+          <tr><td><code>id</code></td><td>String (UUID)</td></tr>
+          <tr><td><code>name</code></td><td>String</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-blue">⭐</span> ArticleFavorite</div>
+        <table>
+          <tr><th>Field</th><th>Type</th></tr>
+          <tr><td><code>articleId</code></td><td>String (FK → Article)</td></tr>
+          <tr><td><code>userId</code></td><td>String (FK → User)</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-green">🤝</span> FollowRelation</div>
+        <table>
+          <tr><th>Field</th><th>Type</th></tr>
+          <tr><td><code>userId</code></td><td>String (follower)</td></tr>
+          <tr><td><code>followId</code></td><td>String (followed)</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Database Schema -->
+  <section id="database-schema">
+    <h2>Database Schema</h2>
+    <p style="margin-bottom: 1rem; color: var(--text-secondary);">SQLite database with Flyway migrations. 7 tables total.</p>
+    <div class="card er-diagram">
+      <table>
+        <thead>
+          <tr><th>Table</th><th>Primary Key</th><th>Key Columns</th><th>Relationships</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>users</code></td>
+            <td><code>id</code> (VARCHAR)</td>
+            <td>username (UNIQUE), email (UNIQUE), password, bio, image</td>
+            <td>Referenced by articles, comments, follows, article_favorites</td>
+          </tr>
+          <tr>
+            <td><code>articles</code></td>
+            <td><code>id</code> (VARCHAR)</td>
+            <td>user_id, slug (UNIQUE), title, description, body, created_at, updated_at</td>
+            <td>Belongs to users; has many comments, tags, favorites</td>
+          </tr>
+          <tr>
+            <td><code>comments</code></td>
+            <td><code>id</code> (VARCHAR)</td>
+            <td>body, article_id, user_id, created_at, updated_at</td>
+            <td>Belongs to articles &amp; users</td>
+          </tr>
+          <tr>
+            <td><code>tags</code></td>
+            <td><code>id</code> (VARCHAR)</td>
+            <td>name</td>
+            <td>Many-to-many with articles via article_tags</td>
+          </tr>
+          <tr>
+            <td><code>article_tags</code></td>
+            <td>Composite (article_id, tag_id)</td>
+            <td>article_id, tag_id</td>
+            <td>Join table: articles ↔ tags</td>
+          </tr>
+          <tr>
+            <td><code>article_favorites</code></td>
+            <td>Composite (article_id, user_id)</td>
+            <td>article_id, user_id</td>
+            <td>Join table: users ↔ articles (favorites)</td>
+          </tr>
+          <tr>
+            <td><code>follows</code></td>
+            <td>—</td>
+            <td>user_id, follow_id</td>
+            <td>Self-referential: users ↔ users</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- REST API -->
+  <section id="rest-api">
+    <h2>REST API Endpoints</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Path</th><th>Description</th><th>Auth</th><th>Controller</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="5" style="background: #f8fafc; font-weight: 600; color: var(--primary);">Authentication</td></tr>
+          <tr>
+            <td><span class="method-post">POST</span></td>
+            <td><code>/users</code></td>
+            <td>Register new user</td>
+            <td><span class="auth-tag auth-public">Public</span></td>
+            <td>UsersApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-post">POST</span></td>
+            <td><code>/users/login</code></td>
+            <td>Login (returns JWT)</td>
+            <td><span class="auth-tag auth-public">Public</span></td>
+            <td>UsersApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-get">GET</span></td>
+            <td><code>/user</code></td>
+            <td>Get current user</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>CurrentUserApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-put">PUT</span></td>
+            <td><code>/user</code></td>
+            <td>Update current user</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>CurrentUserApi</td>
+          </tr>
+
+          <tr><td colspan="5" style="background: #f8fafc; font-weight: 600; color: var(--primary);">Profiles</td></tr>
+          <tr>
+            <td><span class="method-get">GET</span></td>
+            <td><code>/profiles/{username}</code></td>
+            <td>Get user profile</td>
+            <td><span class="auth-tag auth-optional">Optional</span></td>
+            <td>ProfileApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-post">POST</span></td>
+            <td><code>/profiles/{username}/follow</code></td>
+            <td>Follow user</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>ProfileApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-delete">DELETE</span></td>
+            <td><code>/profiles/{username}/follow</code></td>
+            <td>Unfollow user</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>ProfileApi</td>
+          </tr>
+
+          <tr><td colspan="5" style="background: #f8fafc; font-weight: 600; color: var(--primary);">Articles</td></tr>
+          <tr>
+            <td><span class="method-get">GET</span></td>
+            <td><code>/articles</code></td>
+            <td>List articles (filterable by tag, author, favorited)</td>
+            <td><span class="auth-tag auth-optional">Optional</span></td>
+            <td>ArticlesApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-get">GET</span></td>
+            <td><code>/articles/feed</code></td>
+            <td>Get articles from followed users</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>ArticlesApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-post">POST</span></td>
+            <td><code>/articles</code></td>
+            <td>Create article</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>ArticlesApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-get">GET</span></td>
+            <td><code>/articles/{slug}</code></td>
+            <td>Get single article</td>
+            <td><span class="auth-tag auth-optional">Optional</span></td>
+            <td>ArticleApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-put">PUT</span></td>
+            <td><code>/articles/{slug}</code></td>
+            <td>Update article</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>ArticleApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-delete">DELETE</span></td>
+            <td><code>/articles/{slug}</code></td>
+            <td>Delete article</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>ArticleApi</td>
+          </tr>
+
+          <tr><td colspan="5" style="background: #f8fafc; font-weight: 600; color: var(--primary);">Favorites</td></tr>
+          <tr>
+            <td><span class="method-post">POST</span></td>
+            <td><code>/articles/{slug}/favorite</code></td>
+            <td>Favorite article</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>ArticleFavoriteApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-delete">DELETE</span></td>
+            <td><code>/articles/{slug}/favorite</code></td>
+            <td>Unfavorite article</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>ArticleFavoriteApi</td>
+          </tr>
+
+          <tr><td colspan="5" style="background: #f8fafc; font-weight: 600; color: var(--primary);">Comments</td></tr>
+          <tr>
+            <td><span class="method-post">POST</span></td>
+            <td><code>/articles/{slug}/comments</code></td>
+            <td>Add comment to article</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>CommentsApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-get">GET</span></td>
+            <td><code>/articles/{slug}/comments</code></td>
+            <td>List comments for article</td>
+            <td><span class="auth-tag auth-optional">Optional</span></td>
+            <td>CommentsApi</td>
+          </tr>
+          <tr>
+            <td><span class="method-delete">DELETE</span></td>
+            <td><code>/articles/{slug}/comments/{id}</code></td>
+            <td>Delete comment</td>
+            <td><span class="auth-tag auth-required">Required</span></td>
+            <td>CommentsApi</td>
+          </tr>
+
+          <tr><td colspan="5" style="background: #f8fafc; font-weight: 600; color: var(--primary);">Tags</td></tr>
+          <tr>
+            <td><span class="method-get">GET</span></td>
+            <td><code>/tags</code></td>
+            <td>List all tags</td>
+            <td><span class="auth-tag auth-public">Public</span></td>
+            <td>TagsApi</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- GraphQL API -->
+  <section id="graphql-api">
+    <h2>GraphQL API</h2>
+    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Available at <code>/graphql</code> (public). Interactive explorer at <code>/graphiql</code>. Powered by Netflix DGS framework.</p>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon icon-blue">🔍</span> Queries</div>
+        <table>
+          <tr><th>Query</th><th>Description</th></tr>
+          <tr><td><code>article(slug)</code></td><td>Get a single article</td></tr>
+          <tr><td><code>articles(first, after, authoredBy, favoritedBy, withTag)</code></td><td>Paginated article list with filters</td></tr>
+          <tr><td><code>feed(first, after)</code></td><td>Feed from followed users</td></tr>
+          <tr><td><code>me</code></td><td>Current authenticated user</td></tr>
+          <tr><td><code>profile(username)</code></td><td>User profile lookup</td></tr>
+          <tr><td><code>tags</code></td><td>All available tags</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-purple">✏️</span> Mutations</div>
+        <table>
+          <tr><th>Mutation</th><th>Description</th></tr>
+          <tr><td><code>createUser(input)</code></td><td>Register new user</td></tr>
+          <tr><td><code>login(email, password)</code></td><td>Authenticate &amp; get token</td></tr>
+          <tr><td><code>updateUser(changes)</code></td><td>Update profile</td></tr>
+          <tr><td><code>followUser(username)</code></td><td>Follow a user</td></tr>
+          <tr><td><code>unfollowUser(username)</code></td><td>Unfollow a user</td></tr>
+          <tr><td><code>createArticle(input)</code></td><td>Publish an article</td></tr>
+          <tr><td><code>updateArticle(slug, changes)</code></td><td>Edit an article</td></tr>
+          <tr><td><code>deleteArticle(slug)</code></td><td>Remove an article</td></tr>
+          <tr><td><code>favoriteArticle(slug)</code></td><td>Favorite an article</td></tr>
+          <tr><td><code>unfavoriteArticle(slug)</code></td><td>Unfavorite an article</td></tr>
+          <tr><td><code>addComment(slug, body)</code></td><td>Comment on an article</td></tr>
+          <tr><td><code>deleteComment(slug, id)</code></td><td>Remove a comment</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-top: 1rem;">
+      <div class="card-title"><span class="icon icon-green">🔗</span> Key GraphQL Features</div>
+      <table>
+        <tr><td><strong>Cursor-based Pagination</strong></td><td>Relay-style connections with <code>edges</code>, <code>pageInfo</code>, <code>startCursor</code>/<code>endCursor</code></td></tr>
+        <tr><td><strong>Union Types</strong></td><td><code>UserResult = UserPayload | Error</code> for typed error handling</td></tr>
+        <tr><td><strong>Nested Resolvers</strong></td><td>Profile → articles, favorites, feed; Article → comments, author</td></tr>
+        <tr><td><strong>Code Generation</strong></td><td>DGS codegen from <code>schema.graphqls</code> via Gradle plugin</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- Security -->
+  <section id="security">
+    <h2>Security</h2>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon icon-blue">🔐</span> Authentication Flow</div>
+        <table>
+          <tr><td><strong>Strategy</strong></td><td>Stateless JWT (no server-side sessions)</td></tr>
+          <tr><td><strong>Header</strong></td><td><code>Authorization: Token &lt;jwt&gt;</code></td></tr>
+          <tr><td><strong>Library</strong></td><td>io.jsonwebtoken (jjwt) 0.11.2</td></tr>
+          <tr><td><strong>Token TTL</strong></td><td>86,400 seconds (24 hours)</td></tr>
+          <tr><td><strong>Password Hash</strong></td><td>BCrypt (via Spring Security)</td></tr>
+          <tr><td><strong>Filter</strong></td><td><code>JwtTokenFilter</code> before <code>UsernamePasswordAuthenticationFilter</code></td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-green">🛡️</span> Security Configuration</div>
+        <table>
+          <tr><td><strong>CSRF</strong></td><td>Disabled (stateless API)</td></tr>
+          <tr><td><strong>CORS</strong></td><td>All origins, selected headers</td></tr>
+          <tr><td><strong>Session</strong></td><td>STATELESS (no HttpSession)</td></tr>
+          <tr><td><strong>Public Endpoints</strong></td><td><code>GET /articles/**</code>, <code>GET /profiles/**</code>, <code>GET /tags</code>, <code>POST /users</code>, <code>POST /users/login</code>, <code>/graphql</code>, <code>/graphiql</code></td></tr>
+          <tr><td><strong>Protected</strong></td><td>All other endpoints require valid JWT</td></tr>
+          <tr><td><strong>401 Handling</strong></td><td>Returns HTTP 401 via <code>HttpStatusEntryPoint</code></td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dependencies -->
+  <section id="dependencies">
+    <h2>Dependencies</h2>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon icon-blue">📦</span> Runtime Dependencies</div>
+        <ul class="dep-list">
+          <li><div><span class="dep-name">spring-boot-starter-web</span><br><span class="dep-purpose">Embedded Tomcat, Spring MVC, REST support</span></div><span class="tag tag-blue">Web</span></li>
+          <li><div><span class="dep-name">spring-boot-starter-validation</span><br><span class="dep-purpose">JSR-303 bean validation (javax.validation)</span></div><span class="tag tag-blue">Validation</span></li>
+          <li><div><span class="dep-name">spring-boot-starter-hateoas</span><br><span class="dep-purpose">Hypermedia-driven REST support</span></div><span class="tag tag-blue">REST</span></li>
+          <li><div><span class="dep-name">spring-boot-starter-security</span><br><span class="dep-purpose">Authentication &amp; authorization framework</span></div><span class="tag tag-blue">Security</span></li>
+          <li><div><span class="dep-name">mybatis-spring-boot-starter 2.2.2</span><br><span class="dep-purpose">SQL mapping framework with Spring integration</span></div><span class="tag tag-green">Data</span></li>
+          <li><div><span class="dep-name">graphql-dgs-spring-boot-starter 4.9.21</span><br><span class="dep-purpose">Netflix DGS GraphQL server framework</span></div><span class="tag tag-purple">GraphQL</span></li>
+          <li><div><span class="dep-name">flyway-core</span><br><span class="dep-purpose">Database schema migration management</span></div><span class="tag tag-green">Data</span></li>
+          <li><div><span class="dep-name">jjwt-api / jjwt-impl / jjwt-jackson 0.11.2</span><br><span class="dep-purpose">JWT creation and validation</span></div><span class="tag tag-amber">Auth</span></li>
+          <li><div><span class="dep-name">joda-time 2.10.13</span><br><span class="dep-purpose">Date/time handling (legacy but stable)</span></div><span class="tag tag-amber">Utility</span></li>
+          <li><div><span class="dep-name">sqlite-jdbc 3.36.0.3</span><br><span class="dep-purpose">Embedded SQLite database driver</span></div><span class="tag tag-green">Data</span></li>
+          <li><div><span class="dep-name">lombok</span><br><span class="dep-purpose">Compile-time code generation (getters, equals, etc.)</span></div><span class="tag tag-amber">Utility</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-purple">🧪</span> Test Dependencies</div>
+        <ul class="dep-list">
+          <li><div><span class="dep-name">spring-boot-starter-test</span><br><span class="dep-purpose">JUnit 5, Mockito, AssertJ, Spring Test</span></div><span class="tag tag-purple">Test</span></li>
+          <li><div><span class="dep-name">rest-assured 4.5.1</span><br><span class="dep-purpose">Fluent HTTP API testing DSL</span></div><span class="tag tag-purple">Test</span></li>
+          <li><div><span class="dep-name">rest-assured spring-mock-mvc</span><br><span class="dep-purpose">MockMvc integration for controller tests</span></div><span class="tag tag-purple">Test</span></li>
+          <li><div><span class="dep-name">spring-security-test</span><br><span class="dep-purpose">Security context test utilities</span></div><span class="tag tag-purple">Test</span></li>
+          <li><div><span class="dep-name">mybatis-spring-boot-starter-test 2.2.2</span><br><span class="dep-purpose">MyBatis mapper/repository testing</span></div><span class="tag tag-purple">Test</span></li>
+        </ul>
+        <div style="margin-top: 1.5rem;">
+          <div class="card-title"><span class="icon icon-amber">🔧</span> Build Tools</div>
+          <ul class="dep-list">
+            <li><div><span class="dep-name">Gradle</span><br><span class="dep-purpose">Build automation (wrapper included)</span></div><span class="tag tag-amber">Build</span></li>
+            <li><div><span class="dep-name">Spotless 6.2.1</span><br><span class="dep-purpose">Code formatting (Google Java Format)</span></div><span class="tag tag-amber">Build</span></li>
+            <li><div><span class="dep-name">DGS Codegen 5.0.6</span><br><span class="dep-purpose">GraphQL schema → Java type generation</span></div><span class="tag tag-amber">Build</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testing -->
+  <section id="testing">
+    <h2>Testing</h2>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon icon-purple">🧪</span> Test Overview</div>
+        <p style="margin-bottom: 1rem; color: var(--text-secondary);">23 test files covering API endpoints, application services, domain logic, and repository persistence.</p>
+        <table>
+          <tr><th>Category</th><th>Files</th><th>Scope</th></tr>
+          <tr><td>API Tests</td><td>8</td><td>REST controller integration tests via MockMvc + RestAssured</td></tr>
+          <tr><td>Application Tests</td><td>4</td><td>Query service unit tests (article, comment, profile, tag)</td></tr>
+          <tr><td>Core Tests</td><td>1</td><td>Domain entity logic (Article slug generation, updates)</td></tr>
+          <tr><td>Infrastructure Tests</td><td>6</td><td>MyBatis repository tests, JWT service, DB transaction tests</td></tr>
+          <tr><td>Integration Tests</td><td>1</td><td>Full Spring Boot context loading</td></tr>
+          <tr><td>Helpers</td><td>3</td><td>TestHelper, TestWithCurrentUser, DbTestBase</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon icon-green">🏃</span> Running Tests</div>
+        <div style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; margin-bottom: 1rem;">
+          <div style="color: #94a3b8; margin-bottom: 0.5rem;"># Run all tests</div>
+          <div>./gradlew test</div>
+          <br>
+          <div style="color: #94a3b8; margin-bottom: 0.5rem;"># Run the application</div>
+          <div>./gradlew bootRun</div>
+          <br>
+          <div style="color: #94a3b8; margin-bottom: 0.5rem;"># Format code</div>
+          <div>./gradlew spotlessJavaApply</div>
+          <br>
+          <div style="color: #94a3b8; margin-bottom: 0.5rem;"># Build Docker image</div>
+          <div>./gradlew bootBuildImage --imageName spring-boot-realworld-example-app</div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+          Tests use JUnit 5 platform. API tests leverage RestAssured's Spring MockMvc integration for fluent HTTP assertions. Repository tests use a test-specific SQLite database configured in <code>application-test.properties</code>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Getting Started -->
+  <section id="getting-started">
+    <h2>Getting Started</h2>
+    <div class="card">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+        <div>
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">1. Prerequisites</h3>
+          <ul style="padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.9rem;">
+            <li>Java 11 (JDK)</li>
+            <li>Git</li>
+            <li>Docker (optional)</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">2. Run Locally</h3>
+          <div style="background: #1e293b; color: #e2e8f0; padding: 0.75rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem;">
+            git clone &lt;repo-url&gt;<br>
+            cd spring-boot-realworld-example-app<br>
+            ./gradlew bootRun
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">3. Verify</h3>
+          <div style="background: #1e293b; color: #e2e8f0; padding: 0.75rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem;">
+            curl http://localhost:8080/tags
+          </div>
+          <p style="margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">Should return a JSON object with a <code>tags</code> array.</p>
+        </div>
+        <div>
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">4. GraphQL Playground</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            Open <code>http://localhost:8080/graphiql</code> in your browser for the interactive GraphQL explorer.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="footer">
+  <p>Generated on May 25, 2026 &bull; spring-boot-realworld-example-app &bull; Commit <code>1b03279e</code></p>
+</div>
+
+</body>
+</html>
