@@ -1,5 +1,9 @@
 package io.spring.api.security;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,7 +47,7 @@ class JwtTokenFilterTest {
     jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
     verify(filterChain).doFilter(request, response);
-    assert SecurityContextHolder.getContext().getAuthentication() == null;
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
   }
 
   @Test
@@ -53,7 +57,7 @@ class JwtTokenFilterTest {
     jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
     verify(filterChain).doFilter(request, response);
-    assert SecurityContextHolder.getContext().getAuthentication() == null;
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
   }
 
   @Test
@@ -68,8 +72,8 @@ class JwtTokenFilterTest {
     jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
     verify(filterChain).doFilter(request, response);
-    assert SecurityContextHolder.getContext().getAuthentication() != null;
-    assert SecurityContextHolder.getContext().getAuthentication().getPrincipal().equals(user);
+    assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+    assertEquals(user, SecurityContextHolder.getContext().getAuthentication().getPrincipal());
   }
 
   @Test
@@ -84,7 +88,7 @@ class JwtTokenFilterTest {
     jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
     verify(filterChain).doFilter(request, response);
-    assert SecurityContextHolder.getContext().getAuthentication() == null;
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
   }
 
   @Test
@@ -102,6 +106,6 @@ class JwtTokenFilterTest {
     jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
     verify(filterChain).doFilter(request, response);
-    assert SecurityContextHolder.getContext().getAuthentication() == existingAuth;
+    assertSame(existingAuth, SecurityContextHolder.getContext().getAuthentication());
   }
 }
