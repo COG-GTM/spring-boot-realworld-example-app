@@ -2,6 +2,8 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import io.spring.core.service.JwtService;
+import io.spring.core.user.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,10 +23,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+  private final UserRepository userRepository;
+  private final JwtService jwtService;
+
+  public WebSecurityConfig(UserRepository userRepository, JwtService jwtService) {
+    this.userRepository = userRepository;
+    this.jwtService = jwtService;
+  }
 
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
-    return new JwtTokenFilter();
+    return new JwtTokenFilter(userRepository, jwtService);
   }
 
   @Bean
