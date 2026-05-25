@@ -162,4 +162,44 @@ public class CommentsApiTest extends TestWithCurrentUser {
         .then()
         .statusCode(403);
   }
+
+  @Test
+  public void should_get_404_when_create_comment_for_nonexistent_article() throws Exception {
+    when(articleRepository.findBySlug(eq("non-existent-slug"))).thenReturn(Optional.empty());
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "comment",
+                new HashMap<String, Object>() {
+                  {
+                    put("body", "comment content");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles/{slug}/comments", "non-existent-slug")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_404_when_delete_comment_not_found() throws Exception {
+    when(commentRepository.findById(eq(article.getId()), eq("non-existent-comment-id")))
+        .thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/articles/{slug}/comments/{id}", article.getSlug(), "non-existent-comment-id")
+        .then()
+        .statusCode(404);
+  }
 }

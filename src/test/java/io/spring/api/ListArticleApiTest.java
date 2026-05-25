@@ -3,6 +3,7 @@ package io.spring.api;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.spring.TestHelper.articleDataFixture;
 import static java.util.Arrays.asList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -13,7 +14,11 @@ import io.spring.application.ArticleQueryService;
 import io.spring.application.Page;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleDataList;
+import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +73,120 @@ public class ListArticleApiTest extends TestWithCurrentUser {
         .header("Authorization", "Token " + token)
         .when()
         .get("/articles/feed")
+        .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_create_article_success() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "article",
+                new HashMap<String, Object>() {
+                  {
+                    put("title", "How to train your dragon");
+                    put("description", "Ever wonder how?");
+                    put("body", "You have to believe");
+                    put("tagList", Arrays.asList("reactjs", "angularjs", "dragons"));
+                  }
+                });
+          }
+        };
+
+    Article article =
+        new Article(
+            "How to train your dragon",
+            "Ever wonder how?",
+            "You have to believe",
+            Arrays.asList("reactjs", "angularjs", "dragons"),
+            user.getId());
+
+    when(articleCommandService.createArticle(any(), eq(user))).thenReturn(article);
+    when(articleQueryService.findById(eq(article.getId()), eq(user)))
+        .thenReturn(java.util.Optional.of(articleDataFixture("1", user)));
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles")
+        .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_422_when_create_article_with_empty_title() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "article",
+                new HashMap<String, Object>() {
+                  {
+                    put("title", "");
+                    put("description", "");
+                    put("body", "");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles")
+        .prettyPeek()
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void should_get_articles_with_tag_filter() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq("reactjs"), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    RestAssuredMockMvc.when()
+        .get("/articles?tag=reactjs")
+        .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_with_author_filter() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq("johnjacob"), eq(null), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    RestAssuredMockMvc.when()
+        .get("/articles?author=johnjacob")
+        .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_articles_with_favorited_filter() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(asList(articleDataFixture("1", user)), 1);
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq(null), eq("johnjacob"), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(articleDataList);
+
+    RestAssuredMockMvc.when()
+        .get("/articles?favorited=johnjacob")
         .prettyPeek()
         .then()
         .statusCode(200);
