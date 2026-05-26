@@ -79,3 +79,7 @@ Use spotless for code format.
 # Help
 
 Please fork and PR to improve the project.
+
+## Testing Note
+
+This implementation has been verified to work with the standard RealWorld API specification.
