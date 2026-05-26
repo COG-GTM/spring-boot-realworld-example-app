@@ -36,17 +36,25 @@ public class WebSecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .cors(cors -> {})
-        .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+        .exceptionHandling(
+            ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.OPTIONS).permitAll()
-            .requestMatchers("/graphiql").permitAll()
-            .requestMatchers("/graphql").permitAll()
-            .requestMatchers(HttpMethod.GET, "/articles/feed").authenticated()
-            .requestMatchers(HttpMethod.POST, "/users", "/users/login").permitAll()
-            .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags").permitAll()
-            .anyRequest().authenticated()
-        );
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers(HttpMethod.OPTIONS)
+                    .permitAll()
+                    .requestMatchers("/graphiql")
+                    .permitAll()
+                    .requestMatchers("/graphql")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/articles/feed")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/users", "/users/login")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated());
     http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }

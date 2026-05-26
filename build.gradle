@@ -12,10 +12,7 @@ targetCompatibility = '17'
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
-        }
+        target 'src/**/*.java'
         googleJavaFormat()
     }
 }
@@ -38,7 +35,6 @@ dependencies {
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:8.5.0'
     implementation 'org.flywaydb:flyway-core'
-    implementation 'org.flywaydb:flyway-database-sqlite'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5',
                 'io.jsonwebtoken:jjwt-jackson:0.12.5'
