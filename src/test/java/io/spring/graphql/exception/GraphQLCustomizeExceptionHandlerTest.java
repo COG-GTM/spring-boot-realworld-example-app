@@ -101,7 +101,7 @@ public class GraphQLCustomizeExceptionHandlerTest {
     Set<ConstraintViolation<?>> violations = new HashSet<>();
     ConstraintViolation violation = mock(ConstraintViolation.class);
     Path path = mock(Path.class);
-    when(path.toString()).thenReturn("register.email");
+    when(path.toString()).thenReturn("register.param.email");
     when(violation.getPropertyPath()).thenReturn(path);
     when(violation.getMessage()).thenReturn("must not be blank");
     when(violation.getRootBeanClass()).thenReturn(Object.class);
@@ -121,5 +121,8 @@ public class GraphQLCustomizeExceptionHandlerTest {
     assertNotNull(error);
     assertEquals("BAD_REQUEST", error.getMessage());
     assertFalse(error.getErrors().isEmpty());
+    assertTrue(
+        error.getErrors().stream()
+            .anyMatch(e -> e.getKey().equals("email")));
   }
 }
