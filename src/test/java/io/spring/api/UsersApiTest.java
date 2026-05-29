@@ -55,7 +55,7 @@ public class UsersApiTest {
   @BeforeEach
   public void setUp() throws Exception {
     RestAssuredMockMvc.mockMvc(mvc);
-    defaultAvatar = "https://static.productionready.io/images/smiley-cyrus.jpg";
+    defaultAvatar = "https://api.realworld.io/images/smiley-cyrus.jpg";
   }
 
   @Test

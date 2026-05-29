@@ -29,7 +29,7 @@ abstract class TestWithCurrentUser {
   protected void userFixture() {
     email = "john@jacob.com";
     username = "johnjacob";
-    defaultAvatar = "https://static.productionready.io/images/smiley-cyrus.jpg";
+    defaultAvatar = "https://api.realworld.io/images/smiley-cyrus.jpg";
 
     user = new User(email, username, "123", "", defaultAvatar);
     when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(user));
