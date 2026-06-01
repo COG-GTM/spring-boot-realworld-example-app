@@ -62,7 +62,7 @@ public class ArticleQueryServiceTest extends DbTestBase {
     Assertions.assertTrue(optional.isPresent());
 
     ArticleData fetched = optional.get();
-    Assertions.assertEquals(fetched.getFavoritesCount(), 0);
+    Assertions.assertEquals(0, fetched.getFavoritesCount());
     Assertions.assertFalse(fetched.isFavorited());
     Assertions.assertNotNull(fetched.getCreatedAt());
     Assertions.assertNotNull(fetched.getUpdatedAt());
