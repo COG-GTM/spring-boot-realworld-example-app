@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UAE Account Engine — Command Centre</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --panel: #121826;
+      --panel-2: #1a2234;
+      --border: #243049;
+      --text: #e6ecf5;
+      --muted: #8a98b3;
+      --accent: #5b8cff;
+      --accent-2: #36d399;
+      --warn: #f5b942;
+      --cold: #6b7a99;
+      --danger: #ff6b6b;
+      --shadow: 0 8px 30px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 80% -10%, #15203a 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header.top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 32px; border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(20,28,48,.9), rgba(10,14,23,.6));
+      position: sticky; top: 0; z-index: 20; backdrop-filter: blur(8px);
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand .logo {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #8a5bff);
+      display: grid; place-items: center; font-weight: 800; font-size: 18px; color: #fff;
+      box-shadow: var(--shadow);
+    }
+    .brand h1 { font-size: 18px; margin: 0; letter-spacing: .3px; }
+    .brand p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+    .top-meta { text-align: right; font-size: 12px; color: var(--muted); }
+    .top-meta strong { color: var(--text); }
+
+    .wrap { padding: 24px 32px 60px; max-width: 1500px; margin: 0 auto; }
+
+    .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 22px; }
+    .kpi {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px 18px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .kpi::after {
+      content: ""; position: absolute; right: -20px; top: -20px; width: 80px; height: 80px;
+      border-radius: 50%; background: var(--accent); opacity: .06;
+    }
+    .kpi .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+    .kpi .value { font-size: 34px; font-weight: 800; margin-top: 6px; }
+    .kpi .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .kpi.green .value { color: var(--accent-2); }
+    .kpi.amber .value { color: var(--warn); }
+    .kpi.cold .value { color: var(--cold); }
+    .kpi.blue .value { color: var(--accent); }
+
+    .grid-2 { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 16px; margin-bottom: 22px; }
+    .panel {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+      padding: 18px; box-shadow: var(--shadow);
+    }
+    .panel h3 { margin: 0 0 12px; font-size: 14px; font-weight: 700; letter-spacing: .3px; }
+    .chart { width: 100%; height: 240px; }
+
+    .funnel { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+    .funnel-row { display: flex; align-items: center; gap: 12px; }
+    .funnel-bar {
+      height: 34px; border-radius: 8px; display: flex; align-items: center; padding: 0 12px;
+      color: #06101f; font-weight: 700; font-size: 13px; min-width: 60px; transition: width .6s ease;
+    }
+    .funnel-label { width: 120px; font-size: 13px; color: var(--muted); }
+
+    .toolbar {
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .toolbar input[type="text"] {
+      flex: 1; min-width: 240px; background: var(--panel-2); border: 1px solid var(--border);
+      color: var(--text); padding: 11px 14px; border-radius: 10px; font-size: 14px; outline: none;
+    }
+    .toolbar input::placeholder { color: var(--muted); }
+    .seg { display: flex; gap: 6px; background: var(--panel-2); border: 1px solid var(--border); padding: 4px; border-radius: 10px; flex-wrap: wrap; }
+    .seg button {
+      background: transparent; border: none; color: var(--muted); padding: 7px 12px;
+      border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .15s;
+    }
+    .seg button.active { background: var(--accent); color: #fff; }
+    .seg button:hover:not(.active) { color: var(--text); }
+    .count-pill { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; }
+    .card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px 18px; box-shadow: var(--shadow); transition: border-color .2s, transform .1s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card .row1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .card .name { font-size: 16px; font-weight: 700; }
+    .card .title { font-size: 12.5px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .badge { font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; white-space: nowrap; }
+    .badge.cat { background: rgba(91,140,255,.14); color: #9db8ff; border: 1px solid rgba(91,140,255,.3); }
+    .status { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+    .status.connected { background: rgba(54,211,153,.16); color: var(--accent-2); }
+    .status.messaged { background: rgba(245,185,66,.16); color: var(--warn); }
+    .status.notcontacted { background: rgba(107,122,153,.18); color: #aab6cc; }
+    .card .links { margin-top: 12px; display: flex; gap: 14px; align-items: center; }
+    .card .links .li { font-size: 12.5px; font-weight: 600; }
+    .expand-btn {
+      margin-left: auto; background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+      font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    }
+    .expand-btn:hover { color: var(--text); border-color: var(--accent); }
+    .has-msg { color: var(--accent-2); }
+    .no-msg { color: var(--cold); }
+    .detail { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; display: none; }
+    .detail.open { display: block; }
+    .detail .block { margin-bottom: 12px; }
+    .detail .block:last-child { margin-bottom: 0; }
+    .detail .block .h {
+      font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--accent);
+      font-weight: 700; margin-bottom: 4px;
+    }
+    .detail .block.why .h { color: var(--warn); }
+    .detail .block .b { font-size: 13px; line-height: 1.55; color: #d4ddec; }
+    .detail .empty { font-size: 12.5px; color: var(--cold); font-style: italic; }
+    .empty-state { text-align: center; color: var(--muted); padding: 50px; grid-column: 1/-1; }
+    footer { text-align: center; color: var(--muted); font-size: 12px; padding: 30px; }
+    @media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="logo">UAE</div>
+      <div>
+        <h1>UAE Account Engine — Command Centre</h1>
+        <p>First Abu Dhabi Bank (FAB) · Cognition / Devin GTM</p>
+      </div>
+    </div>
+    <div class="top-meta">
+      <div><strong id="totalMeta">—</strong> tracked stakeholders</div>
+      <div id="updated">—</div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <section class="kpis" id="kpis"></section>
+
+    <section class="grid-2">
+      <div class="panel">
+        <h3>Outreach Pipeline</h3>
+        <div class="funnel" id="funnel"></div>
+      </div>
+      <div class="panel">
+        <h3>Status Breakdown</h3>
+        <div class="chart" id="statusChart"></div>
+      </div>
+      <div class="panel">
+        <h3>By Category</h3>
+        <div class="chart" id="catChart"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="toolbar">
+        <input type="text" id="search" placeholder="Search name, title, or messaging…" />
+        <div class="seg" id="statusSeg"></div>
+        <div class="seg" id="catSeg"></div>
+        <span class="count-pill" id="countPill"></span>
+      </div>
+      <div class="cards" id="cards"></div>
+    </section>
+  </div>
+
+  <footer>UAE Account Engine · Built for the FAB account team · Data sourced from the UAE Account Engine sheet</footer>
+
+  <script src="data.js"></script>
+  <script>
+    const STATUS_META = {
+      "Connected": { cls: "connected", color: "#36d399", key: "connected" },
+      "Messaged": { cls: "messaged", color: "#f5b942", key: "messaged" },
+      "Not Contacted": { cls: "notcontacted", color: "#6b7a99", key: "notcontacted" },
+    };
+    const state = { status: "All", category: "All", q: "" };
+
+    function esc(s) { return (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+    function statusClass(s) { return (STATUS_META[s] || STATUS_META["Not Contacted"]).cls; }
+
+    function renderKpis() {
+      const total = CONTACTS.length;
+      const connected = CONTACTS.filter(c => c.status === "Connected").length;
+      const messaged = CONTACTS.filter(c => c.status === "Messaged").length;
+      const cold = CONTACTS.filter(c => c.status === "Not Contacted").length;
+      const ready = CONTACTS.filter(c => c.messaging).length;
+      const engaged = connected + messaged;
+      const items = [
+        { label: "Total Stakeholders", value: total, sub: "across 4 tiers", cls: "blue" },
+        { label: "Engaged", value: engaged, sub: Math.round(engaged / total * 100) + "% of accounts", cls: "green" },
+        { label: "Connected", value: connected, sub: "accepted / in convo", cls: "green" },
+        { label: "Messaged", value: messaged, sub: "awaiting reply", cls: "amber" },
+        { label: "Not Contacted", value: cold, sub: "open whitespace", cls: "cold" },
+      ];
+      document.getElementById("kpis").innerHTML = items.map(i => `
+        <div class="kpi ${i.cls}">
+          <div class="label">${i.label}</div>
+          <div class="value">${i.value}</div>
+          <div class="sub">${i.sub}</div>
+        </div>`).join("");
+      document.getElementById("totalMeta").textContent = total;
+      document.getElementById("updated").textContent = "Messaging ready: " + ready + "/" + total;
+    }
+
+    function renderFunnel() {
+      const total = CONTACTS.length;
+      const stages = [
+        { name: "Not Contacted", color: "#6b7a99" },
+        { name: "Messaged", color: "#f5b942" },
+        { name: "Connected", color: "#36d399" },
+      ];
+      const max = total;
+      document.getElementById("funnel").innerHTML = stages.map(s => {
+        const n = CONTACTS.filter(c => c.status === s.name).length;
+        const w = Math.max(8, Math.round(n / max * 100));
+        return `<div class="funnel-row">
+          <span class="funnel-label">${s.name}</span>
+          <div class="funnel-bar" style="width:${w}%;background:${s.color}">${n}</div>
+        </div>`;
+      }).join("");
+    }
+
+    function renderCharts() {
+      const statusChart = echarts.init(document.getElementById("statusChart"));
+      const counts = {};
+      CONTACTS.forEach(c => counts[c.status] = (counts[c.status] || 0) + 1);
+      statusChart.setOption({
+        tooltip: { trigger: "item" },
+        legend: { bottom: 0, textStyle: { color: "#8a98b3" } },
+        series: [{
+          type: "pie", radius: ["45%", "70%"], center: ["50%", "44%"],
+          itemStyle: { borderColor: "#121826", borderWidth: 2 },
+          label: { color: "#e6ecf5", fontSize: 12 },
+          data: Object.keys(counts).map(k => ({
+            name: k, value: counts[k],
+            itemStyle: { color: (STATUS_META[k] || {}).color || "#6b7a99" }
+          }))
+        }]
+      });
+
+      const catChart = echarts.init(document.getElementById("catChart"));
+      const cats = {};
+      CONTACTS.forEach(c => cats[c.category] = (cats[c.category] || 0) + 1);
+      const catNames = Object.keys(cats);
+      catChart.setOption({
+        grid: { left: 8, right: 16, top: 10, bottom: 4, containLabel: true },
+        tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+        xAxis: { type: "value", axisLabel: { color: "#8a98b3" }, splitLine: { lineStyle: { color: "#243049" } } },
+        yAxis: { type: "category", data: catNames, axisLabel: { color: "#cdd7ea", fontSize: 11 } },
+        series: [{
+          type: "bar", data: catNames.map(n => cats[n]), barWidth: "55%",
+          itemStyle: { color: "#5b8cff", borderRadius: [0, 6, 6, 0] },
+          label: { show: true, position: "right", color: "#e6ecf5" }
+        }]
+      });
+      window.addEventListener("resize", () => { statusChart.resize(); catChart.resize(); });
+    }
+
+    function buildSegments() {
+      const statuses = ["All", "Connected", "Messaged", "Not Contacted"];
+      document.getElementById("statusSeg").innerHTML = statuses.map(s =>
+        `<button data-status="${s}" class="${s === state.status ? "active" : ""}">${s}</button>`).join("");
+      const cats = ["All", ...Array.from(new Set(CONTACTS.map(c => c.category)))];
+      document.getElementById("catSeg").innerHTML = cats.map(c =>
+        `<button data-cat="${c}" class="${c === state.category ? "active" : ""}">${c}</button>`).join("");
+
+      document.querySelectorAll("#statusSeg button").forEach(b => b.onclick = () => {
+        state.status = b.dataset.status; syncSeg(); renderCards();
+      });
+      document.querySelectorAll("#catSeg button").forEach(b => b.onclick = () => {
+        state.category = b.dataset.cat; syncSeg(); renderCards();
+      });
+    }
+    function syncSeg() {
+      document.querySelectorAll("#statusSeg button").forEach(b => b.classList.toggle("active", b.dataset.status === state.status));
+      document.querySelectorAll("#catSeg button").forEach(b => b.classList.toggle("active", b.dataset.cat === state.category));
+    }
+
+    function filtered() {
+      const q = state.q.toLowerCase();
+      return CONTACTS.filter(c => {
+        if (state.status !== "All" && c.status !== state.status) return false;
+        if (state.category !== "All" && c.category !== state.category) return false;
+        if (q) {
+          const hay = (c.name + " " + c.title + " " + c.messaging + " " + c.whyNow + " " + c.whyCognition).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function block(label, val, why) {
+      if (!val) return "";
+      return `<div class="block ${why ? "why" : ""}"><div class="h">${label}</div><div class="b">${esc(val)}</div></div>`;
+    }
+
+    function renderCards() {
+      const list = filtered();
+      document.getElementById("countPill").textContent = list.length + " of " + CONTACTS.length + " shown";
+      const el = document.getElementById("cards");
+      if (!list.length) { el.innerHTML = `<div class="empty-state">No stakeholders match the current filters.</div>`; return; }
+      el.innerHTML = list.map(c => {
+        const hasMsg = c.messaging || c.whyNow || c.whyCognition || c.whyAnything || c.talkTrack;
+        const detail = hasMsg
+          ? block("Messaging Track", c.messaging) + block("Talk Track", c.talkTrack) +
+            block("Why Now", c.whyNow, true) + block("Why Anything", c.whyAnything, true) +
+            block("Why Cognition", c.whyCognition, true)
+          : `<div class="empty">No messaging assets drafted yet for this stakeholder.</div>`;
+        return `<div class="card">
+          <div class="row1">
+            <div>
+              <div class="name">${esc(c.name)}</div>
+              <div class="title">${esc(c.title)}</div>
+            </div>
+            <span class="status ${statusClass(c.status)}">${esc(c.status)}</span>
+          </div>
+          <div class="badges">
+            <span class="badge cat">${esc(c.category)}</span>
+            <span class="badge cat" style="background:rgba(138,152,179,.12);color:#aab6cc;border-color:#2c3a55">#${esc(c.id)}</span>
+          </div>
+          <div class="links">
+            <a class="li" href="${esc(c.linkedin)}" target="_blank" rel="noopener">LinkedIn ↗</a>
+            <span class="li ${hasMsg ? "has-msg" : "no-msg"}">${hasMsg ? "● Messaging ready" : "○ No messaging"}</span>
+            <button class="expand-btn" onclick="toggle(this)">Details ▾</button>
+          </div>
+          <div class="detail">${detail}</div>
+        </div>`;
+      }).join("");
+    }
+    function toggle(btn) {
+      const d = btn.closest(".card").querySelector(".detail");
+      const open = d.classList.toggle("open");
+      btn.textContent = open ? "Details ▴" : "Details ▾";
+    }
+
+    document.getElementById("search").addEventListener("input", e => { state.q = e.target.value; renderCards(); });
+
+    renderKpis();
+    renderFunnel();
+    renderCharts();
+    buildSegments();
+    renderCards();
+  </script>
+</body>
+</html>
