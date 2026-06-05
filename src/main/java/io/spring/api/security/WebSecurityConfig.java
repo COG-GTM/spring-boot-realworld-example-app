@@ -48,6 +48,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authorizeRequests()
         .antMatchers(HttpMethod.OPTIONS)
         .permitAll()
+        .antMatchers(HttpMethod.GET, "/uae-command-centre/**")
+        .permitAll()
         .antMatchers("/graphiql")
         .permitAll()
         .antMatchers("/graphql")
