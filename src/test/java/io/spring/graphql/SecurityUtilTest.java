@@ -52,4 +52,12 @@ public class SecurityUtilTest {
     Optional<User> result = SecurityUtil.getCurrentUser();
     assertTrue(result.isEmpty());
   }
+
+  @Test
+  void should_throw_npe_when_authentication_is_null() {
+    // Pre-existing bug: SecurityUtil doesn't null-check authentication before calling
+    // getPrincipal()
+    SecurityContextHolder.clearContext();
+    assertThrows(NullPointerException.class, () -> SecurityUtil.getCurrentUser());
+  }
 }
