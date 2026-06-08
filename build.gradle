@@ -4,6 +4,11 @@ plugins {
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
+    id 'jacoco'
+}
+
+jacoco {
+    toolVersion = "0.8.7"
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -58,6 +63,15 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
 
 tasks.named('clean') {
