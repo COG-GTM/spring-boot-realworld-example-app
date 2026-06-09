@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.Optional;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -87,10 +89,14 @@ public class CommentMutationTest {
 
   @Test
   public void should_fail_create_comment_when_not_authenticated() {
-    SecurityContextHolder.clearContext();
-    SecurityContextHolder.getContext().setAuthentication(null);
+    SecurityContextHolder.getContext()
+        .setAuthentication(
+            new AnonymousAuthenticationToken(
+                "key",
+                "anonymous",
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))));
     assertThrows(
-        NullPointerException.class,
+        AuthenticationException.class,
         () -> commentMutation.createComment("title", "body"));
   }
 

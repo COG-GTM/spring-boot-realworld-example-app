@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -85,8 +87,12 @@ public class ArticleMutationTest {
 
   @Test
   public void should_fail_create_article_when_not_authenticated() {
-    SecurityContextHolder.clearContext();
-    SecurityContextHolder.getContext().setAuthentication(null);
+    SecurityContextHolder.getContext()
+        .setAuthentication(
+            new AnonymousAuthenticationToken(
+                "key",
+                "anonymous",
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))));
 
     CreateArticleInput input =
         CreateArticleInput.newBuilder()
@@ -94,7 +100,7 @@ public class ArticleMutationTest {
             .description("desc")
             .body("body")
             .build();
-    assertThrows(NullPointerException.class, () -> articleMutation.createArticle(input));
+    assertThrows(AuthenticationException.class, () -> articleMutation.createArticle(input));
   }
 
   @Test
