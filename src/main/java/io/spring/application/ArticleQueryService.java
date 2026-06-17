@@ -120,6 +120,9 @@ public class ArticleQueryService {
       return new ArticleDataList(new ArrayList<>(), count);
     }
     List<ArticleData> articles = articleReadService.findArticles(articleIds);
+    if (articles.isEmpty()) {
+      return new ArticleDataList(new ArrayList<>(), count);
+    }
     fillExtraInfo(articles, user);
     return new ArticleDataList(articles, count);
   }
