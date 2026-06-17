@@ -1,11 +1,13 @@
 package io.spring.application;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
 import io.spring.application.data.ArticleFavoriteCount;
 import io.spring.core.user.User;
+import io.spring.infrastructure.mybatis.mapper.ArticleBookmarkMapper;
 import io.spring.infrastructure.mybatis.readservice.ArticleFavoritesReadService;
 import io.spring.infrastructure.mybatis.readservice.ArticleReadService;
 import io.spring.infrastructure.mybatis.readservice.UserRelationshipQueryService;
@@ -14,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -26,6 +29,7 @@ public class ArticleQueryService {
   private ArticleReadService articleReadService;
   private UserRelationshipQueryService userRelationshipQueryService;
   private ArticleFavoritesReadService articleFavoritesReadService;
+  private ArticleBookmarkMapper articleBookmarkMapper;
 
   public Optional<ArticleData> findById(String id, User user) {
     ArticleData articleData = articleReadService.findById(id);
@@ -108,6 +112,25 @@ public class ArticleQueryService {
       fillExtraInfo(articles, currentUser);
       return new ArticleDataList(articles, articleCount);
     }
+  }
+
+  public ArticleDataList findBookmarkedArticles(User user, Page page) {
+    List<String> articleIds =
+        articleBookmarkMapper.findByUserId(user.getId(), page.getOffset(), page.getLimit());
+    int count = articleBookmarkMapper.countByUserId(user.getId());
+    if (articleIds.size() == 0) {
+      return new ArticleDataList(new ArrayList<>(), count);
+    }
+    List<ArticleData> articles = articleReadService.findArticles(articleIds);
+    Map<String, ArticleData> articleById =
+        articles.stream().collect(toMap(ArticleData::getId, article -> article));
+    List<ArticleData> ordered =
+        articleIds.stream().map(articleById::get).filter(Objects::nonNull).collect(toList());
+    if (ordered.isEmpty()) {
+      return new ArticleDataList(new ArrayList<>(), count);
+    }
+    fillExtraInfo(ordered, user);
+    return new ArticleDataList(ordered, count);
   }
 
   public ArticleDataList findUserFeed(User user, Page page) {
