@@ -19,15 +19,19 @@
     </delete>
 
     <select id="findByUserId" resultType="string">
-        select article_id
-        from article_bookmarks
-        where user_id = #{userId}
-        order by created_at desc
+        select B.article_id
+        from article_bookmarks B
+        join articles A on A.id = B.article_id
+        where B.user_id = #{userId}
+        order by B.created_at desc
         limit #{limit} offset #{offset}
     </select>
 
     <select id="countByUserId" resultType="int">
-        select count(*) from article_bookmarks where user_id = #{userId}
+        select count(*)
+        from article_bookmarks B
+        join articles A on A.id = B.article_id
+        where B.user_id = #{userId}
     </select>
 
 </mapper>
