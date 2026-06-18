@@ -24,6 +24,8 @@ repositories {
     mavenCentral()
 }
 
+ext['tomcat.version'] = '9.0.98'
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
