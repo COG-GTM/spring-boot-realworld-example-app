@@ -10,6 +10,8 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 targetCompatibility = '11'
 
+ext['tomcat.version'] = '9.0.99'
+
 spotless {
     java {
         target project.fileTree(project.rootDir) {
