@@ -10,6 +10,8 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 targetCompatibility = '11'
 
+ext['spring-framework.version'] = '5.3.32'
+
 spotless {
     java {
         target project.fileTree(project.rootDir) {
