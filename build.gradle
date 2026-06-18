@@ -30,6 +30,8 @@ configurations {
     }
 }
 
+ext['json-path.version'] = '2.9.0' // CVE-2023-51074 (SNYK-JAVA-COMJAYWAYJSONPATH-6140361): json-path < 2.9.0 buffer overflow
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
