@@ -10,6 +10,11 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 targetCompatibility = '11'
 
+// Override the Jackson BOM to remediate CVE-2025-52999 (SNYK-JAVA-COMFASTERXMLJACKSONCORE-10500754)
+// in the transitive com.fasterxml.jackson.core:jackson-core dependency. Bumping the BOM keeps all
+// Jackson modules aligned at the same fixed version.
+ext['jackson-bom.version'] = '2.15.0'
+
 spotless {
     java {
         target project.fileTree(project.rootDir) {
