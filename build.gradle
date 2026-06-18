@@ -31,6 +31,12 @@ configurations {
 }
 
 dependencies {
+    constraints {
+        implementation('com.graphql-java:graphql-java:17.4') {
+            because 'CVE-2022-37734 (SNYK-JAVA-COMGRAPHQLJAVA-3021519): DoS in graphql-java < 17.4'
+        }
+    }
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
