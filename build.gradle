@@ -10,6 +10,10 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 targetCompatibility = '11'
 
+// Override the Jackson BOM to a patched version that remediates CVE-2022-42004
+// (jackson-databind DoS). Pulled in transitively via io.jsonwebtoken:jjwt-jackson.
+ext['jackson-bom.version'] = '2.13.4'
+
 spotless {
     java {
         target project.fileTree(project.rootDir) {
