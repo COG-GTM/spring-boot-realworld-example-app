@@ -1,10 +1,10 @@
 package io.spring.core.comment;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.time.OffsetDateTime;
 
 @Getter
 @NoArgsConstructor

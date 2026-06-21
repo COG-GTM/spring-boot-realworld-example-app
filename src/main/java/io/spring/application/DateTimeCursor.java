@@ -19,7 +19,6 @@ public class DateTimeCursor extends PageCursor<OffsetDateTime> {
     if (cursor == null) {
       return null;
     }
-    return OffsetDateTime.ofInstant(
-        Instant.ofEpochMilli(Long.parseLong(cursor)), ZoneOffset.UTC);
+    return OffsetDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(cursor)), ZoneOffset.UTC);
   }
 }

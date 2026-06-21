@@ -19,8 +19,7 @@ public class DateTimeHandler implements TypeHandler<OffsetDateTime> {
   private static final Calendar UTC_CALENDAR = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
   @Override
-  public void setParameter(
-      PreparedStatement ps, int i, OffsetDateTime parameter, JdbcType jdbcType)
+  public void setParameter(PreparedStatement ps, int i, OffsetDateTime parameter, JdbcType jdbcType)
       throws SQLException {
     ps.setTimestamp(
         i, parameter != null ? Timestamp.from(parameter.toInstant()) : null, UTC_CALENDAR);
@@ -45,8 +44,6 @@ public class DateTimeHandler implements TypeHandler<OffsetDateTime> {
   @Override
   public OffsetDateTime getResult(CallableStatement cs, int columnIndex) throws SQLException {
     Timestamp ts = cs.getTimestamp(columnIndex, UTC_CALENDAR);
-    return ts != null
-        ? OffsetDateTime.ofInstant(ts.toInstant(), ZoneOffset.UTC)
-        : null;
+    return ts != null ? OffsetDateTime.ofInstant(ts.toInstant(), ZoneOffset.UTC) : null;
   }
 }
