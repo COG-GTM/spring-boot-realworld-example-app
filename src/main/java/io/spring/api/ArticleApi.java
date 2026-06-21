@@ -10,6 +10,9 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Valid;
@@ -27,12 +30,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/articles/{slug}")
 @AllArgsConstructor
+@Tag(name = "Article", description = "Read, update, and delete a single article by slug")
 public class ArticleApi {
   private ArticleQueryService articleQueryService;
   private ArticleRepository articleRepository;
   private ArticleCommandService articleCommandService;
 
   @GetMapping
+  @Operation(summary = "Get an article", description = "Returns a single article by its slug.")
   public ResponseEntity<?> article(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleQueryService
@@ -42,6 +47,10 @@ public class ArticleApi {
   }
 
   @PutMapping
+  @Operation(
+      summary = "Update an article",
+      description = "Updates an existing article. Only the author may update it.")
+  @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
   public ResponseEntity<?> updateArticle(
       @PathVariable("slug") String slug,
       @AuthenticationPrincipal User user,
@@ -63,6 +72,10 @@ public class ArticleApi {
   }
 
   @DeleteMapping
+  @Operation(
+      summary = "Delete an article",
+      description = "Deletes an existing article. Only the author may delete it.")
+  @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
   public ResponseEntity deleteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleRepository
