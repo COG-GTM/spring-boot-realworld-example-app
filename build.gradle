@@ -30,6 +30,7 @@ configurations {
     configureEach {
         resolutionStrategy {
             force 'com.graphql-java:java-dataloader:3.2.2'
+            force 'com.google.protobuf:protobuf-java:3.25.5'
         }
     }
 }
