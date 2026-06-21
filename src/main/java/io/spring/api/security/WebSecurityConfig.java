@@ -69,8 +69,9 @@ public class WebSecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(asList(allowedOrigins.split("\\s*,\\s*")));
-    configuration.setAllowedMethods(asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(asList("authorization", "content-type", "x-auth-token"));
+    configuration.setAllowedMethods(
+        asList("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(asList("Authorization", "Cache-Control", "Content-Type"));
     configuration.setExposedHeaders(asList("x-auth-token"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);

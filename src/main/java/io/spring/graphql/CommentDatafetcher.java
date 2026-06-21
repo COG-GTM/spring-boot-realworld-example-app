@@ -114,7 +114,7 @@ public class CommentDatafetcher {
         .body(comment.getBody())
         .updatedAt(
             comment
-                .getCreatedAt()
+                .getUpdatedAt()
                 .withOffsetSameInstant(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSXXX")))
         .createdAt(
