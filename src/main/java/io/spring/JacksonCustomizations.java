@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +38,10 @@ public class JacksonCustomizations {
       if (value == null) {
         gen.writeNull();
       } else {
-        gen.writeString(value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        gen.writeString(
+            value
+                .withOffsetSameInstant(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSXXX")));
       }
     }
   }

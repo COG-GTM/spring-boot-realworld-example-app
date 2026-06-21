@@ -30,6 +30,7 @@ import io.spring.graphql.types.Profile;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 @DgsComponent
@@ -371,14 +372,22 @@ public class ArticleDatafetcher {
   private Article buildArticleResult(ArticleData articleData) {
     return Article.newBuilder()
         .body(articleData.getBody())
-        .createdAt(articleData.getCreatedAt().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+        .createdAt(
+            articleData
+                .getCreatedAt()
+                .withOffsetSameInstant(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSXXX")))
         .description(articleData.getDescription())
         .favorited(articleData.isFavorited())
         .favoritesCount(articleData.getFavoritesCount())
         .slug(articleData.getSlug())
         .tagList(articleData.getTagList())
         .title(articleData.getTitle())
-        .updatedAt(articleData.getUpdatedAt().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+        .updatedAt(
+            articleData
+                .getUpdatedAt()
+                .withOffsetSameInstant(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSXXX")))
         .build();
   }
 }

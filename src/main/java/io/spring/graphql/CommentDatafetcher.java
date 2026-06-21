@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 @DgsComponent
@@ -115,8 +116,16 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(comment.getCreatedAt().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-        .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+        .updatedAt(
+            comment
+                .getCreatedAt()
+                .withOffsetSameInstant(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSXXX")))
+        .createdAt(
+            comment
+                .getCreatedAt()
+                .withOffsetSameInstant(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSXXX")))
         .build();
   }
 }
