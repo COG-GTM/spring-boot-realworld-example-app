@@ -36,7 +36,15 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The secret key is stored in `application.properties`.
+The JWT secret is read from the `JWT_SECRET` environment variable. A default development value is provided, but **you must set `JWT_SECRET` to a strong, unique value in production**.
+
+    export JWT_SECRET=your-production-secret-here
+
+CORS allowed origins default to `http://localhost:3000`. Override in production via the `cors.allowed-origins` property (comma-separated).
+
+GraphiQL is enabled by default for development. In production, activate the `prod` profile to disable it:
+
+    ./gradlew bootRun --args='--spring.profiles.active=prod'
 
 # Database
 
