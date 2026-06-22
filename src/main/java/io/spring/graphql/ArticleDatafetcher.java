@@ -9,6 +9,7 @@ import graphql.execution.DataFetcherResult;
 import graphql.relay.DefaultConnectionCursor;
 import graphql.relay.DefaultPageInfo;
 import graphql.schema.DataFetchingEnvironment;
+import io.spring.JacksonCustomizations;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.CursorPageParameter;
@@ -30,7 +31,6 @@ import io.spring.graphql.types.Profile;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import io.spring.JacksonCustomizations;
 
 @DgsComponent
 @AllArgsConstructor

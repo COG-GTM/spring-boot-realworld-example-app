@@ -7,6 +7,7 @@ import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
 import graphql.relay.DefaultConnectionCursor;
 import graphql.relay.DefaultPageInfo;
+import io.spring.JacksonCustomizations;
 import io.spring.application.CommentQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
@@ -25,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import io.spring.JacksonCustomizations;
 
 @DgsComponent
 @AllArgsConstructor
