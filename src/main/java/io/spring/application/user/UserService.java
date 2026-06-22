@@ -49,7 +49,7 @@ public class UserService {
     user.update(
         updateUserParam.getEmail(),
         updateUserParam.getUsername(),
-        updateUserParam.getPassword() != null
+        !io.spring.Util.isEmpty(updateUserParam.getPassword())
             ? passwordEncoder.encode(updateUserParam.getPassword())
             : null,
         updateUserParam.getBio(),
