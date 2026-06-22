@@ -38,7 +38,6 @@ dependencies {
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-graphql-starter:9.1.2'
     implementation 'org.flywaydb:flyway-core'
-    implementation 'org.flywaydb:flyway-database-sqlite'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6',
                 'io.jsonwebtoken:jjwt-jackson:0.12.6'
@@ -69,4 +68,5 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
+    typeMapping = ["PageInfo": "graphql.relay.PageInfo"]
 }
