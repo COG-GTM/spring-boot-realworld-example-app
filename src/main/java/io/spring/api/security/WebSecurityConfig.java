@@ -36,28 +36,31 @@ public class WebSecurityConfig {
   @Bean
   SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    http.csrf(csrf -> csrf
-        .disable())
+    http.csrf(csrf -> csrf.disable())
         .cors(withDefaults())
-        .exceptionHandling(handling -> handling
-            .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-        .sessionManagement(management -> management
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(requests -> requests
-            .requestMatchers(HttpMethod.OPTIONS)
-            .permitAll()
-            .requestMatchers("/graphiql")
-            .permitAll()
-            .requestMatchers("/graphql")
-            .permitAll()
-            .requestMatchers(HttpMethod.GET, "/articles/feed")
-            .authenticated()
-            .requestMatchers(HttpMethod.POST, "/users", "/users/login")
-            .permitAll()
-            .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
-            .permitAll()
-            .anyRequest()
-            .authenticated());
+        .exceptionHandling(
+            handling ->
+                handling.authenticationEntryPoint(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+        .sessionManagement(
+            management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            requests ->
+                requests
+                    .requestMatchers(HttpMethod.OPTIONS)
+                    .permitAll()
+                    .requestMatchers("/graphiql")
+                    .permitAll()
+                    .requestMatchers("/graphql")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/articles/feed")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/users", "/users/login")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated());
 
     http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     return http.build();

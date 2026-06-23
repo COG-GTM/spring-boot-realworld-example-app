@@ -35,8 +35,7 @@ public class ProfileApi {
   }
 
   @PostMapping(path = "follow")
-  public ResponseEntity follow(
-      @PathVariable String username, @AuthenticationPrincipal User user) {
+  public ResponseEntity follow(@PathVariable String username, @AuthenticationPrincipal User user) {
     return userRepository
         .findByUsername(username)
         .map(
