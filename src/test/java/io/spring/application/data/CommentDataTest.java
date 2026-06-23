@@ -1,6 +1,7 @@
 package io.spring.application.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.spring.application.DateTimeCursor;
 import org.joda.time.DateTime;
@@ -63,10 +64,14 @@ class CommentDataTest {
   }
 
   @Test
-  void getCursorHandlesNullCreatedAtField() {
+  void getCursorWrapsNullWhenCreatedAtIsNull() {
     CommentData data = new CommentData();
 
-    assertThat(data.getCursor().getData()).isNull();
+    DateTimeCursor cursor = data.getCursor();
+
+    assertThat(cursor).isNotNull();
+    assertThat(cursor.getData()).isNull();
+    assertThatThrownBy(cursor::toString).isInstanceOf(NullPointerException.class);
   }
 
   @Test

@@ -1,6 +1,7 @@
 package io.spring.application.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.spring.application.DateTimeCursor;
 import java.util.Arrays;
@@ -90,12 +91,14 @@ class ArticleDataTest {
   }
 
   @Test
-  void getCursorHandlesNullUpdatedAtField() {
+  void getCursorWrapsNullWhenUpdatedAtIsNull() {
     ArticleData data = new ArticleData();
 
     DateTimeCursor cursor = data.getCursor();
 
+    assertThat(cursor).isNotNull();
     assertThat(cursor.getData()).isNull();
+    assertThatThrownBy(cursor::toString).isInstanceOf(NullPointerException.class);
   }
 
   @Test
