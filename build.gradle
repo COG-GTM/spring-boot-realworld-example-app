@@ -4,14 +4,6 @@ plugins {
     id 'java'
     id "com.netflix.dgs.codegen" version "7.0.3"
     id "com.diffplug.spotless" version "6.25.0"
-    id 'org.openrewrite.rewrite' version '6.29.4'
-}
-
-rewrite {
-    activeRecipe(
-        'org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2',
-        'org.openrewrite.java.migrate.UpgradeToJava21'
-    )
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -59,10 +51,6 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
-
-    rewrite platform('org.openrewrite.recipe:rewrite-recipe-bom:2.23.2')
-    rewrite 'org.openrewrite.recipe:rewrite-spring'
-    rewrite 'org.openrewrite.recipe:rewrite-migrate-java'
 }
 
 tasks.named('test') {
