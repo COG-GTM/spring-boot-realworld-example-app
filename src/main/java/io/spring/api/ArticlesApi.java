@@ -7,7 +7,7 @@ import io.spring.application.article.NewArticleParam;
 import io.spring.core.article.Article;
 import io.spring.core.user.User;
 import java.util.HashMap;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,19 +39,19 @@ public class ArticlesApi {
 
   @GetMapping(path = "feed")
   public ResponseEntity getFeed(
-      @RequestParam(value = "offset", defaultValue = "0") int offset,
-      @RequestParam(value = "limit", defaultValue = "20") int limit,
+      @RequestParam(defaultValue = "0") int offset,
+      @RequestParam(defaultValue = "20") int limit,
       @AuthenticationPrincipal User user) {
     return ResponseEntity.ok(articleQueryService.findUserFeed(user, new Page(offset, limit)));
   }
 
   @GetMapping
   public ResponseEntity getArticles(
-      @RequestParam(value = "offset", defaultValue = "0") int offset,
-      @RequestParam(value = "limit", defaultValue = "20") int limit,
-      @RequestParam(value = "tag", required = false) String tag,
+      @RequestParam(defaultValue = "0") int offset,
+      @RequestParam(defaultValue = "20") int limit,
+      @RequestParam(required = false) String tag,
       @RequestParam(value = "favorited", required = false) String favoritedBy,
-      @RequestParam(value = "author", required = false) String author,
+      @RequestParam(required = false) String author,
       @AuthenticationPrincipal User user) {
     return ResponseEntity.ok(
         articleQueryService.findRecentArticles(

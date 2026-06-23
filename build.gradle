@@ -1,14 +1,22 @@
 plugins {
-    id 'org.springframework.boot' version '2.6.3'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '3.2.12'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
+    id 'org.openrewrite.rewrite' version '6.29.4'
+}
+
+rewrite {
+    activeRecipe(
+        'org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2',
+        'org.openrewrite.java.migrate.UpgradeToJava21'
+    )
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-targetCompatibility = '11'
+sourceCompatibility = '21'
+targetCompatibility = '21'
 
 spotless {
     java {
@@ -39,6 +47,7 @@ dependencies {
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+    implementation "jakarta.validation:jakarta.validation-api:3.1.1"
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
                 'io.jsonwebtoken:jjwt-jackson:0.11.2'
     implementation 'joda-time:joda-time:2.10.13'
@@ -47,13 +56,17 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:4.5.1'
-    testImplementation 'io.rest-assured:json-path:4.5.1'
-    testImplementation 'io.rest-assured:xml-path:4.5.1'
-    testImplementation 'io.rest-assured:spring-mock-mvc:4.5.1'
+    testImplementation 'io.rest-assured:rest-assured:5.1.1'
+    testImplementation 'io.rest-assured:json-path:5.1.1'
+    testImplementation 'io.rest-assured:xml-path:5.1.1'
+    testImplementation 'io.rest-assured:spring-mock-mvc:5.1.1'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
+
+    rewrite platform('org.openrewrite.recipe:rewrite-recipe-bom:2.23.2')
+    rewrite 'org.openrewrite.recipe:rewrite-spring'
+    rewrite 'org.openrewrite.recipe:rewrite-migrate-java'
 }
 
 tasks.named('test') {
