@@ -25,6 +25,11 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    all {
+        resolutionStrategy {
+            force 'com.google.protobuf:protobuf-java:4.28.3'
+        }
+    }
 }
 
 dependencies {
