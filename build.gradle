@@ -1,14 +1,14 @@
 plugins {
-    id 'org.springframework.boot' version '2.6.3'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '3.5.15'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
-    id "com.netflix.dgs.codegen" version "5.0.6"
-    id "com.diffplug.spotless" version "6.2.1"
+    id "com.netflix.dgs.codegen" version "7.0.3"
+    id "com.diffplug.spotless" version "6.25.0"
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-targetCompatibility = '11'
+sourceCompatibility = '21'
+targetCompatibility = '21'
 
 spotless {
     java {
@@ -24,6 +24,18 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    dependencies {
+        // Override vulnerable versions pinned by transitive BOMs/dependencies:
+        // - kotlin-stdlib < 2.1.0: Information Exposure (SNYK-JAVA-ORGJETBRAINSKOTLIN-2393744),
+        //   pulled in (and pinned to 1.9.25) via the DGS platform BOM / codegen support.
+        // - commons-lang3 < 3.18.0: Uncontrolled Recursion (SNYK-JAVA-ORGAPACHECOMMONS-10734078),
+        //   pulled transitively by rest-assured (test scope).
+        dependency 'org.jetbrains.kotlin:kotlin-stdlib:2.1.20'
+        dependency 'org.apache.commons:commons-lang3:3.18.0'
+    }
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -31,29 +43,39 @@ configurations {
 }
 
 dependencies {
+    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2')
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter'
+    // Declared directly (also managed below) so the resolved kotlin-stdlib is a
+    // patched 2.1.0+ release; the DGS platform BOM otherwise pins 1.9.25, which
+    // carries an Information Exposure advisory (SNYK-JAVA-ORGJETBRAINSKOTLIN-2393744).
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.20'
     implementation 'org.flywaydb:flyway-core'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
-                'io.jsonwebtoken:jjwt-jackson:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
+                'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.xerial:sqlite-jdbc:3.50.3.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:4.5.1'
-    testImplementation 'io.rest-assured:json-path:4.5.1'
-    testImplementation 'io.rest-assured:xml-path:4.5.1'
-    testImplementation 'io.rest-assured:spring-mock-mvc:4.5.1'
+    // Declared directly (also managed above) so the resolved commons-lang3 is a
+    // patched 3.18.0 release; rest-assured otherwise pulls 3.17.0 transitively
+    // (Uncontrolled Recursion, SNYK-JAVA-ORGAPACHECOMMONS-10734078).
+    testImplementation 'org.apache.commons:commons-lang3:3.18.0'
+    testImplementation 'io.rest-assured:rest-assured:5.5.7'
+    testImplementation 'io.rest-assured:json-path:5.5.7'
+    testImplementation 'io.rest-assured:xml-path:5.5.7'
+    testImplementation 'io.rest-assured:spring-mock-mvc:5.5.7'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
 }
 
 tasks.named('test') {
@@ -69,4 +91,5 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
+    typeMapping = ["PageInfo": "graphql.relay.PageInfo"]
 }
