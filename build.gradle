@@ -68,7 +68,7 @@ tasks.named('clean') {
 }
 
 tasks.named('generateJava') {
-    schemaPaths.set(["${projectDir}/src/main/resources/schema"])
-    packageName.set('io.spring.graphql')
+    schemaPaths = ["${projectDir}/src/main/resources/schema"]
+    packageName = 'io.spring.graphql'
     generateClientv2 = true
 }
