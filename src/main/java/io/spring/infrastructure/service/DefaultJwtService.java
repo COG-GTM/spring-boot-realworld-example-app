@@ -1,9 +1,7 @@
 package io.spring.infrastructure.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.MacAlgorithm;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import java.util.Date;
@@ -17,32 +15,47 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultJwtService implements JwtService {
   private final SecretKey signingKey;
-  private final SignatureAlgorithm signatureAlgorithm;
+  private final MacAlgorithm algorithm;
   private int sessionTime;
 
   @Autowired
   public DefaultJwtService(
       @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
     this.sessionTime = sessionTime;
-    signatureAlgorithm = SignatureAlgorithm.HS512;
-    this.signingKey = new SecretKeySpec(secret.getBytes(), signatureAlgorithm.getJcaName());
+    byte[] keyBytes = secret.getBytes();
+    String jcaName;
+    if (keyBytes.length >= 64) {
+      this.algorithm = Jwts.SIG.HS512;
+      jcaName = "HmacSHA512";
+    } else if (keyBytes.length >= 48) {
+      this.algorithm = Jwts.SIG.HS384;
+      jcaName = "HmacSHA384";
+    } else {
+      this.algorithm = Jwts.SIG.HS256;
+      jcaName = "HmacSHA256";
+    }
+    this.signingKey = new SecretKeySpec(keyBytes, jcaName);
   }
 
   @Override
   public String toToken(User user) {
     return Jwts.builder()
-        .setSubject(user.getId())
-        .setExpiration(expireTimeFromNow())
-        .signWith(signingKey)
+        .subject(user.getId())
+        .expiration(expireTimeFromNow())
+        .signWith(signingKey, algorithm)
         .compact();
   }
 
   @Override
   public Optional<String> getSubFromToken(String token) {
     try {
-      Jws<Claims> claimsJws =
-          Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
-      return Optional.ofNullable(claimsJws.getBody().getSubject());
+      return Optional.ofNullable(
+          Jwts.parser()
+              .verifyWith(signingKey)
+              .build()
+              .parseSignedClaims(token)
+              .getPayload()
+              .getSubject());
     } catch (Exception e) {
       return Optional.empty();
     }
