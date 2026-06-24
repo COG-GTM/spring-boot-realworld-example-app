@@ -28,6 +28,7 @@ configurations {
     all {
         resolutionStrategy {
             force 'com.google.protobuf:protobuf-java:4.28.3'
+            force 'net.minidev:json-smart:2.5.2'
         }
     }
 }
