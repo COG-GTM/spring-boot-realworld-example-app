@@ -39,6 +39,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter'
+    // DGS codegen support pulls kotlin-stdlib, which the DGS BOM pins to 1.9.25;
+    // versions < 2.1.0 carry an Information Exposure advisory
+    // (SNYK-JAVA-ORGJETBRAINSKOTLIN-2393744), so pin to a fixed release.
+    implementation('org.jetbrains.kotlin:kotlin-stdlib') {
+        version { strictly '2.1.20' }
+    }
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
