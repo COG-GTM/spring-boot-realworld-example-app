@@ -51,6 +51,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter'
+    // Declared directly (also managed below) so the resolved kotlin-stdlib is a
+    // patched 2.1.0+ release; the DGS platform BOM otherwise pins 1.9.25, which
+    // carries an Information Exposure advisory (SNYK-JAVA-ORGJETBRAINSKOTLIN-2393744).
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.20'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
@@ -61,6 +65,10 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    // Declared directly (also managed above) so the resolved commons-lang3 is a
+    // patched 3.18.0 release; rest-assured otherwise pulls 3.17.0 transitively
+    // (Uncontrolled Recursion, SNYK-JAVA-ORGAPACHECOMMONS-10734078).
+    testImplementation 'org.apache.commons:commons-lang3:3.18.0'
     testImplementation 'io.rest-assured:rest-assured:5.5.7'
     testImplementation 'io.rest-assured:json-path:5.5.7'
     testImplementation 'io.rest-assured:xml-path:5.5.7'
