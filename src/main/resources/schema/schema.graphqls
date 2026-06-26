@@ -31,6 +31,8 @@ type Mutation {
     updateArticle(slug: String!, changes: UpdateArticleInput!): ArticlePayload
     favoriteArticle(slug: String!): ArticlePayload
     unfavoriteArticle(slug: String!): ArticlePayload
+    bookmarkArticle(slug: String!): ArticlePayload
+    unbookmarkArticle(slug: String!): ArticlePayload
     deleteArticle(slug: String!): DeletionStatus
 
     ### Comment
@@ -52,6 +54,7 @@ type Article {
     description: String!
     favorited: Boolean!
     favoritesCount: Int!
+    bookmarked: Boolean!
     slug: String!
     tagList: [String],
     title: String!
