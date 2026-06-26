@@ -24,6 +24,8 @@
         limit #{page.offset}, #{page.limit}
     </select>
     <select id="countUserBookmarks" resultType="java.lang.Integer">
-        select count(1) from article_bookmarks where user_id = #{userId}
+        select count(1) from article_bookmarks AB
+        join articles A on A.id = AB.article_id
+        where AB.user_id = #{userId}
     </select>
 </mapper>
