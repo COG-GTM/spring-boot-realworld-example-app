@@ -3,9 +3,15 @@ package io.spring.infrastructure.article;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.article.Tag;
+import io.spring.core.bookmark.ArticleBookmark;
+import io.spring.core.bookmark.ArticleBookmarkRepository;
+import io.spring.core.favorite.ArticleFavorite;
+import io.spring.core.favorite.ArticleFavoriteRepository;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.DbTestBase;
+import io.spring.infrastructure.repository.MyBatisArticleBookmarkRepository;
+import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.Arrays;
@@ -16,17 +22,27 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
-@Import({MyBatisArticleRepository.class, MyBatisUserRepository.class})
+@Import({
+  MyBatisArticleRepository.class,
+  MyBatisUserRepository.class,
+  MyBatisArticleFavoriteRepository.class,
+  MyBatisArticleBookmarkRepository.class
+})
 public class MyBatisArticleRepositoryTest extends DbTestBase {
   @Autowired private ArticleRepository articleRepository;
 
   @Autowired private UserRepository userRepository;
 
+  @Autowired private ArticleFavoriteRepository articleFavoriteRepository;
+
+  @Autowired private ArticleBookmarkRepository articleBookmarkRepository;
+
+  private User user;
   private Article article;
 
   @BeforeEach
   public void setUp() {
-    User user = new User("aisensiy@gmail.com", "aisensiy", "123", "bio", "default");
+    user = new User("aisensiy@gmail.com", "aisensiy", "123", "bio", "default");
     userRepository.save(user);
     article = new Article("test", "desc", "body", Arrays.asList("java", "spring"), user.getId());
   }
@@ -62,5 +78,20 @@ public class MyBatisArticleRepositoryTest extends DbTestBase {
 
     articleRepository.remove(article);
     Assertions.assertFalse(articleRepository.findById(article.getId()).isPresent());
+  }
+
+  @Test
+  public void should_delete_article_with_its_favorites_and_bookmarks() {
+    articleRepository.save(article);
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), user.getId()));
+    articleBookmarkRepository.save(new ArticleBookmark(article.getId(), user.getId()));
+
+    articleRepository.remove(article);
+
+    Assertions.assertFalse(articleRepository.findById(article.getId()).isPresent());
+    Assertions.assertFalse(
+        articleFavoriteRepository.find(article.getId(), user.getId()).isPresent());
+    Assertions.assertFalse(
+        articleBookmarkRepository.find(article.getId(), user.getId()).isPresent());
   }
 }

@@ -7,6 +7,9 @@
     <delete id="delete">
         delete from article_favorites where article_id = #{favorite.articleId} and user_id = #{favorite.userId}
     </delete>
+    <delete id="deleteByArticleId">
+        delete from article_favorites where article_id = #{articleId}
+    </delete>
     <select id="find" resultMap="articleFavorite">
         select
           AF.article_id articleFavoriteArticleId,

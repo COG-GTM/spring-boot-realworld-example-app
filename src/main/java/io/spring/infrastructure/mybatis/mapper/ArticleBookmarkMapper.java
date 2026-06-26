@@ -11,4 +11,6 @@ public interface ArticleBookmarkMapper {
   void insert(@Param("articleBookmark") ArticleBookmark articleBookmark);
 
   void delete(@Param("bookmark") ArticleBookmark bookmark);
+
+  void deleteByArticleId(@Param("articleId") String articleId);
 }

@@ -3,6 +3,8 @@ package io.spring.infrastructure.repository;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.article.Tag;
+import io.spring.infrastructure.mybatis.mapper.ArticleBookmarkMapper;
+import io.spring.infrastructure.mybatis.mapper.ArticleFavoriteMapper;
 import io.spring.infrastructure.mybatis.mapper.ArticleMapper;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
@@ -11,9 +13,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class MyBatisArticleRepository implements ArticleRepository {
   private ArticleMapper articleMapper;
+  private ArticleFavoriteMapper articleFavoriteMapper;
+  private ArticleBookmarkMapper articleBookmarkMapper;
 
-  public MyBatisArticleRepository(ArticleMapper articleMapper) {
+  public MyBatisArticleRepository(
+      ArticleMapper articleMapper,
+      ArticleFavoriteMapper articleFavoriteMapper,
+      ArticleBookmarkMapper articleBookmarkMapper) {
     this.articleMapper = articleMapper;
+    this.articleFavoriteMapper = articleFavoriteMapper;
+    this.articleBookmarkMapper = articleBookmarkMapper;
   }
 
   @Override
@@ -51,7 +60,10 @@ public class MyBatisArticleRepository implements ArticleRepository {
   }
 
   @Override
+  @Transactional
   public void remove(Article article) {
+    articleFavoriteMapper.deleteByArticleId(article.getId());
+    articleBookmarkMapper.deleteByArticleId(article.getId());
     articleMapper.delete(article.getId());
   }
 }

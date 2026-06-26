@@ -7,6 +7,9 @@
     <delete id="delete">
         delete from article_bookmarks where article_id = #{bookmark.articleId} and user_id = #{bookmark.userId}
     </delete>
+    <delete id="deleteByArticleId">
+        delete from article_bookmarks where article_id = #{articleId}
+    </delete>
     <select id="find" resultMap="articleBookmark">
         select
           AB.article_id articleBookmarkArticleId,
