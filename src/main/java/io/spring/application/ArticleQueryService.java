@@ -126,7 +126,9 @@ public class ArticleQueryService {
               .collect(toMap(ArticleData::getId, article -> article));
       List<ArticleData> articles =
           articleIds.stream().map(articleById::get).filter(Objects::nonNull).collect(toList());
-      fillExtraInfo(articles, user);
+      if (!articles.isEmpty()) {
+        fillExtraInfo(articles, user);
+      }
       return new ArticleDataList(articles, count);
     }
   }
