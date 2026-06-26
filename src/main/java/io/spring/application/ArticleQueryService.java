@@ -1,6 +1,7 @@
 package io.spring.application;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
@@ -15,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -119,7 +121,11 @@ public class ArticleQueryService {
     if (articleIds.size() == 0) {
       return new ArticleDataList(new ArrayList<>(), count);
     } else {
-      List<ArticleData> articles = articleReadService.findArticles(articleIds);
+      Map<String, ArticleData> articleById =
+          articleReadService.findArticles(articleIds).stream()
+              .collect(toMap(ArticleData::getId, article -> article));
+      List<ArticleData> articles =
+          articleIds.stream().map(articleById::get).filter(Objects::nonNull).collect(toList());
       fillExtraInfo(articles, user);
       return new ArticleDataList(articles, count);
     }

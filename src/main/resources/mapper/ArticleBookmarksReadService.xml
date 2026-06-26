@@ -20,7 +20,7 @@
         from articles A
         join article_bookmarks AB on A.id = AB.article_id
         where AB.user_id = #{userId}
-        order by A.created_at desc
+        order by AB.created_at desc
         limit #{page.offset}, #{page.limit}
     </select>
     <select id="countUserBookmarks" resultType="java.lang.Integer">
