@@ -14,8 +14,10 @@ import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleData;
+import io.spring.application.data.ArticleDataList;
 import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             title,
             description,
             body,
+            false,
             false,
             0,
             new DateTime(),
@@ -131,6 +134,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             description,
             body,
             false,
+            false,
             0,
             new DateTime(),
             new DateTime(),
@@ -151,6 +155,43 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .prettyPeek()
         .then()
         .statusCode(422);
+  }
+
+  @Test
+  public void should_get_current_user_bookmarked_articles() throws Exception {
+    ArticleData articleData =
+        new ArticleData(
+            "123",
+            "how-to-train-your-dragon",
+            "How to train your dragon",
+            "Ever wonder how?",
+            "You have to believe",
+            false,
+            true,
+            0,
+            new DateTime(),
+            new DateTime(),
+            asList("dragons"),
+            new ProfileData("userid", user.getUsername(), user.getBio(), user.getImage(), false));
+
+    when(articleQueryService.findUserBookmarks(eq(user), any()))
+        .thenReturn(new ArticleDataList(Arrays.asList(articleData), 1));
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .get("/articles/bookmarked")
+        .prettyPeek()
+        .then()
+        .statusCode(200)
+        .body("articlesCount", equalTo(1))
+        .body("articles[0].id", equalTo("123"))
+        .body("articles[0].bookmarked", equalTo(true));
+  }
+
+  @Test
+  public void should_get_401_for_bookmarked_articles_without_login() throws Exception {
+    given().when().get("/articles/bookmarked").prettyPeek().then().statusCode(401);
   }
 
   private HashMap<String, Object> prepareParam(
