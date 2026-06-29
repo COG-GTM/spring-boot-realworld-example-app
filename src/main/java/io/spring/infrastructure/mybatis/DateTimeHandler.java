@@ -15,30 +15,32 @@ import org.joda.time.DateTime;
 @MappedTypes(DateTime.class)
 public class DateTimeHandler implements TypeHandler<DateTime> {
 
-  private final Calendar utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+  private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
   @Override
   public void setParameter(PreparedStatement ps, int i, DateTime parameter, JdbcType jdbcType)
       throws SQLException {
     ps.setTimestamp(
-        i, parameter != null ? new Timestamp(parameter.getMillis()) : null, utcCalendar);
+        i,
+        parameter != null ? new Timestamp(parameter.getMillis()) : null,
+        Calendar.getInstance(UTC));
   }
 
   @Override
   public DateTime getResult(ResultSet rs, String columnName) throws SQLException {
-    Timestamp timestamp = rs.getTimestamp(columnName, utcCalendar);
+    Timestamp timestamp = rs.getTimestamp(columnName, Calendar.getInstance(UTC));
     return timestamp != null ? new DateTime(timestamp.getTime()) : null;
   }
 
   @Override
   public DateTime getResult(ResultSet rs, int columnIndex) throws SQLException {
-    Timestamp timestamp = rs.getTimestamp(columnIndex, utcCalendar);
+    Timestamp timestamp = rs.getTimestamp(columnIndex, Calendar.getInstance(UTC));
     return timestamp != null ? new DateTime(timestamp.getTime()) : null;
   }
 
   @Override
   public DateTime getResult(CallableStatement cs, int columnIndex) throws SQLException {
-    Timestamp ts = cs.getTimestamp(columnIndex, utcCalendar);
+    Timestamp ts = cs.getTimestamp(columnIndex, Calendar.getInstance(UTC));
     return ts != null ? new DateTime(ts.getTime()) : null;
   }
 }
