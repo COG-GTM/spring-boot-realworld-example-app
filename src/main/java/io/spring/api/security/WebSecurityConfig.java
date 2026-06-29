@@ -35,6 +35,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
 
+    // CSRF protection is intentionally disabled.
+    //
+    // This API is fully stateless and authenticates every request with a JWT bearer
+    // token carried in the "Authorization" header (see JwtTokenFilter), never with a
+    // session cookie. Session creation is STATELESS and CORS is configured with
+    // allowCredentials=false, so the browser never attaches ambient credentials
+    // (cookies) to cross-site requests. CSRF attacks rely on such ambient credentials
+    // being sent automatically; because authentication requires a token that an
+    // attacker's site cannot read or forge, CSRF is not applicable here. Enabling CSRF
+    // (e.g. CookieCsrfTokenRepository) would add a cookie/token exchange that this
+    // token-based model does not use and would break the stateless API contract.
     http.csrf()
         .disable()
         .cors()
@@ -69,9 +80,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     final CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(asList("*"));
     configuration.setAllowedMethods(asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
-    // setAllowCredentials(true) is important, otherwise:
-    // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
-    // wildcard '*' when the request's credentials mode is 'include'.
+    // Credentials are intentionally disabled: this is a stateless, token-based API, so the
+    // browser must never send ambient cookies cross-site. Keeping this false also lets the
+    // wildcard "*" origin remain valid (a wildcard origin is forbidden when credentials are
+    // included). Do not set this to true while the allowed origin is "*".
     configuration.setAllowCredentials(false);
     // setAllowedHeaders is important! Without it, OPTIONS preflight request
     // will fail with 403 Invalid CORS request
