@@ -21,6 +21,9 @@ ext['jackson-bom.version'] = '2.17.3'
 ext['snakeyaml.version'] = '2.6'
 ext['logback.version'] = '1.2.13'
 ext['commons-lang3.version'] = '3.18.0'
+// Keep all rest-assured modules (including transitive rest-assured-common) on a
+// single patched version instead of the 4.5.1 default from the Spring Boot BOM.
+ext['rest-assured.version'] = '5.3.2'
 
 spotless {
     java {
@@ -40,9 +43,6 @@ dependencyManagement {
     imports {
         mavenBom "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:5.6.2"
     }
-    // Keep all rest-assured modules (including transitive rest-assured-common)
-    // on a single, patched version so they don't mix with the Spring Boot BOM default.
-    properties['rest-assured.version'] = '5.3.2'
 }
 
 configurations {
