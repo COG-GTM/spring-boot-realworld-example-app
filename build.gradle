@@ -10,6 +10,12 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
+// Override Spring Boot BOM-managed transitive versions to pick up security patches
+// (newer than the versions shipped with this Spring Boot release).
+ext['tomcat.version'] = '10.1.56'
+ext['logback.version'] = '1.5.36'
+ext['commons-lang3.version'] = '3.18.0'
+
 spotless {
     java {
         target project.fileTree(project.rootDir) {
