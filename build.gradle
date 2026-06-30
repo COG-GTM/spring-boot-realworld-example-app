@@ -8,6 +8,10 @@ plugins {
 
 version = '0.0.1-SNAPSHOT'
 
+ext['logback.version'] = '1.5.37'
+ext['tomcat.version'] = '10.1.56'
+ext['commons-lang3.version'] = '3.18.0'
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
@@ -49,10 +53,10 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:5.4.0'
-    testImplementation 'io.rest-assured:json-path:5.4.0'
-    testImplementation 'io.rest-assured:xml-path:5.4.0'
-    testImplementation 'io.rest-assured:spring-mock-mvc:5.4.0'
+    testImplementation 'io.rest-assured:rest-assured:5.5.7'
+    testImplementation 'io.rest-assured:json-path:5.5.7'
+    testImplementation 'io.rest-assured:xml-path:5.5.7'
+    testImplementation 'io.rest-assured:spring-mock-mvc:5.5.7'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
