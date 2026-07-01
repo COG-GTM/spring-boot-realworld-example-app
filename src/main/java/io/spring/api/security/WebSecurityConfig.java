@@ -2,6 +2,7 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,6 +26,15 @@ public class WebSecurityConfig {
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
     return new JwtTokenFilter();
+  }
+
+  @Bean
+  public FilterRegistrationBean<JwtTokenFilter> jwtTokenFilterRegistration(JwtTokenFilter filter) {
+    // Prevent Spring Boot from auto-registering the filter in the servlet container;
+    // it should only run within the Spring Security filter chain.
+    FilterRegistrationBean<JwtTokenFilter> registration = new FilterRegistrationBean<>(filter);
+    registration.setEnabled(false);
+    return registration;
   }
 
   @Bean
