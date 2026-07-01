@@ -10,6 +10,11 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
+// Pin patched versions of Spring Boot-managed transitive deps flagged by Snyk.
+ext['logback.version'] = '1.5.37'
+ext['tomcat.version'] = '10.1.56'
+ext['commons-lang3.version'] = '3.19.0'
+
 spotless {
     java {
         target 'src/**/*.java'
