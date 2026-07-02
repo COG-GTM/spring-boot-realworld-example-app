@@ -37,8 +37,12 @@ public class DefaultJwtServiceTest {
 
   @Test
   public void should_get_null_with_expired_jwt() {
-    String token =
-        "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhaXNlbnNpeSIsImV4cCI6MTUwMjE2MTIwNH0.SJB-U60WzxLYNomqLo4G3v3LzFxJKuVrIud8D8Lz3-mgpo9pN1i7C8ikU_jQPJGm8HsC1CquGMI-rSuM7j6LDA";
+    JwtService expiredJwtService =
+        new DefaultJwtService(
+            "1231231231231231231231231231231231231231231231231231231231231231231231231231231231231231",
+            0);
+    User user = new User("email@email.com", "username", "123", "", "");
+    String token = expiredJwtService.toToken(user);
     Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
   }
 }
