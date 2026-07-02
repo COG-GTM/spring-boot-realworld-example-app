@@ -25,6 +25,12 @@ repositories {
     mavenCentral()
 }
 
+// Pin patched transitive versions (same major/minor lines as the Spring Boot 3.5
+// BOM) to clear known CVEs the BOM hasn't yet picked up.
+ext['tomcat.version'] = '10.1.56'
+ext['logback.version'] = '1.5.37'
+ext['commons-lang3.version'] = '3.18.0'
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
