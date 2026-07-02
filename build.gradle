@@ -27,6 +27,7 @@ repositories {
 
 ext['tomcat.version'] = '10.1.56'
 ext['logback.version'] = '1.5.36'
+ext['spring-security.version'] = '6.5.11'
 
 configurations {
     compileOnly {
