@@ -135,6 +135,7 @@ public class ArticleDatafetcherTest {
 
   @Test
   public void getFeed_should_throw_when_first_and_last_both_null() {
+    anonymous();
     assertThrows(
         IllegalArgumentException.class,
         () -> articleDatafetcher.getFeed(null, null, null, null, dgsEnv()));
@@ -173,6 +174,7 @@ public class ArticleDatafetcherTest {
 
   @Test
   public void userFeed_should_throw_when_first_and_last_both_null() {
+    anonymous();
     assertThrows(
         IllegalArgumentException.class,
         () -> articleDatafetcher.userFeed(null, null, null, null, dgsEnv()));
@@ -213,6 +215,7 @@ public class ArticleDatafetcherTest {
 
   @Test
   public void userFavorites_should_throw_when_first_and_last_both_null() {
+    anonymous();
     assertThrows(
         IllegalArgumentException.class,
         () -> articleDatafetcher.userFavorites(null, null, null, null, dgsEnv()));
@@ -241,6 +244,7 @@ public class ArticleDatafetcherTest {
 
   @Test
   public void userArticles_should_throw_when_first_and_last_both_null() {
+    anonymous();
     assertThrows(
         IllegalArgumentException.class,
         () -> articleDatafetcher.userArticles(null, null, null, null, dgsEnv()));
@@ -270,6 +274,7 @@ public class ArticleDatafetcherTest {
 
   @Test
   public void getArticles_should_throw_when_first_and_last_both_null() {
+    anonymous();
     assertThrows(
         IllegalArgumentException.class,
         () -> articleDatafetcher.getArticles(null, null, null, null, null, null, null, dgsEnv()));
