@@ -51,7 +51,7 @@ public class ArticleDatafetcherTest {
 
   private User currentUser;
 
-  private static final DateTime FIXED_CREATED_AT = new DateTime().withMillis(500_000L);
+  private static final DateTime FIXED_CREATED_AT = new DateTime(500_000L);
 
   @BeforeEach
   public void setUp() {
@@ -191,6 +191,25 @@ public class ArticleDatafetcherTest {
     assertEquals(Direction.PREV, page.getDirection());
     assertEquals(10, page.getLimit());
     assertFalse(page.isNext());
+  }
+
+  @Test
+  public void getFeed_should_prefer_first_when_both_first_and_last_provided() {
+    authenticate(currentUser);
+    when(articleQueryService.findUserFeedWithCursor(any(), any()))
+        .thenReturn(pagerWith(Direction.NEXT, false, "a1"));
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.getFeed(10, null, 5, null, dgsEnv());
+
+    assertConnection(result, "a1");
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<CursorPageParameter<DateTime>> pageCaptor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService).findUserFeedWithCursor(eq(currentUser), pageCaptor.capture());
+    CursorPageParameter<DateTime> page = pageCaptor.getValue();
+    assertEquals(Direction.NEXT, page.getDirection());
+    assertEquals(10, page.getLimit());
   }
 
   // userFeed ----------------------------------------------------------------
