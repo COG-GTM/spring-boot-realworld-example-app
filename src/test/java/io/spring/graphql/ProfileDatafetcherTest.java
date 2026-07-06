@@ -157,6 +157,7 @@ public class ProfileDatafetcherTest {
     Profile profile = profileDatafetcher.getCommentAuthor(dfe);
 
     assertMatchesFixture(profile);
+    verify(profileQueryService).findByUsername(eq("targetUser"), eq(currentUser));
   }
 
   @Test
