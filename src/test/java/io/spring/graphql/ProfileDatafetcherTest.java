@@ -1,8 +1,8 @@
 package io.spring.graphql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -170,7 +170,7 @@ public class ProfileDatafetcherTest {
 
     ProfilePayload payload = profileDatafetcher.queryProfile("targetUser", dfe);
 
-    assertTrue(payload.getProfile() != null);
+    assertNotNull(payload.getProfile());
     assertMatchesFixture(payload.getProfile());
     verify(profileQueryService).findByUsername(eq("targetUser"), eq(currentUser));
   }
