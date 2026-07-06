@@ -90,6 +90,7 @@ public class CommentDatafetcherTest {
 
   @Test
   public void should_throw_when_both_first_and_last_are_null() {
+    setCurrentUser();
     DgsDataFetchingEnvironment dfe =
         new DgsDataFetchingEnvironment(mock(DataFetchingEnvironment.class));
     assertThrows(
