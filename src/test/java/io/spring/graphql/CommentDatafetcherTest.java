@@ -7,12 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.application.CommentQueryService;
+import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.data.ArticleData;
@@ -31,6 +33,7 @@ import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -138,6 +141,16 @@ public class CommentDatafetcherTest {
     @SuppressWarnings("unchecked")
     Map<String, CommentData> mapped = (Map<String, CommentData>) resultLocalContext;
     assertEquals(commentData, mapped.get("comment-1"));
+
+    ArgumentCaptor<String> articleIdCaptor = ArgumentCaptor.forClass(String.class);
+    @SuppressWarnings("rawtypes")
+    ArgumentCaptor<CursorPageParameter> pageCaptor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(commentQueryService)
+        .findByArticleIdWithCursor(articleIdCaptor.capture(), any(), pageCaptor.capture());
+    assertEquals("article-1", articleIdCaptor.getValue());
+    assertEquals(Direction.NEXT, pageCaptor.getValue().getDirection());
+    assertEquals(10, pageCaptor.getValue().getLimit());
   }
 
   @Test
@@ -173,5 +186,15 @@ public class CommentDatafetcherTest {
     graphql.relay.PageInfo pageInfo = connection.getPageInfo();
     assertTrue(pageInfo.isHasPreviousPage());
     assertFalse(pageInfo.isHasNextPage());
+
+    ArgumentCaptor<String> articleIdCaptor = ArgumentCaptor.forClass(String.class);
+    @SuppressWarnings("rawtypes")
+    ArgumentCaptor<CursorPageParameter> pageCaptor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(commentQueryService)
+        .findByArticleIdWithCursor(articleIdCaptor.capture(), any(), pageCaptor.capture());
+    assertEquals("article-1", articleIdCaptor.getValue());
+    assertEquals(Direction.PREV, pageCaptor.getValue().getDirection());
+    assertEquals(5, pageCaptor.getValue().getLimit());
   }
 }
