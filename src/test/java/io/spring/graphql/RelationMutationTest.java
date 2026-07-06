@@ -2,7 +2,6 @@ package io.spring.graphql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,7 +72,7 @@ public class RelationMutationTest {
     authenticate(currentUser);
     when(userRepository.findByUsername(eq(targetUser.getUsername())))
         .thenReturn(Optional.of(targetUser));
-    when(profileQueryService.findByUsername(eq(targetUser.getUsername()), any()))
+    when(profileQueryService.findByUsername(eq(targetUser.getUsername()), eq(currentUser)))
         .thenReturn(Optional.of(profileData));
 
     ProfilePayload payload = relationMutation.follow(targetUser.getUsername());
@@ -116,7 +115,7 @@ public class RelationMutationTest {
     ProfileData unfollowedProfile =
         new ProfileData(
             targetUser.getId(), targetUser.getUsername(), "target bio", "target-image.png", false);
-    when(profileQueryService.findByUsername(eq(targetUser.getUsername()), any()))
+    when(profileQueryService.findByUsername(eq(targetUser.getUsername()), eq(currentUser)))
         .thenReturn(Optional.of(unfollowedProfile));
 
     ProfilePayload payload = relationMutation.unfollow(targetUser.getUsername());
