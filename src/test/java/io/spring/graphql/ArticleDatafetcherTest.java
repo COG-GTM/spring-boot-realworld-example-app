@@ -51,6 +51,8 @@ public class ArticleDatafetcherTest {
 
   private User currentUser;
 
+  private static final DateTime FIXED_CREATED_AT = new DateTime().withMillis(500_000L);
+
   @BeforeEach
   public void setUp() {
     articleQueryService = mock(ArticleQueryService.class);
@@ -97,7 +99,7 @@ public class ArticleDatafetcherTest {
         "Body " + slug,
         false,
         0,
-        new DateTime(),
+        FIXED_CREATED_AT,
         updatedAt,
         Arrays.asList("java"),
         new ProfileData("author-id", "author", "bio", "image", false));
@@ -123,7 +125,9 @@ public class ArticleDatafetcherTest {
     for (int i = 0; i < expectedSlugs.length; i++) {
       Article node = connection.getEdges().get(i).getNode();
       assertEquals(expectedSlugs[i], node.getSlug());
-      assertNotNull(connection.getEdges().get(i).getCursor());
+      String cursor = connection.getEdges().get(i).getCursor();
+      assertNotNull(cursor);
+      assertTrue(cursor.matches("\\d+"), "cursor should be a stringified millis value");
     }
     @SuppressWarnings("unchecked")
     Map<String, ArticleData> localContext = (Map<String, ArticleData>) result.getLocalContext();
@@ -417,7 +421,7 @@ public class ArticleDatafetcherTest {
   @Test
   public void findArticleBySlug_should_throw_when_not_found() {
     anonymous();
-    when(articleQueryService.findBySlug(eq("missing"), any())).thenReturn(Optional.empty());
+    when(articleQueryService.findBySlug(eq("missing"), isNull())).thenReturn(Optional.empty());
 
     assertThrows(
         ResourceNotFoundException.class, () -> articleDatafetcher.findArticleBySlug("missing"));
