@@ -17,6 +17,7 @@ import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
+import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.data.ArticleData;
@@ -36,6 +37,7 @@ import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -148,12 +150,20 @@ public class ArticleDatafetcherTest {
         .thenReturn(pagerWith(Direction.NEXT, true, "a1", "a2"));
 
     DataFetcherResult<ArticlesConnection> result =
-        articleDatafetcher.getFeed(10, null, null, null, dgsEnv());
+        articleDatafetcher.getFeed(10, "1000000", null, null, dgsEnv());
 
     assertConnection(result, "a1", "a2");
     assertTrue(result.getData().getPageInfo().isHasNextPage());
     assertFalse(result.getData().getPageInfo().isHasPreviousPage());
-    verify(articleQueryService).findUserFeedWithCursor(eq(currentUser), any());
+
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<CursorPageParameter<DateTime>> pageCaptor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService).findUserFeedWithCursor(eq(currentUser), pageCaptor.capture());
+    CursorPageParameter<DateTime> page = pageCaptor.getValue();
+    assertEquals(Direction.NEXT, page.getDirection());
+    assertEquals(10, page.getLimit());
+    assertEquals(1_000_000L, page.getCursor().getMillis());
   }
 
   @Test
@@ -168,6 +178,15 @@ public class ArticleDatafetcherTest {
     assertConnection(result, "b1");
     assertTrue(result.getData().getPageInfo().isHasPreviousPage());
     assertFalse(result.getData().getPageInfo().isHasNextPage());
+
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<CursorPageParameter<DateTime>> pageCaptor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService).findUserFeedWithCursor(eq(currentUser), pageCaptor.capture());
+    CursorPageParameter<DateTime> page = pageCaptor.getValue();
+    assertEquals(Direction.PREV, page.getDirection());
+    assertEquals(10, page.getLimit());
+    assertFalse(page.isNext());
   }
 
   // userFeed ----------------------------------------------------------------
