@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -81,7 +82,10 @@ public class RelationMutationTest {
     assertEquals(profileData.getBio(), payload.getProfile().getBio());
     assertEquals(profileData.getImage(), payload.getProfile().getImage());
     assertEquals(profileData.isFollowing(), payload.getProfile().getFollowing());
-    verify(userRepository).saveRelation(any(FollowRelation.class));
+    ArgumentCaptor<FollowRelation> captor = ArgumentCaptor.forClass(FollowRelation.class);
+    verify(userRepository).saveRelation(captor.capture());
+    assertEquals(currentUser.getId(), captor.getValue().getUserId());
+    assertEquals(targetUser.getId(), captor.getValue().getTargetId());
   }
 
   @Test
@@ -109,15 +113,18 @@ public class RelationMutationTest {
         .thenReturn(Optional.of(targetUser));
     when(userRepository.findRelation(eq(currentUser.getId()), eq(targetUser.getId())))
         .thenReturn(Optional.of(followRelation));
+    ProfileData unfollowedProfile =
+        new ProfileData(
+            targetUser.getId(), targetUser.getUsername(), "target bio", "target-image.png", false);
     when(profileQueryService.findByUsername(eq(targetUser.getUsername()), any()))
-        .thenReturn(Optional.of(profileData));
+        .thenReturn(Optional.of(unfollowedProfile));
 
     ProfilePayload payload = relationMutation.unfollow(targetUser.getUsername());
 
-    assertEquals(profileData.getUsername(), payload.getProfile().getUsername());
-    assertEquals(profileData.getBio(), payload.getProfile().getBio());
-    assertEquals(profileData.getImage(), payload.getProfile().getImage());
-    assertEquals(profileData.isFollowing(), payload.getProfile().getFollowing());
+    assertEquals(unfollowedProfile.getUsername(), payload.getProfile().getUsername());
+    assertEquals(unfollowedProfile.getBio(), payload.getProfile().getBio());
+    assertEquals(unfollowedProfile.getImage(), payload.getProfile().getImage());
+    assertEquals(false, payload.getProfile().getFollowing());
     verify(userRepository).removeRelation(eq(followRelation));
   }
 
