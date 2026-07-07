@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asset Management Feature Plan — RealWorld Spring Boot App</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      color: #1a1a1a;
+    }
+    h1 { font-size: 1.9rem; border-bottom: 2px solid #ddd; padding-bottom: 12px; }
+    h2 { font-size: 1.35rem; margin-top: 2rem; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.9em;
+    }
+    .callout {
+      background: #fff8e6;
+      border-left: 4px solid #e0b000;
+      padding: 12px 16px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    ul { padding-left: 22px; }
+    li { margin-bottom: 8px; }
+    ol li { margin-bottom: 10px; }
+    footer { margin-top: 40px; font-size: 0.85rem; color: #777; border-top: 1px solid #eee; padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Asset Management Feature Plan</h1>
+  <p>Codebase: <code>ankehao-demo/spring-boot-realworld-example-app</code></p>
+
+  <div class="callout">
+    <strong>Reality check first.</strong> This codebase is a generic
+    <strong>RealWorld</strong> demo — a Medium-style blogging/social platform.
+    It has nothing asset-management-specific in it today. Its domain is articles,
+    comments, tags, favorites, user profiles and follows. What it <em>does</em>
+    give you is a solid, reusable technical foundation and a clean domain model
+    you can repurpose.
+  </div>
+
+  <h2>Existing capabilities worth highlighting to a CTO</h2>
+  <ul>
+    <li><strong>Dual REST + GraphQL API from one domain layer</strong> — DDD keeps the core consistent regardless of the delivery adapter, so client teams can consume either.</li>
+    <li><strong>CQRS</strong> — read and write models are separated, useful for read-heavy reporting/dashboard workloads.</li>
+    <li><strong>Stateless JWT authentication</strong> via Spring Security, secret held in <code>application.properties</code>.</li>
+    <li><strong>MyBatis persistence + Flyway migrations</strong>, DB swappable from SQLite to anything production-grade.</li>
+    <li><strong>Layered architecture</strong> (<code>api</code> / <code>core</code> / <code>application</code> / <code>infrastructure</code>) that isolates business logic from tech details.</li>
+    <li><strong>Comprehensive test suite</strong> covering both API and repository layers.</li>
+  </ul>
+
+  <h2>Features an Asset Management CTO would actually want</h2>
+  <ol>
+    <li><strong>Portfolio &amp; holdings domain</strong> — repurpose the <code>article</code> aggregate pattern into a <code>portfolio</code>/<code>position</code> aggregate.</li>
+    <li><strong>Role-based access &amp; audit</strong> — extend the existing JWT/Spring Security layer for investor vs. manager vs. compliance roles.</li>
+    <li><strong>Reporting / analytics queries via CQRS read side</strong> — NAV, exposure, and performance dashboards using the query-service pattern.</li>
+    <li><strong>GraphQL for flexible client reporting</strong> — let front-office dashboards request exactly the fields they need.</li>
+    <li><strong>Tagging / classification</strong> — reuse the tag system for asset class / sector / risk-band classification.</li>
+  </ol>
+
+  <footer>
+    Prepared as an internal discussion document. The underlying repository is a
+    generic RealWorld reference app; asset-management features described above are
+    proposed extensions, not existing functionality.
+  </footer>
+</body>
+</html>
