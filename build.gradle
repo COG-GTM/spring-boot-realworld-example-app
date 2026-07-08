@@ -24,6 +24,7 @@ spotless {
 ext['commons-lang3.version'] = '3.19.0'
 ext['logback.version'] = '1.5.37'
 ext['tomcat.version'] = '10.1.56'
+ext['jackson-bom.version'] = '2.21.4'
 
 repositories {
     mavenCentral()
@@ -39,6 +40,10 @@ configurations.all {
     resolutionStrategy.eachDependency { details ->
         if (details.requested.group == 'com.netflix.graphql.dgs') {
             details.useVersion '9.2.2'
+        }
+        if (details.requested.group == 'org.jetbrains.kotlin'
+            && details.requested.name.startsWith('kotlin-')) {
+            details.useVersion '2.1.21'
         }
     }
 }
