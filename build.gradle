@@ -1,8 +1,8 @@
 plugins {
-    id 'org.springframework.boot' version '3.2.5'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.springframework.boot' version '3.5.16'
+    id 'io.spring.dependency-management' version '1.1.6'
     id 'java'
-    id "com.netflix.dgs.codegen" version "6.3.0"
+    id "com.netflix.dgs.codegen" version "8.6.0"
     id "com.diffplug.spotless" version "6.25.0"
 }
 
@@ -21,6 +21,10 @@ spotless {
     }
 }
 
+ext['commons-lang3.version'] = '3.19.0'
+ext['logback.version'] = '1.5.37'
+ext['tomcat.version'] = '10.1.56'
+
 repositories {
     mavenCentral()
 }
@@ -31,13 +35,21 @@ configurations {
     }
 }
 
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'com.netflix.graphql.dgs') {
+            details.useVersion '9.2.2'
+        }
+    }
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:8.7.1'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:9.2.2'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6',
@@ -54,7 +66,7 @@ dependencies {
     testImplementation 'io.rest-assured:spring-mock-mvc:5.5.1'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
 }
 
 tasks.named('test') {
