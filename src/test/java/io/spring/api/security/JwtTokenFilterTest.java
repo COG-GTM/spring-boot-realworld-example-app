@@ -1,6 +1,5 @@
 package io.spring.api.security;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -39,13 +38,14 @@ public class JwtTokenFilterTest {
   private MockHttpServletRequest request;
   private MockHttpServletResponse response;
   private MockFilterChain chain;
+  private AutoCloseable closeable;
 
   private User user;
   private final String token = "valid.jwt.token";
 
   @BeforeEach
   public void setUp() {
-    MockitoAnnotations.openMocks(this);
+    closeable = MockitoAnnotations.openMocks(this);
     filter = new JwtTokenFilter();
     ReflectionTestUtils.setField(filter, "jwtService", jwtService);
     ReflectionTestUtils.setField(filter, "userRepository", userRepository);
@@ -59,8 +59,9 @@ public class JwtTokenFilterTest {
   }
 
   @AfterEach
-  public void tearDown() {
+  public void tearDown() throws Exception {
     SecurityContextHolder.clearContext();
+    closeable.close();
   }
 
   private void doFilter() {
