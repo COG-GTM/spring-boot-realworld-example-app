@@ -85,6 +85,7 @@ public class UserServiceTest {
 
     assertEquals("old@example.com", target.getEmail());
     assertEquals("olduser", target.getUsername());
+    assertEquals("password", target.getPassword());
     assertEquals("old bio", target.getBio());
     assertEquals("old image", target.getImage());
     verify(userRepository, times(1)).save(target);
