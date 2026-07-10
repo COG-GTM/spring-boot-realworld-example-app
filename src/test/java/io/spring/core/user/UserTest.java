@@ -51,6 +51,17 @@ public class UserTest {
   }
 
   @Test
+  public void should_keep_existing_values_when_update_args_are_null() {
+    User user = new User("jake@jake.jake", "jake", "password", "bio", "image");
+    user.update(null, null, null, null, null);
+    assertThat(user.getEmail(), is("jake@jake.jake"));
+    assertThat(user.getUsername(), is("jake"));
+    assertThat(user.getPassword(), is("password"));
+    assertThat(user.getBio(), is("bio"));
+    assertThat(user.getImage(), is("image"));
+  }
+
+  @Test
   public void should_update_only_the_provided_fields() {
     User user = new User("jake@jake.jake", "jake", "password", "bio", "image");
     user.update("", "newname", "", "", "new image");
