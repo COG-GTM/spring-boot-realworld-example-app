@@ -59,6 +59,7 @@ public class UserServiceTest {
         UpdateUserParam.builder()
             .email("new@example.com")
             .username("newuser")
+            .password("new-password")
             .bio("new bio")
             .image("new image")
             .build();
@@ -68,6 +69,7 @@ public class UserServiceTest {
 
     assertEquals("new@example.com", target.getEmail());
     assertEquals("newuser", target.getUsername());
+    assertEquals("new-password", target.getPassword());
     assertEquals("new bio", target.getBio());
     assertEquals("new image", target.getImage());
     verify(userRepository, times(1)).save(target);
