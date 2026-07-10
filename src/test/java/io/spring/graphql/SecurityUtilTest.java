@@ -2,6 +2,7 @@ package io.spring.graphql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.spring.core.user.User;
@@ -50,5 +51,14 @@ class SecurityUtilTest {
         .setAuthentication(new UsernamePasswordAuthenticationToken(null, null));
 
     assertFalse(SecurityUtil.getCurrentUser().isPresent());
+  }
+
+  @Test
+  void should_throw_when_no_authentication_present() {
+    SecurityContextHolder.clearContext();
+
+    // Documents current behaviour: with no authentication in the context the
+    // instanceof check is false for null and getPrincipal() is dereferenced.
+    assertThrows(NullPointerException.class, SecurityUtil::getCurrentUser);
   }
 }

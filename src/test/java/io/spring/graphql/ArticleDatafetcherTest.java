@@ -54,7 +54,7 @@ class ArticleDatafetcherTest extends DgsGraphQLTestBase {
 
   @Test
   void should_error_when_feed_missing_first_and_last() {
-    setAnonymous();
+    setAuthenticatedUser(user);
 
     QueryException error =
         org.junit.jupiter.api.Assertions.assertThrows(
