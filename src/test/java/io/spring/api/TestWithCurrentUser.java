@@ -10,8 +10,11 @@ import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.mybatis.readservice.UserReadService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+@ResourceLock(value = "MOCKMVC", mode = ResourceAccessMode.READ_WRITE)
 abstract class TestWithCurrentUser {
   @MockBean protected UserRepository userRepository;
 
