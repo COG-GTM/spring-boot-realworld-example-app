@@ -30,6 +30,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Shared base for GraphQL (Netflix DGS) datafetcher/mutation tests. Boots the full Spring context
@@ -38,6 +39,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * exact same context configuration so Spring caches and reuses a single application context.
  */
 @SpringBootTest
+@ActiveProfiles("test")
 abstract class DgsGraphQLTestBase {
 
   @Autowired protected DgsQueryExecutor dgsQueryExecutor;
