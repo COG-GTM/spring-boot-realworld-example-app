@@ -57,8 +57,10 @@ class SecurityUtilTest {
   void should_throw_when_no_authentication_present() {
     SecurityContextHolder.clearContext();
 
-    // Documents current behaviour: with no authentication in the context the
-    // instanceof check is false for null and getPrincipal() is dereferenced.
+    // TODO: this NPE is a latent null-safety bug in SecurityUtil.getCurrentUser
+    // (it dereferences authentication without a null check). This test documents
+    // the current behaviour; if the production code is hardened to return
+    // Optional.empty() when authentication is null, update this to expect empty.
     assertThrows(NullPointerException.class, SecurityUtil::getCurrentUser);
   }
 }
