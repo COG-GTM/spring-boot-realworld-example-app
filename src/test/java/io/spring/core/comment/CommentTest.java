@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.Test;
 
 public class CommentTest {
@@ -27,10 +28,12 @@ public class CommentTest {
   }
 
   @Test
-  public void should_be_equal_when_ids_are_equal() {
-    Comment comment = new Comment("body", "userId", "articleId");
-    assertThat(comment, is(comment));
-    assertThat(comment.hashCode(), is(comment.hashCode()));
+  public void should_be_equal_for_distinct_instances_sharing_the_same_id() throws Exception {
+    Comment first = new Comment("body", "userId", "articleId");
+    Comment second = new Comment("other body", "otherUser", "otherArticle");
+    setId(second, first.getId());
+    assertThat(first, is(second));
+    assertThat(first.hashCode(), is(second.hashCode()));
   }
 
   @Test
@@ -38,5 +41,11 @@ public class CommentTest {
     Comment first = new Comment("body", "userId", "articleId");
     Comment second = new Comment("body", "userId", "articleId");
     assertThat(first, is(not(second)));
+  }
+
+  private static void setId(Comment comment, String id) throws Exception {
+    Field field = Comment.class.getDeclaredField("id");
+    field.setAccessible(true);
+    field.set(comment, id);
   }
 }

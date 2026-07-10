@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.Test;
 
 public class UserTest {
@@ -61,10 +62,12 @@ public class UserTest {
   }
 
   @Test
-  public void should_be_equal_when_ids_are_equal() {
-    User user = new User("jake@jake.jake", "jake", "password", "bio", "image");
-    assertThat(user, is(user));
-    assertThat(user.hashCode(), is(user.hashCode()));
+  public void should_be_equal_for_distinct_instances_sharing_the_same_id() throws Exception {
+    User first = new User("jake@jake.jake", "jake", "password", "bio", "image");
+    User second = new User("other@email.com", "other", "otherpassword", "other bio", "other image");
+    setId(second, first.getId());
+    assertThat(first, is(second));
+    assertThat(first.hashCode(), is(second.hashCode()));
   }
 
   @Test
@@ -72,5 +75,11 @@ public class UserTest {
     User first = new User("a@a.com", "a", "p", "b", "i");
     User second = new User("b@b.com", "b", "p", "b", "i");
     assertThat(first, is(not(second)));
+  }
+
+  private static void setId(User user, String id) throws Exception {
+    Field field = User.class.getDeclaredField("id");
+    field.setAccessible(true);
+    field.set(user, id);
   }
 }
