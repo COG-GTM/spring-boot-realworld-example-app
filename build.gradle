@@ -74,6 +74,8 @@ jacocoTestReport {
     }
 }
 
+// Non-blocking scaffold: raise `minimum` (and wire into `check`) to enforce a
+// coverage floor once the suite's coverage has been ratcheted up.
 jacocoTestCoverageVerification {
     violationRules {
         rule {
