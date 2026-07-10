@@ -52,6 +52,8 @@ public class WebSecurityConfigTest {
 
   @Test
   public void public_post_login_passes_security_layer() {
+    // Endpoint is public, so the request reaches the controller and fails on unknown
+    // credentials (422) rather than being rejected by the security layer (401/403).
     given()
         .contentType("application/json")
         .body("{\"user\":{\"email\":\"nobody@example.com\",\"password\":\"whatever\"}}")
