@@ -12,7 +12,6 @@ import com.netflix.graphql.dgs.exceptions.QueryException;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.data.ArticleData;
-import io.spring.core.user.User;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;

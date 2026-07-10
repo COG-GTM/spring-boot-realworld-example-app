@@ -200,9 +200,7 @@ class ArticleMutationTest extends DgsGraphQLTestBase {
             QueryException.class,
             () ->
                 dgsQueryExecutor.executeAndExtractJsonPath(
-                    "mutation { deleteArticle(slug: \""
-                        + article.getSlug()
-                        + "\") { success } }",
+                    "mutation { deleteArticle(slug: \"" + article.getSlug() + "\") { success } }",
                     "data.deleteArticle"));
 
     assertFalse(error.getErrors().isEmpty());

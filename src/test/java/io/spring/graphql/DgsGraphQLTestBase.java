@@ -32,9 +32,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Shared base for GraphQL (Netflix DGS) datafetcher/mutation tests. Boots the full Spring context so
- * the real GraphQL schema and wiring are exercised, while every collaborating service/repository is
- * replaced with a Mockito mock so behaviour can be controlled per test. All subclasses share the
+ * Shared base for GraphQL (Netflix DGS) datafetcher/mutation tests. Boots the full Spring context
+ * so the real GraphQL schema and wiring are exercised, while every collaborating service/repository
+ * is replaced with a Mockito mock so behaviour can be controlled per test. All subclasses share the
  * exact same context configuration so Spring caches and reuses a single application context.
  */
 @SpringBootTest

@@ -14,8 +14,7 @@ public class AuthorizationServiceTest {
   @Test
   public void should_allow_author_to_write_article() {
     User author = new User("author@email.com", "author", "password", "bio", "image");
-    Article article =
-        new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
     assertThat(AuthorizationService.canWriteArticle(author, article), is(true));
   }
 
@@ -23,8 +22,7 @@ public class AuthorizationServiceTest {
   public void should_forbid_non_author_to_write_article() {
     User author = new User("author@email.com", "author", "password", "bio", "image");
     User other = new User("other@email.com", "other", "password", "bio", "image");
-    Article article =
-        new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
     assertThat(AuthorizationService.canWriteArticle(other, article), is(false));
   }
 
@@ -32,8 +30,7 @@ public class AuthorizationServiceTest {
   public void should_allow_article_author_to_write_comment() {
     User author = new User("author@email.com", "author", "password", "bio", "image");
     User commenter = new User("commenter@email.com", "commenter", "password", "bio", "image");
-    Article article =
-        new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
     Comment comment = new Comment("body", commenter.getId(), article.getId());
     assertThat(AuthorizationService.canWriteComment(author, article, comment), is(true));
   }
@@ -42,8 +39,7 @@ public class AuthorizationServiceTest {
   public void should_allow_comment_author_to_write_comment() {
     User author = new User("author@email.com", "author", "password", "bio", "image");
     User commenter = new User("commenter@email.com", "commenter", "password", "bio", "image");
-    Article article =
-        new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
     Comment comment = new Comment("body", commenter.getId(), article.getId());
     assertThat(AuthorizationService.canWriteComment(commenter, article, comment), is(true));
   }
@@ -53,8 +49,7 @@ public class AuthorizationServiceTest {
     User author = new User("author@email.com", "author", "password", "bio", "image");
     User commenter = new User("commenter@email.com", "commenter", "password", "bio", "image");
     User stranger = new User("stranger@email.com", "stranger", "password", "bio", "image");
-    Article article =
-        new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), author.getId());
     Comment comment = new Comment("body", commenter.getId(), article.getId());
     assertThat(AuthorizationService.canWriteComment(stranger, article, comment), is(false));
   }

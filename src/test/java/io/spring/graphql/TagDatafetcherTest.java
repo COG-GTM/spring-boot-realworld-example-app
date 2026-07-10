@@ -13,8 +13,7 @@ class TagDatafetcherTest extends DgsGraphQLTestBase {
   void should_return_all_tags() {
     when(tagsQueryService.allTags()).thenReturn(Arrays.asList("java", "spring"));
 
-    List<String> tags =
-        dgsQueryExecutor.executeAndExtractJsonPath("{ tags }", "data.tags");
+    List<String> tags = dgsQueryExecutor.executeAndExtractJsonPath("{ tags }", "data.tags");
 
     assertEquals(Arrays.asList("java", "spring"), tags);
   }
