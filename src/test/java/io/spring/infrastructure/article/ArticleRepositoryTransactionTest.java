@@ -8,6 +8,10 @@ import io.spring.infrastructure.mybatis.mapper.ArticleMapper;
 import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +20,8 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Execution(ExecutionMode.SAME_THREAD)
+@ResourceLock(value = "DB", mode = ResourceAccessMode.READ_WRITE)
 public class ArticleRepositoryTransactionTest {
   @Autowired private ArticleRepository articleRepository;
 
