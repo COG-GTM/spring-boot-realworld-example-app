@@ -119,7 +119,7 @@ public class JwtTokenFilterTest {
     doFilter();
 
     assertNull(currentAuthentication());
-    verify(userRepository, never()).findById(eq(user.getId()));
+    verifyNoInteractions(userRepository);
     assertNotNull(chain.getRequest());
   }
 
