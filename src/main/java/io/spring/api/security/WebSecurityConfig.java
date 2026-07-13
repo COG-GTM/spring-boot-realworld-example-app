@@ -33,7 +33,8 @@ public class WebSecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenFilter jwtTokenFilter)
+      throws Exception {
 
     http.csrf()
         .disable()
@@ -61,7 +62,7 @@ public class WebSecurityConfig {
         .anyRequest()
         .authenticated();
 
-    http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
