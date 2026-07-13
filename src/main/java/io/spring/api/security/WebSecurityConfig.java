@@ -2,6 +2,7 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,6 +26,15 @@ public class WebSecurityConfig {
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
     return new JwtTokenFilter();
+  }
+
+  @Bean
+  public FilterRegistrationBean<JwtTokenFilter> jwtTokenFilterRegistration(
+      JwtTokenFilter jwtTokenFilter) {
+    final FilterRegistrationBean<JwtTokenFilter> registration =
+        new FilterRegistrationBean<>(jwtTokenFilter);
+    registration.setEnabled(false);
+    return registration;
   }
 
   @Bean
