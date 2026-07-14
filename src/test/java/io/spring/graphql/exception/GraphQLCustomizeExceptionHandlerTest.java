@@ -25,20 +25,29 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotBlank;
 import javax.validation.executable.ExecutableValidator;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class GraphQLCustomizeExceptionHandlerTest {
 
   private GraphQLCustomizeExceptionHandler handler;
+  private ValidatorFactory validatorFactory;
   private Validator validator;
 
   @BeforeEach
   public void setUp() {
     handler = new GraphQLCustomizeExceptionHandler();
-    validator = Validation.buildDefaultValidatorFactory().getValidator();
+    validatorFactory = Validation.buildDefaultValidatorFactory();
+    validator = validatorFactory.getValidator();
+  }
+
+  @AfterEach
+  public void tearDown() {
+    validatorFactory.close();
   }
 
   @Test
