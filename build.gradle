@@ -1,20 +1,24 @@
 plugins {
-    id 'org.springframework.boot' version '2.6.3'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '3.5.16'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
-    id "com.netflix.dgs.codegen" version "5.0.6"
-    id "com.diffplug.spotless" version "6.2.1"
+    id "com.netflix.dgs.codegen" version "6.2.1"
+    id "com.diffplug.spotless" version "6.25.0"
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-targetCompatibility = '11'
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+ext['logback.version'] = '1.5.36'
+ext['jackson-bom.version'] = '2.21.5'
+ext['tomcat.version'] = '10.1.56'
+ext['log4j2.version'] = '2.25.5'
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
+        target project.fileTree(project.projectDir) {
+            include 'src/**/*.java'
         }
         googleJavaFormat()
     }
@@ -28,32 +32,71 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.apache.commons'
+                    && details.requested.name == 'commons-lang3') {
+                details.useVersion '3.18.0'
+                details.because 'CVE-fix: SNYK-JAVA-ORGAPACHECOMMONS-10734078'
+            }
+            if (details.requested.group == 'com.google.protobuf'
+                    && details.requested.name == 'protobuf-java') {
+                details.useVersion '4.28.2'
+                details.because 'CVE-fix: SNYK-JAVA-COMGOOGLEPROTOBUF-8055227'
+            }
+            if (details.requested.group == 'org.jetbrains.kotlin'
+                    && details.requested.name.startsWith('kotlin-stdlib')) {
+                details.useVersion '2.1.0'
+                details.because 'CVE-fix: SNYK-JAVA-ORGJETBRAINSKOTLIN-2393744'
+            }
+        }
+    }
 }
 
 dependencies {
+    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2')
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter'
     implementation 'org.flywaydb:flyway-core'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
-                'io.jsonwebtoken:jjwt-jackson:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
+                'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.xerial:sqlite-jdbc:3.50.1.0'
+
+    // Security pins: CVE-fixed versions of transitive deps, declared directly so
+    // both Gradle resolution and SCA scanners see the patched versions. The DGS
+    // platform pins Spring Boot 3.5.0 / Spring Framework 6.2.7; these force the
+    // patched 3.5.16 / 6.2.19 line (the versions the Spring Boot plugin BOM
+    // already resolves to locally).
+    implementation 'org.springframework.boot:spring-boot:3.5.16'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure:3.5.16'
+    implementation 'org.springframework:spring-core:6.2.19'
+    implementation 'org.springframework:spring-beans:6.2.19'
+    implementation 'org.springframework:spring-expression:6.2.19'
+    implementation 'ch.qos.logback:logback-classic:1.5.36'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.21.5'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.56'
+    implementation 'org.apache.logging.log4j:log4j-api:2.25.5'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'com.google.protobuf:protobuf-java:4.28.2'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:4.5.1'
-    testImplementation 'io.rest-assured:json-path:4.5.1'
-    testImplementation 'io.rest-assured:xml-path:4.5.1'
-    testImplementation 'io.rest-assured:spring-mock-mvc:4.5.1'
+    testImplementation 'io.rest-assured:rest-assured:5.5.7'
+    testImplementation 'io.rest-assured:json-path:5.5.7'
+    testImplementation 'io.rest-assured:xml-path:5.5.7'
+    testImplementation 'io.rest-assured:spring-mock-mvc:5.5.7'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
 }
 
 tasks.named('test') {
@@ -69,4 +112,5 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
+    typeMapping = ["PageInfo": "graphql.relay.PageInfo"]
 }
