@@ -86,7 +86,7 @@ class JwtTokenFilterTest {
   }
 
   @Test
-  void wrongSchemeWithUnresolvableTokenDoesNotAuthenticateAndContinuesFilterChain()
+  void nonStandardSchemeWithUnresolvableTokenDoesNotAuthenticateAndContinuesFilterChain()
       throws Exception {
     MockHttpServletRequest request = requestWithAuthorization("Bearer invalid-jwt");
     MockHttpServletResponse response = new MockHttpServletResponse();
@@ -97,6 +97,22 @@ class JwtTokenFilterTest {
 
     assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     verify(jwtService).getSubFromToken("invalid-jwt");
+    verifyNoInteractions(userRepository);
+    verify(filterChain).doFilter(request, response);
+  }
+
+  @Test
+  void authorizationHeaderWithExtraSpaceDoesNotAuthenticateAndContinuesFilterChain()
+      throws Exception {
+    MockHttpServletRequest request = requestWithAuthorization("Token  valid-jwt");
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    FilterChain filterChain = mock(FilterChain.class);
+    when(jwtService.getSubFromToken("")).thenReturn(Optional.empty());
+
+    jwtTokenFilter.doFilter(request, response, filterChain);
+
+    assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    verify(jwtService).getSubFromToken("");
     verifyNoInteractions(userRepository);
     verify(filterChain).doFilter(request, response);
   }
