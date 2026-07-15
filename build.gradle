@@ -44,6 +44,11 @@ configurations {
                 details.useVersion '4.28.2'
                 details.because 'CVE-fix: SNYK-JAVA-COMGOOGLEPROTOBUF-8055227'
             }
+            if (details.requested.group == 'org.jetbrains.kotlin'
+                    && details.requested.name.startsWith('kotlin-stdlib')) {
+                details.useVersion '2.1.0'
+                details.because 'CVE-fix: SNYK-JAVA-ORGJETBRAINSKOTLIN-2393744'
+            }
         }
     }
 }
