@@ -161,6 +161,7 @@ class ArticleDatafetcherTest {
 
   @Test
   void userFeed_withFirst_resolvesForProfileUser() {
+    authenticateAnonymous();
     io.spring.graphql.types.Profile profile =
         io.spring.graphql.types.Profile.newBuilder().username("target").build();
     User target = new User("target@example.com", "target", "123", "", "");
@@ -180,6 +181,7 @@ class ArticleDatafetcherTest {
 
   @Test
   void userFeed_withLast_resolvesPrevPage() {
+    authenticateAnonymous();
     io.spring.graphql.types.Profile profile =
         io.spring.graphql.types.Profile.newBuilder().username("target").build();
     User target = new User("target@example.com", "target", "123", "", "");
