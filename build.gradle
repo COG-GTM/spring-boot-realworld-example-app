@@ -1,6 +1,6 @@
 plugins {
-    id 'org.springframework.boot' version '3.2.5'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.springframework.boot' version '3.5.16'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
     id "com.netflix.dgs.codegen" version "6.2.1"
     id "com.diffplug.spotless" version "6.25.0"
@@ -9,6 +9,11 @@ plugins {
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 targetCompatibility = '17'
+
+ext['logback.version'] = '1.5.36'
+ext['jackson-bom.version'] = '2.21.5'
+ext['tomcat.version'] = '10.1.56'
+ext['log4j2.version'] = '2.25.5'
 
 spotless {
     java {
@@ -27,34 +32,48 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.apache.commons'
+                    && details.requested.name == 'commons-lang3') {
+                details.useVersion '3.18.0'
+                details.because 'CVE-fix: SNYK-JAVA-ORGAPACHECOMMONS-10734078'
+            }
+            if (details.requested.group == 'com.google.protobuf'
+                    && details.requested.name == 'protobuf-java') {
+                details.useVersion '4.28.2'
+                details.because 'CVE-fix: SNYK-JAVA-COMGOOGLEPROTOBUF-8055227'
+            }
+        }
+    }
 }
 
 dependencies {
-    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.1.2')
+    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
                 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.xerial:sqlite-jdbc:3.50.1.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:5.4.0'
-    testImplementation 'io.rest-assured:json-path:5.4.0'
-    testImplementation 'io.rest-assured:xml-path:5.4.0'
-    testImplementation 'io.rest-assured:spring-mock-mvc:5.4.0'
+    testImplementation 'io.rest-assured:rest-assured:5.5.7'
+    testImplementation 'io.rest-assured:json-path:5.5.7'
+    testImplementation 'io.rest-assured:xml-path:5.5.7'
+    testImplementation 'io.rest-assured:spring-mock-mvc:5.5.7'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
 }
 
 tasks.named('test') {
