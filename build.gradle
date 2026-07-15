@@ -54,10 +54,6 @@ configurations {
 }
 
 dependencies {
-    // Pin the Spring Boot BOM explicitly (ahead of the DGS platform) so both Gradle
-    // and SCA scanners resolve the whole Spring family to the patched 3.5.16 line
-    // instead of the older Spring Boot 3.5.0 / Framework 6.2.7 the DGS platform pins.
-    implementation platform('org.springframework.boot:spring-boot-dependencies:3.5.16')
     implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -74,7 +70,15 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.50.1.0'
 
     // Security pins: CVE-fixed versions of transitive deps, declared directly so
-    // both Gradle resolution and SCA scanners see the patched versions.
+    // both Gradle resolution and SCA scanners see the patched versions. The DGS
+    // platform pins Spring Boot 3.5.0 / Spring Framework 6.2.7; these force the
+    // patched 3.5.16 / 6.2.19 line (the versions the Spring Boot plugin BOM
+    // already resolves to locally).
+    implementation 'org.springframework.boot:spring-boot:3.5.16'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure:3.5.16'
+    implementation 'org.springframework:spring-core:6.2.19'
+    implementation 'org.springframework:spring-beans:6.2.19'
+    implementation 'org.springframework:spring-expression:6.2.19'
     implementation 'ch.qos.logback:logback-classic:1.5.36'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.21.5'
     implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.56'
