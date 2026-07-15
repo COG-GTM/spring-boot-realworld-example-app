@@ -54,6 +54,10 @@ configurations {
 }
 
 dependencies {
+    // Pin the Spring Boot BOM explicitly (ahead of the DGS platform) so both Gradle
+    // and SCA scanners resolve the whole Spring family to the patched 3.5.16 line
+    // instead of the older Spring Boot 3.5.0 / Framework 6.2.7 the DGS platform pins.
+    implementation platform('org.springframework.boot:spring-boot-dependencies:3.5.16')
     implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
