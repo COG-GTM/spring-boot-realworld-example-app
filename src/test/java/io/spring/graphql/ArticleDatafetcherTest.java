@@ -148,6 +148,7 @@ class ArticleDatafetcherTest {
 
   @Test
   void getFeed_withNeitherFirstNorLast_throws() {
+    authenticateAnonymous();
     DataFetchingEnvironment delegate = org.mockito.Mockito.mock(DataFetchingEnvironment.class);
     DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(delegate);
     assertThatThrownBy(() -> articleDatafetcher.getFeed(null, null, null, null, dfe))
@@ -189,7 +190,7 @@ class ArticleDatafetcherTest {
     when(articleQueryService.findUserFeedWithCursor(eq(target), any())).thenReturn(emptyPager());
 
     DataFetcherResult<ArticlesConnection> result =
-        articleDatafetcher.userFeed(null, "2000", 5, null, dfe);
+        articleDatafetcher.userFeed(null, null, 5, "2000", dfe);
 
     assertThat(result.getData().getEdges()).isEmpty();
   }
@@ -209,6 +210,7 @@ class ArticleDatafetcherTest {
 
   @Test
   void userFeed_withNeitherFirstNorLast_throws() {
+    authenticateAnonymous();
     DataFetchingEnvironment delegate = org.mockito.Mockito.mock(DataFetchingEnvironment.class);
     DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(delegate);
     assertThatThrownBy(() -> articleDatafetcher.userFeed(null, null, null, null, dfe))
@@ -259,6 +261,7 @@ class ArticleDatafetcherTest {
 
   @Test
   void userFavorites_withNeitherFirstNorLast_throws() {
+    authenticateAnonymous();
     DataFetchingEnvironment delegate = org.mockito.Mockito.mock(DataFetchingEnvironment.class);
     DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(delegate);
     assertThatThrownBy(() -> articleDatafetcher.userFavorites(null, null, null, null, dfe))
@@ -309,6 +312,7 @@ class ArticleDatafetcherTest {
 
   @Test
   void userArticles_withNeitherFirstNorLast_throws() {
+    authenticateAnonymous();
     DataFetchingEnvironment delegate = org.mockito.Mockito.mock(DataFetchingEnvironment.class);
     DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(delegate);
     assertThatThrownBy(() -> articleDatafetcher.userArticles(null, null, null, null, dfe))
@@ -354,6 +358,7 @@ class ArticleDatafetcherTest {
 
   @Test
   void getArticles_withNeitherFirstNorLast_throws() {
+    authenticateAnonymous();
     DataFetchingEnvironment delegate = org.mockito.Mockito.mock(DataFetchingEnvironment.class);
     DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(delegate);
     assertThatThrownBy(
