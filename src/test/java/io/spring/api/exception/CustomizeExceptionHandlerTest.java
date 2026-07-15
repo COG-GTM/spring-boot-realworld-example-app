@@ -1,5 +1,6 @@
 package io.spring.api.exception;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -75,7 +76,12 @@ public class CustomizeExceptionHandlerTest {
 
   @Test
   public void should_return_404_for_resource_not_found() throws Exception {
-    mvc.perform(get("/exception-test/not-found")).andExpect(status().isNotFound());
+    mvc.perform(get("/exception-test/not-found"))
+        .andExpect(status().isNotFound())
+        .andExpect(
+            result ->
+                assertThat(result.getResolvedException())
+                    .isInstanceOf(ResourceNotFoundException.class));
   }
 
   @RestController
