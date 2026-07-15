@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 
 public class ArticleBehaviorTest {
@@ -68,6 +69,25 @@ public class ArticleBehaviorTest {
     assertThat(article.getTitle()).isEqualTo("old title");
     assertThat(article.getDescription()).isEqualTo("old desc");
     assertThat(article.getBody()).isEqualTo("old body");
+  }
+
+  @Test
+  public void should_advance_updated_at_when_a_field_is_updated() {
+    DateTime createdAt = new DateTime().minusDays(1);
+    Article article =
+        new Article("title", "desc", "body", Collections.emptyList(), "userId", createdAt);
+    assertThat(article.getUpdatedAt()).isEqualTo(createdAt);
+    article.update("new title", "", "");
+    assertThat(article.getUpdatedAt()).isGreaterThan(createdAt);
+  }
+
+  @Test
+  public void should_not_advance_updated_at_when_update_values_all_empty() {
+    DateTime createdAt = new DateTime().minusDays(1);
+    Article article =
+        new Article("title", "desc", "body", Collections.emptyList(), "userId", createdAt);
+    article.update("", "", "");
+    assertThat(article.getUpdatedAt()).isEqualTo(createdAt);
   }
 
   @Test
