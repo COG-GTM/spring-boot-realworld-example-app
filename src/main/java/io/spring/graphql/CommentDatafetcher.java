@@ -5,8 +5,7 @@ import com.netflix.graphql.dgs.DgsData;
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
-import graphql.relay.DefaultConnectionCursor;
-import graphql.relay.DefaultPageInfo;
+import io.spring.DateFormats;
 import io.spring.application.CommentQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
@@ -21,11 +20,10 @@ import io.spring.graphql.types.Article;
 import io.spring.graphql.types.Comment;
 import io.spring.graphql.types.CommentEdge;
 import io.spring.graphql.types.CommentsConnection;
-import java.util.HashMap;
+import io.spring.graphql.types.PageInfo;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.joda.time.format.ISODateTimeFormat;
 
 @DgsComponent
 @AllArgsConstructor
@@ -38,12 +36,7 @@ public class CommentDatafetcher {
     Comment commentResult = buildCommentResult(comment);
     return DataFetcherResult.<Comment>newResult()
         .data(commentResult)
-        .localContext(
-            new HashMap<String, Object>() {
-              {
-                put(comment.getId(), comment);
-              }
-            })
+        .localContext(Map.of(comment.getId(), comment))
         .build();
   }
 
@@ -78,7 +71,7 @@ public class CommentDatafetcher {
               current,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
-    graphql.relay.PageInfo pageInfo = buildCommentPageInfo(comments);
+    PageInfo pageInfo = buildCommentPageInfo(comments);
     CommentsConnection result =
         CommentsConnection.newBuilder()
             .pageInfo(pageInfo)
@@ -99,24 +92,22 @@ public class CommentDatafetcher {
         .build();
   }
 
-  private DefaultPageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
-    return new DefaultPageInfo(
-        comments.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getStartCursor().toString()),
-        comments.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getEndCursor().toString()),
-        comments.hasPrevious(),
-        comments.hasNext());
+  private PageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
+    return PageInfo.newBuilder()
+        .startCursor(
+            comments.getStartCursor() == null ? null : comments.getStartCursor().toString())
+        .endCursor(comments.getEndCursor() == null ? null : comments.getEndCursor().toString())
+        .hasPreviousPage(comments.hasPrevious())
+        .hasNextPage(comments.hasNext())
+        .build();
   }
 
   private Comment buildCommentResult(CommentData comment) {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
-        .createdAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
+        .updatedAt(DateFormats.ISO_UTC_MILLIS.format(comment.getCreatedAt()))
+        .createdAt(DateFormats.ISO_UTC_MILLIS.format(comment.getCreatedAt()))
         .build();
   }
 }
