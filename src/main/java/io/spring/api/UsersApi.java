@@ -12,7 +12,6 @@ import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -58,11 +57,7 @@ public class UsersApi {
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {
-    return new HashMap<String, Object>() {
-      {
-        put("user", userWithToken);
-      }
-    };
+    return Map.of("user", userWithToken);
   }
 }
 
