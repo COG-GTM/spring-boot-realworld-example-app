@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import io.spring.DateFormats;
 import io.spring.JacksonCustomizations;
 import io.spring.TestHelper;
 import io.spring.api.security.WebSecurityConfig;
@@ -73,7 +74,7 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .statusCode(200)
         .body("article.slug", equalTo(slug))
         .body("article.body", equalTo(articleData.getBody()))
-        .body("article.createdAt", equalTo(time.toString()));
+        .body("article.createdAt", equalTo(DateFormats.ISO_UTC_MILLIS.format(time)));
   }
 
   @Test

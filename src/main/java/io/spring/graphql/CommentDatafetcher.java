@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsData;
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
+import io.spring.DateFormats;
 import io.spring.application.CommentQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
@@ -105,8 +106,8 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(comment.getCreatedAt().toString())
-        .createdAt(comment.getCreatedAt().toString())
+        .updatedAt(DateFormats.ISO_UTC_MILLIS.format(comment.getCreatedAt()))
+        .createdAt(DateFormats.ISO_UTC_MILLIS.format(comment.getCreatedAt()))
         .build();
   }
 }

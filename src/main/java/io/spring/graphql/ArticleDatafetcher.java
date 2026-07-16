@@ -7,6 +7,7 @@ import com.netflix.graphql.dgs.DgsQuery;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
+import io.spring.DateFormats;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.CursorPageParameter;
@@ -352,14 +353,14 @@ public class ArticleDatafetcher {
   private Article buildArticleResult(ArticleData articleData) {
     return Article.newBuilder()
         .body(articleData.getBody())
-        .createdAt(articleData.getCreatedAt().toString())
+        .createdAt(DateFormats.ISO_UTC_MILLIS.format(articleData.getCreatedAt()))
         .description(articleData.getDescription())
         .favorited(articleData.isFavorited())
         .favoritesCount(articleData.getFavoritesCount())
         .slug(articleData.getSlug())
         .tagList(articleData.getTagList())
         .title(articleData.getTitle())
-        .updatedAt(articleData.getUpdatedAt().toString())
+        .updatedAt(DateFormats.ISO_UTC_MILLIS.format(articleData.getUpdatedAt()))
         .build();
   }
 }
