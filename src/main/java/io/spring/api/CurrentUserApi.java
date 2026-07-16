@@ -7,7 +7,6 @@ import io.spring.application.user.UpdateUserCommand;
 import io.spring.application.user.UpdateUserParam;
 import io.spring.application.user.UserService;
 import io.spring.core.user.User;
-import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -49,10 +48,6 @@ public class CurrentUserApi {
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {
-    return new HashMap<String, Object>() {
-      {
-        put("user", userWithToken);
-      }
-    };
+    return Map.of("user", userWithToken);
   }
 }
