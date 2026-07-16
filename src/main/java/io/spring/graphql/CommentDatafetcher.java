@@ -20,7 +20,6 @@ import io.spring.graphql.types.Comment;
 import io.spring.graphql.types.CommentEdge;
 import io.spring.graphql.types.CommentsConnection;
 import io.spring.graphql.types.PageInfo;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -36,12 +35,7 @@ public class CommentDatafetcher {
     Comment commentResult = buildCommentResult(comment);
     return DataFetcherResult.<Comment>newResult()
         .data(commentResult)
-        .localContext(
-            new HashMap<String, Object>() {
-              {
-                put(comment.getId(), comment);
-              }
-            })
+        .localContext(Map.of(comment.getId(), comment))
         .build();
   }
 

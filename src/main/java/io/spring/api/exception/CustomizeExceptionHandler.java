@@ -6,8 +6,8 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -50,13 +50,7 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(InvalidAuthenticationException.class)
   public ResponseEntity<Object> handleInvalidAuthentication(
       InvalidAuthenticationException e, WebRequest request) {
-    return ResponseEntity.status(UNPROCESSABLE_ENTITY)
-        .body(
-            new HashMap<String, Object>() {
-              {
-                put("message", e.getMessage());
-              }
-            });
+    return ResponseEntity.status(UNPROCESSABLE_ENTITY).body(Map.of("message", e.getMessage()));
   }
 
   @Override

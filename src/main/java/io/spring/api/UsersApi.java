@@ -15,7 +15,6 @@ import io.spring.core.user.UserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -58,11 +57,7 @@ public class UsersApi {
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {
-    return new HashMap<String, Object>() {
-      {
-        put("user", userWithToken);
-      }
-    };
+    return Map.of("user", userWithToken);
   }
 }
 
