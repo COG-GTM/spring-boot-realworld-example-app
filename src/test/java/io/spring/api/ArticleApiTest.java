@@ -20,7 +20,6 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.user.User;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -206,20 +205,8 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .statusCode(403);
   }
 
-  private HashMap<String, Object> prepareUpdateParam(
+  private Map<String, Object> prepareUpdateParam(
       final String title, final String body, final String description) {
-    return new HashMap<String, Object>() {
-      {
-        put(
-            "article",
-            new HashMap<String, Object>() {
-              {
-                put("title", title);
-                put("body", body);
-                put("description", description);
-              }
-            });
-      }
-    };
+    return Map.of("article", Map.of("title", title, "body", body, "description", description));
   }
 }
