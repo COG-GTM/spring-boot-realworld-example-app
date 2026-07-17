@@ -4,6 +4,7 @@ plugins {
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
+    id 'jacoco'
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -56,8 +57,44 @@ dependencies {
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
 }
 
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+// Generated GraphQL (DGS codegen) sources should not count towards coverage.
+def coverageExcludes = [
+        'io/spring/graphql/DgsConstants**',
+        'io/spring/graphql/types/**',
+        'io/spring/graphql/client/**',
+]
+
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn test
+    reports {
+        html.required = true
+        xml.required = true
+    }
+    classDirectories.setFrom(files(sourceSets.main.output.classesDirs.collect {
+        fileTree(dir: it, exclude: coverageExcludes)
+    }))
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    classDirectories.setFrom(files(sourceSets.main.output.classesDirs.collect {
+        fileTree(dir: it, exclude: coverageExcludes)
+    }))
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.0
+            }
+        }
+    }
 }
 
 tasks.named('clean') {
