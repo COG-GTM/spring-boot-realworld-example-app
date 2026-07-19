@@ -58,6 +58,10 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	// Test-only, throwaway signing secret. Real deployments must provide JWT_SECRET
+	// via the environment; it is intentionally absent from source control.
+	environment 'JWT_SECRET', System.getenv('JWT_SECRET') ?:
+		'test-only-do-not-use-in-production-jwt-signing-secret-0123456789abcdef'
 }
 
 tasks.named('clean') {

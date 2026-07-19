@@ -36,7 +36,18 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The secret key is stored in `application.properties`.
+The JWT signing secret is **not** stored in source control. It must be supplied
+at runtime through the `JWT_SECRET` environment variable (see
+`jwt.secret=${JWT_SECRET}` in `application.properties`). The application will fail
+to start if it is missing, which prevents accidentally running with a known key.
+
+Use a long, random, high-entropy value (HS512 requires at least 64 bytes), e.g.:
+
+    export JWT_SECRET="$(openssl rand -base64 64)"
+    ./gradlew bootRun
+
+If this repository was ever deployed with the previously hardcoded secret, rotate
+it immediately — any token signed with the old key must be considered forgeable.
 
 # Database
 
