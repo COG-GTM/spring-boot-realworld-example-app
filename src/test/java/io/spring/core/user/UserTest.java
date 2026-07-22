@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class UserTest {
 
@@ -65,11 +66,14 @@ public class UserTest {
   }
 
   @Test
-  public void should_be_equal_when_ids_are_equal() {
+  public void should_be_equal_only_when_ids_are_equal() {
     User user = new User("email@test.com", "username", "password", "bio", "image");
-    User same = new User("email@test.com", "username", "password", "bio", "image");
-    assertThat(user.equals(same), is(false));
-    assertThat(user.equals(user), is(true));
-    assertThat(user.hashCode(), is(user.hashCode()));
+    User differentId = new User("email@test.com", "username", "password", "bio", "image");
+    User sameId = new User("other@test.com", "other", "otherpass", "otherbio", "otherimage");
+    ReflectionTestUtils.setField(sameId, "id", user.getId());
+
+    assertThat(user.equals(differentId), is(false));
+    assertThat(user.equals(sameId), is(true));
+    assertThat(user.hashCode(), is(sameId.hashCode()));
   }
 }

@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class CommentTest {
 
@@ -26,9 +27,14 @@ public class CommentTest {
   }
 
   @Test
-  public void should_be_equal_when_ids_are_equal() {
+  public void should_be_equal_only_when_ids_are_equal() {
     Comment comment = new Comment("body", "userId", "articleId");
-    assertThat(comment.equals(comment), is(true));
-    assertThat(comment.hashCode(), is(comment.hashCode()));
+    Comment differentId = new Comment("body", "userId", "articleId");
+    Comment sameId = new Comment("otherBody", "otherUser", "otherArticle");
+    ReflectionTestUtils.setField(sameId, "id", comment.getId());
+
+    assertThat(comment.equals(differentId), is(false));
+    assertThat(comment.equals(sameId), is(true));
+    assertThat(comment.hashCode(), is(sameId.hashCode()));
   }
 }
