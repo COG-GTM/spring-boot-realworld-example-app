@@ -13,6 +13,8 @@ ext['tomcat.version'] = '10.1.56'
 ext['logback.version'] = '1.5.36'
 ext['jackson-bom.version'] = '2.21.5'
 ext['commons-lang3.version'] = '3.18.0'
+ext['log4j2.version'] = '2.25.5'
+ext['kotlin.version'] = '2.1.0'
 
 java {
     toolchain {
