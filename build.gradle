@@ -1,12 +1,13 @@
 plugins {
-    id 'org.springframework.boot' version '3.5.3'
+    id 'org.springframework.boot' version '3.5.16'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
-    id "com.netflix.dgs.codegen" version "8.1.0"
+    id "com.netflix.dgs.codegen" version "8.6.0"
     id "com.diffplug.spotless" version "7.0.4"
 }
 
 version = '0.0.1-SNAPSHOT'
+ext['logback.version'] = '1.5.36'
 
 java {
     toolchain {
@@ -16,10 +17,7 @@ java {
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
-        }
+        target 'src/**/*.java'
         googleJavaFormat()
     }
 }
@@ -30,7 +28,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:10.2.1"
+        mavenBom "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:10.6.0"
     }
 }
 
@@ -52,7 +50,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
                 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'joda-time:joda-time:2.14.0'
-    implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
+    implementation 'org.xerial:sqlite-jdbc:3.53.2.1'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
