@@ -61,6 +61,25 @@ configurations.all {
 }
 
 dependencies {
+    // Declarative upgrades for transitive dependencies whose Spring Boot 3.5.16
+    // BOM-managed versions carry known CVEs. The ext[...] property overrides above
+    // drive the resolved versions; these constraints restate them declaratively so
+    // static dependency scanners (Snyk PR checks) also see the patched versions.
+    constraints {
+        implementation('ch.qos.logback:logback-core:1.5.36') { because 'CVE fix: expression injection' }
+        implementation('ch.qos.logback:logback-classic:1.5.36') { because 'CVE fix: expression injection' }
+        implementation('org.apache.tomcat.embed:tomcat-embed-core:10.1.56') { because 'CVE fix: multiple Tomcat issues' }
+        implementation('org.apache.tomcat.embed:tomcat-embed-el:10.1.56') { because 'CVE fix: multiple Tomcat issues' }
+        implementation('org.apache.tomcat.embed:tomcat-embed-websocket:10.1.56') { because 'CVE fix: multiple Tomcat issues' }
+        implementation('com.fasterxml.jackson.core:jackson-databind:2.21.5') { because 'CVE fix: jackson-databind' }
+        implementation('org.apache.logging.log4j:log4j-api:2.25.5') { because 'CVE fix: log4j2' }
+        implementation('org.apache.logging.log4j:log4j-to-slf4j:2.25.5') { because 'CVE fix: log4j2' }
+        implementation('org.apache.commons:commons-lang3:3.18.0') { because 'CVE fix: uncontrolled recursion' }
+        implementation('com.google.protobuf:protobuf-java:4.27.5') { because 'CVE fix: stack-based buffer overflow' }
+        implementation('org.jetbrains.kotlin:kotlin-stdlib:2.1.0') { because 'CVE fix: information exposure' }
+        implementation('org.jetbrains.kotlin:kotlin-reflect:2.1.0') { because 'CVE fix: information exposure' }
+    }
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
