@@ -8,6 +8,8 @@ plugins {
 
 version = '0.0.1-SNAPSHOT'
 ext['logback.version'] = '1.5.36'
+ext['jackson-bom.version'] = '2.21.5'
+ext['tomcat.version'] = '10.1.57'
 
 java {
     toolchain {
@@ -29,6 +31,10 @@ repositories {
 dependencyManagement {
     imports {
         mavenBom "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:10.6.0"
+    }
+    dependencies {
+        // SNYK-JAVA-ORGAPACHECOMMONS-10734078: override version managed by the DGS BOM
+        dependency 'org.apache.commons:commons-lang3:3.18.0'
     }
 }
 
@@ -55,10 +61,10 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:5.5.2'
-    testImplementation 'io.rest-assured:json-path:5.5.2'
-    testImplementation 'io.rest-assured:xml-path:5.5.2'
-    testImplementation 'io.rest-assured:spring-mock-mvc:5.5.2'
+    testImplementation 'io.rest-assured:rest-assured:5.5.7'
+    testImplementation 'io.rest-assured:json-path:5.5.7'
+    testImplementation 'io.rest-assured:xml-path:5.5.7'
+    testImplementation 'io.rest-assured:spring-mock-mvc:5.5.7'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
