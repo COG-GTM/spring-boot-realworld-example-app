@@ -14,7 +14,8 @@ java {
     }
 }
 
-ext['graphql-java.version'] = '19.5'
+ext['graphql-java.version'] = '19.11'
+ext['tomcat.version'] = '9.0.118'
 
 spotless {
     java {
