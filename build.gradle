@@ -38,6 +38,12 @@ configurations {
 }
 
 dependencies {
+    constraints {
+        implementation('com.google.protobuf:protobuf-java:4.28.3') {
+            because 'CVE-2024-7254: protobuf-java < 4.27.5/4.28.3 allows DoS via deeply nested groups; pulled transitively via DGS Apollo federation support'
+        }
+    }
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
