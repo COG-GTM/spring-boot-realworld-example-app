@@ -33,7 +33,7 @@ public class ArticleApi {
   private ArticleCommandService articleCommandService;
 
   @GetMapping
-  public ResponseEntity<?> article(
+  public ResponseEntity<Map<String, Object>> article(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleQueryService
         .findBySlug(slug, user)
@@ -42,7 +42,7 @@ public class ArticleApi {
   }
 
   @PutMapping
-  public ResponseEntity<?> updateArticle(
+  public ResponseEntity<Map<String, Object>> updateArticle(
       @PathVariable("slug") String slug,
       @AuthenticationPrincipal User user,
       @Valid @RequestBody UpdateArticleParam updateArticleParam) {
