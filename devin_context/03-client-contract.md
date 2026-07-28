@@ -69,7 +69,9 @@ The frontend renders a validation error list from exactly this shape:
 ## 6. Anonymous access
 
 `GET /articles/**`, `GET /profiles/**` and `GET /tags` must keep working without a token — the
-frontend renders the home feed before login. Personalised flags degrade to `false`.
+frontend renders the home feed before login. Personalised flags degrade to `false`. The one
+exception is `GET /articles/feed` (the personalised feed), matched ahead of `/articles/**` in
+`WebSecurityConfig` and `.authenticated()`.
 
 ## 7. CORS
 
