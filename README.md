@@ -32,6 +32,12 @@ And the code is organized as this:
 3. `application` is the high-level services for querying the data transfer objects
 4. `infrastructure`  contains all the implementation classes as the technique details
 
+# Conventions
+
+Codebase conventions (layering, REST/GraphQL, the client contract every RealWorld frontend depends
+on, persistence and testing) are documented in [`devin_context/`](devin_context/README.md) and are
+expected to be followed by contributors and coding agents alike — see [`AGENTS.md`](AGENTS.md).
+
 # Security
 
 Integration with Spring Security and add other filter for jwt token process.
