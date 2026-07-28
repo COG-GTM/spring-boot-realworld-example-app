@@ -38,6 +38,13 @@ configurations {
     }
 }
 
+dependencyManagement {
+    dependencies {
+        // DGS' BOM pins kotlin-stdlib 1.9.25, which carries an open advisory.
+        dependency 'org.jetbrains.kotlin:kotlin-stdlib:2.1.21'
+    }
+}
+
 dependencies {
     constraints {
         // Not managed by the Spring Boot BOM; pulled in transitively by DGS.
