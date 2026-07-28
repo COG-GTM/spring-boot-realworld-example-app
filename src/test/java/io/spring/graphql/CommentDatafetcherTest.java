@@ -19,6 +19,7 @@ import io.spring.graphql.types.CommentsConnection;
 import java.util.Collections;
 import java.util.Map;
 import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,7 +38,7 @@ class CommentDatafetcherTest extends GraphQLTestBase {
         "comment-id",
         "comment body",
         articleId,
-        new DateTime(),
+        new DateTime().minusDays(1),
         new DateTime(),
         new ProfileData(user.getId(), user.getUsername(), user.getBio(), user.getImage(), false));
   }
@@ -50,7 +51,10 @@ class CommentDatafetcherTest extends GraphQLTestBase {
 
     assertThat(result.getData().getId()).isEqualTo(commentData.getId());
     assertThat(result.getData().getBody()).isEqualTo(commentData.getBody());
-    assertThat(result.getData().getCreatedAt()).isEqualTo(result.getData().getUpdatedAt());
+    String createdAt = ISODateTimeFormat.dateTime().withZoneUTC().print(commentData.getCreatedAt());
+    assertThat(result.getData().getCreatedAt()).isEqualTo(createdAt);
+    // buildCommentResult maps updatedAt from createdAt as well
+    assertThat(result.getData().getUpdatedAt()).isEqualTo(createdAt);
     @SuppressWarnings("unchecked")
     Map<String, Object> localContext = (Map<String, Object>) result.getLocalContext();
     assertThat(localContext).containsKey(commentData.getId());
