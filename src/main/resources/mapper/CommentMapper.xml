@@ -9,9 +9,15 @@
           #{comment.userId},
           #{comment.articleId},
           #{comment.createdAt},
-          #{comment.createdAt}
+          #{comment.updatedAt}
         )
     </insert>
+    <update id="update">
+        update comments
+        set body = #{comment.body},
+            updated_at = #{comment.updatedAt}
+        where id = #{comment.id}
+    </update>
     <delete id="delete">
         delete from comments where id = #{id}
     </delete>
@@ -21,7 +27,8 @@
           body commentBody,
           user_id commentUserId,
           article_id commentArticleId,
-          created_at commentCreatedAt
+          created_at commentCreatedAt,
+          updated_at commentUpdatedAt
         from comments
         where id = #{id} and article_id = #{articleId}
     </select>
@@ -31,5 +38,6 @@
         <result column="commentUserId" property="userId"/>
         <result column="commentArticleId" property="articleId"/>
         <result column="commentCreatedAt" property="createdAt"/>
+        <result column="commentUpdatedAt" property="updatedAt"/>
     </resultMap>
 </mapper>

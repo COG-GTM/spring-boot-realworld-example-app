@@ -15,6 +15,7 @@ public class Comment {
   private String userId;
   private String articleId;
   private DateTime createdAt;
+  private DateTime updatedAt;
 
   public Comment(String body, String userId, String articleId) {
     this.id = UUID.randomUUID().toString();
@@ -22,5 +23,13 @@ public class Comment {
     this.userId = userId;
     this.articleId = articleId;
     this.createdAt = new DateTime();
+    this.updatedAt = this.createdAt;
+  }
+
+  public void update(String body) {
+    if (!"".equals(body)) {
+      this.body = body;
+      this.updatedAt = new DateTime();
+    }
   }
 }

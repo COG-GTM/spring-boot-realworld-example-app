@@ -35,6 +35,7 @@ type Mutation {
 
     ### Comment
     addComment(slug: String!, body: String!): CommentPayload
+    updateComment(slug: String!, id: ID!, body: String!): CommentPayload
     deleteComment(slug: String!, id: ID!): DeletionStatus
 }
 

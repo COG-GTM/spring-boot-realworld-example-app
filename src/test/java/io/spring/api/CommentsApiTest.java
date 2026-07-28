@@ -129,6 +129,100 @@ public class CommentsApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_update_comment_success() throws Exception {
+    Map<String, Object> param = commentParam("updated content");
+    CommentData updatedCommentData =
+        new CommentData(
+            comment.getId(),
+            "updated content",
+            comment.getArticleId(),
+            comment.getCreatedAt(),
+            comment.getUpdatedAt(),
+            new ProfileData(
+                user.getId(), user.getUsername(), user.getBio(), user.getImage(), false));
+
+    when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
+        .thenReturn(Optional.of(comment));
+    when(commentQueryService.findById(eq(comment.getId()), eq(user)))
+        .thenReturn(Optional.of(updatedCommentData));
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .put("/articles/{slug}/comments/{id}", article.getSlug(), comment.getId())
+        .then()
+        .statusCode(200)
+        .body("comment.body", equalTo("updated content"));
+  }
+
+  @Test
+  public void should_get_422_with_empty_body_when_update_comment() throws Exception {
+    when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
+        .thenReturn(Optional.of(comment));
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(commentParam(""))
+        .when()
+        .put("/articles/{slug}/comments/{id}", article.getSlug(), comment.getId())
+        .then()
+        .statusCode(422)
+        .body("errors.body[0]", equalTo("can't be empty"));
+  }
+
+  @Test
+  public void should_get_401_without_token_when_update_comment() throws Exception {
+    given()
+        .contentType("application/json")
+        .body(commentParam("updated content"))
+        .when()
+        .put("/articles/{slug}/comments/{id}", article.getSlug(), comment.getId())
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  public void should_get_404_if_comment_not_found_when_update_comment() throws Exception {
+    when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
+        .thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(commentParam("updated content"))
+        .when()
+        .put("/articles/{slug}/comments/{id}", article.getSlug(), comment.getId())
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void should_get_403_if_not_author_of_article_or_author_of_comment_when_update_comment()
+      throws Exception {
+    User anotherUser = new User("other@example.com", "other", "123", "", "");
+    when(userRepository.findByUsername(eq(anotherUser.getUsername())))
+        .thenReturn(Optional.of(anotherUser));
+    when(jwtService.getSubFromToken(any())).thenReturn(Optional.of(anotherUser.getId()));
+    when(userRepository.findById(eq(anotherUser.getId()))).thenReturn(Optional.of(anotherUser));
+
+    when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
+        .thenReturn(Optional.of(comment));
+    String anotherToken = jwtService.toToken(anotherUser);
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + anotherToken)
+        .body(commentParam("updated content"))
+        .when()
+        .put("/articles/{slug}/comments/{id}", article.getSlug(), comment.getId())
+        .then()
+        .statusCode(403);
+  }
+
+  @Test
   public void should_delete_comment_success() throws Exception {
     when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
         .thenReturn(Optional.of(comment));
@@ -161,5 +255,19 @@ public class CommentsApiTest extends TestWithCurrentUser {
         .delete("/articles/{slug}/comments/{id}", article.getSlug(), comment.getId())
         .then()
         .statusCode(403);
+  }
+
+  private Map<String, Object> commentParam(String body) {
+    return new HashMap<String, Object>() {
+      {
+        put(
+            "comment",
+            new HashMap<String, Object>() {
+              {
+                put("body", body);
+              }
+            });
+      }
+    };
   }
 }
