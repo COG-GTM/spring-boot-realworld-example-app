@@ -1,6 +1,7 @@
 package io.spring.api.security;
 
 import static java.util.Arrays.asList;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,31 +36,32 @@ public class WebSecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    http.csrf()
-        .disable()
-        .cors()
-        .and()
-        .exceptionHandling()
-        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-        .and()
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-        .authorizeHttpRequests()
-        .requestMatchers(HttpMethod.OPTIONS)
-        .permitAll()
-        .requestMatchers("/graphiql")
-        .permitAll()
-        .requestMatchers("/graphql")
-        .permitAll()
-        .requestMatchers(HttpMethod.GET, "/articles/feed")
-        .authenticated()
-        .requestMatchers(HttpMethod.POST, "/users", "/users/login")
-        .permitAll()
-        .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
-        .permitAll()
-        .anyRequest()
-        .authenticated();
+    http.csrf(csrf -> csrf.disable())
+        .cors(withDefaults())
+        .exceptionHandling(
+            exceptionHandling ->
+                exceptionHandling.authenticationEntryPoint(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+        .sessionManagement(
+            sessionManagement ->
+                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            authorize ->
+                authorize
+                    .requestMatchers(HttpMethod.OPTIONS)
+                    .permitAll()
+                    .requestMatchers("/graphiql")
+                    .permitAll()
+                    .requestMatchers("/graphql")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/articles/feed")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/users", "/users/login")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated());
 
     http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
