@@ -111,3 +111,9 @@ answers against `03-client-contract.md` and the reference client rather than gue
 
 If you want zero live risk: run Prompt B beforehand, then in the meeting show `devin_context/`, read
 the prompt out loud, and review the resulting PR. The talk track above works unchanged.
+
+A pre-run of Prompt B already exists — **PR #866**, `PUT /articles/{slug}/comments/{id}` — and can be
+used as the review artifact as-is. Its description enumerates the conventions followed, and the diff
+hits every row of the table in step 3 (root-wrapped response, `422` error map, `AuthorizationService`
+check, entity-owned `Comment.update`, re-read through `CommentQueryService`, XML mapper SQL,
+GraphQL parity, five API tests).
