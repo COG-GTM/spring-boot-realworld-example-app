@@ -14,6 +14,13 @@ java {
     }
 }
 
+// Patched versions of transitive dependencies with known advisories.
+ext['logback.version'] = '1.5.36'
+ext['jackson-bom.version'] = '2.21.5'
+ext['tomcat.version'] = '10.1.56'
+ext['commons-lang3.version'] = '3.18.0'
+ext['log4j2.version'] = '2.25.5'
+
 spotless {
     java {
         target 'src/**/*.java'
@@ -32,6 +39,11 @@ configurations {
 }
 
 dependencies {
+    constraints {
+        // Not managed by the Spring Boot BOM; pulled in transitively by DGS.
+        implementation 'com.google.protobuf:protobuf-java:4.27.5'
+    }
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
