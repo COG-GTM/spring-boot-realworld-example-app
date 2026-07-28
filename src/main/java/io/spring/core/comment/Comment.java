@@ -1,5 +1,6 @@
 package io.spring.core.comment;
 
+import io.spring.Util;
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,7 +28,7 @@ public class Comment {
   }
 
   public void update(String body) {
-    if (!"".equals(body)) {
+    if (!Util.isEmpty(body)) {
       this.body = body;
       this.updatedAt = new DateTime();
     }
