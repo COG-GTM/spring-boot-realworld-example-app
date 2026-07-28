@@ -6,6 +6,7 @@ import io.spring.infrastructure.mybatis.mapper.CommentMapper;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class MyBatisCommentRepository implements CommentRepository {
@@ -17,8 +18,13 @@ public class MyBatisCommentRepository implements CommentRepository {
   }
 
   @Override
+  @Transactional
   public void save(Comment comment) {
-    commentMapper.insert(comment);
+    if (commentMapper.findById(comment.getArticleId(), comment.getId()) == null) {
+      commentMapper.insert(comment);
+    } else {
+      commentMapper.update(comment);
+    }
   }
 
   @Override

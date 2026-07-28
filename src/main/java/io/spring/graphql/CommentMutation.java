@@ -46,6 +46,33 @@ public class CommentMutation {
         .build();
   }
 
+  @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.UpdateComment)
+  public DataFetcherResult<CommentPayload> updateComment(
+      @InputArgument("slug") String slug,
+      @InputArgument("id") String commentId,
+      @InputArgument("body") String body) {
+    User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+    Article article =
+        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+    Comment comment =
+        commentRepository
+            .findById(article.getId(), commentId)
+            .orElseThrow(ResourceNotFoundException::new);
+    if (!AuthorizationService.canWriteComment(user, article, comment)) {
+      throw new NoAuthorizationException();
+    }
+    comment.update(body);
+    commentRepository.save(comment);
+    CommentData commentData =
+        commentQueryService
+            .findById(comment.getId(), user)
+            .orElseThrow(ResourceNotFoundException::new);
+    return DataFetcherResult.<CommentPayload>newResult()
+        .localContext(commentData)
+        .data(CommentPayload.newBuilder().build())
+        .build();
+  }
+
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.DeleteComment)
   public DeletionStatus removeComment(
       @InputArgument("slug") String slug, @InputArgument("id") String commentId) {

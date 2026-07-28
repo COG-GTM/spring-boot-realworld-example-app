@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.CommentQueryService;
+import io.spring.application.comment.UpdateCommentParam;
 import io.spring.application.data.CommentData;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
@@ -24,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -62,6 +64,29 @@ public class CommentsApi {
             put("comments", comments);
           }
         });
+  }
+
+  @PutMapping(path = "{id}")
+  public ResponseEntity<?> updateComment(
+      @PathVariable("slug") String slug,
+      @PathVariable("id") String commentId,
+      @AuthenticationPrincipal User user,
+      @Valid @RequestBody UpdateCommentParam updateCommentParam) {
+    Article article =
+        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+    return commentRepository
+        .findById(article.getId(), commentId)
+        .map(
+            comment -> {
+              if (!AuthorizationService.canWriteComment(user, article, comment)) {
+                throw new NoAuthorizationException();
+              }
+              comment.update(updateCommentParam.getBody());
+              commentRepository.save(comment);
+              return ResponseEntity.ok(
+                  commentResponse(commentQueryService.findById(comment.getId(), user).get()));
+            })
+        .orElseThrow(ResourceNotFoundException::new);
   }
 
   @RequestMapping(path = "{id}", method = RequestMethod.DELETE)

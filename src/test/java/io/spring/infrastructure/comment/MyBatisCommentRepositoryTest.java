@@ -23,4 +23,17 @@ public class MyBatisCommentRepositoryTest extends DbTestBase {
     Assertions.assertTrue(optional.isPresent());
     Assertions.assertEquals(optional.get(), comment);
   }
+
+  @Test
+  public void should_update_comment_body_success() {
+    Comment comment = new Comment("content", "123", "456");
+    commentRepository.save(comment);
+
+    comment.update("updated content");
+    commentRepository.save(comment);
+
+    Optional<Comment> optional = commentRepository.findById("456", comment.getId());
+    Assertions.assertTrue(optional.isPresent());
+    Assertions.assertEquals("updated content", optional.get().getBody());
+  }
 }
