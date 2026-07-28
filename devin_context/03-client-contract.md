@@ -56,7 +56,7 @@ The frontend renders a validation error list from exactly this shape:
 
 - JSON is `camelCase` (`createdAt`, `favoritesCount`, `tagList`, `following`).
 - Timestamps are ISO-8601 with milliseconds in UTC — `2021-01-01T12:00:00.000Z` — enforced globally
-  by `JacksonCustomizations.DateTimeSerializer`. Never format a date in a controller or DTO.
+  by `io.spring.JacksonCustomizations.DateTimeSerializer`. Never format a date in a controller or DTO.
 - Booleans the frontend toggles on (`favorited`, `following`) are user-relative and must be `false`
   (never `null`, never omitted) for anonymous requests.
 - Counters (`favoritesCount`, `articlesCount`) are numbers, always present.

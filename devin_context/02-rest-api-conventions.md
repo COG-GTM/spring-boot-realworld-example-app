@@ -17,6 +17,8 @@ public class CommentsApi {
   (`ArticlesApi` = collection, `ArticleApi` = `/articles/{slug}`, `CommentsApi` = comments).
 - Method-level `@GetMapping` / `@PostMapping` / `@PutMapping` / `@DeleteMapping` with no path when the
   class-level `@RequestMapping` already covers it; add only the sub-path (`@PutMapping(path = "{id}")`).
+  A few older methods still use `@RequestMapping(path = "{id}", method = RequestMethod.DELETE)`
+  (`CommentsApi.deleteComment`) — prefer the shorthand in new code.
 - Return `ResponseEntity<?>`; build the body with the private `xxxResponse(...)` helper at the bottom
   of the controller (see below). Controllers hold no business logic and no SQL.
 - No `/api` prefix — the app is mounted at the root (`http://localhost:8080/articles`).
