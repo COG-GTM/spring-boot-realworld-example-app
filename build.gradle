@@ -1,15 +1,14 @@
 plugins {
-    id 'org.springframework.boot' version '3.5.3'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '4.1.0'
     id 'java'
-    id "com.netflix.dgs.codegen" version "8.1.0"
-    id "com.diffplug.spotless" version "7.0.4"
+    id "com.netflix.dgs.codegen" version "8.6.0"
+    id "com.diffplug.spotless" version "8.9.0"
 }
 
 version = '0.0.1-SNAPSHOT'
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -31,30 +30,35 @@ configurations {
 }
 
 dependencies {
+    implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+    annotationProcessor platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+    testImplementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
-    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:10.2.1')
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.1.0'
+    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:12.0.1')
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-graphql-starter'
-    implementation 'org.flywaydb:flyway-core'
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6',
-                'io.jsonwebtoken:jjwt-jackson:0.12.6'
-    implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0',
+                'io.jsonwebtoken:jjwt-jackson:0.13.0'
+    implementation 'joda-time:joda-time:2.14.3'
+    implementation 'org.xerial:sqlite-jdbc:3.53.2.1'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:5.5.2'
-    testImplementation 'io.rest-assured:json-path:5.5.2'
-    testImplementation 'io.rest-assured:xml-path:5.5.2'
-    testImplementation 'io.rest-assured:spring-mock-mvc:5.5.2'
+    testImplementation 'io.rest-assured:rest-assured:6.0.1'
+    testImplementation 'io.rest-assured:json-path:6.0.1'
+    testImplementation 'io.rest-assured:xml-path:6.0.1'
+    testImplementation 'io.rest-assured:spring-mock-mvc:6.0.1'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+    testImplementation 'org.springframework.boot:spring-boot-webmvc-test'
+    testImplementation 'org.springframework.boot:spring-boot-security-test'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:4.1.0'
 }
 
 tasks.named('test') {
