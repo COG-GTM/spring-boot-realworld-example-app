@@ -9,7 +9,7 @@ Reference implementations: `api/ArticleApi.java`, `api/CommentsApi.java`, `api/U
 @RequestMapping(path = "/articles/{slug}/comments")   // one controller per resource path
 @AllArgsConstructor                                   // constructor injection, no @Autowired
 public class CommentsApi {
-  private ArticleRepository articleRepository;        // package-private fields, no `final`, no Javadoc
+  private ArticleRepository articleRepository;        // private fields, no `final`, no Javadoc
   private CommentQueryService commentQueryService;
 ```
 
