@@ -27,6 +27,13 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    all {
+        resolutionStrategy {
+            // Patched for GHSA-5gvw-p9qm-jgwh
+            force 'tools.jackson.core:jackson-databind:3.1.5',
+                  'com.fasterxml.jackson.core:jackson-databind:2.21.5'
+        }
+    }
 }
 
 dependencies {
