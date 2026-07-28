@@ -88,8 +88,9 @@ the `core` interface and is the only place that touches the mapper.
 ### 6. `application` — the read model
 
 `CommentQueryService.findById(id, user)` calls `CommentReadService` (a *read* `@Mapper` returning
-`CommentData`) and enriches the projection with the user-relative `following` flag — defaulting to
-`false` when `user` is `null`.
+`CommentData`) and enriches the projection with the user-relative `following` flag. Note the
+asymmetry: `findByArticleId` null-checks `user` (the list endpoint is public), `findById` does not —
+it is only reachable from authenticated endpoints, so pass it a non-null `user`.
 
 ### 7. `graphql` — parity
 

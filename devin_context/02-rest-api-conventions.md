@@ -84,6 +84,8 @@ its body is non-standard, a handler in `CustomizeExceptionHandler`.
 
 - The current user is injected: `@AuthenticationPrincipal User user`. It is `null` for anonymous
   requests on public endpoints — handle that instead of NPE-ing (`CommentQueryService.findByArticleId`).
+  Query-service methods reached only from authenticated endpoints do not null-check
+  (`CommentQueryService.findById` dereferences `user`), so check which one you are calling.
 - `JwtTokenFilter` reads `Authorization: Token <jwt>` and populates the security context.
 - New routes are **authenticated by default** (`anyRequest().authenticated()` in `WebSecurityConfig`).
   Making a route public is an explicit `antMatchers(...).permitAll()` change and must be called out in
