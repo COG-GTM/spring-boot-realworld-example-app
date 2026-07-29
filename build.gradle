@@ -16,6 +16,9 @@ ext['jackson-bom.version'] = '2.21.5'
 ext['tomcat.version'] = '10.1.56'
 ext['commons-lang3.version'] = '3.18.0'
 ext['log4j2.version'] = '2.25.5'
+// Kotlin runtime for the DGS framework; 1.9.25 (Boot's managed version) is flagged by Snyk.
+ext['kotlin.version'] = '2.1.21'
+ext['kotlin-coroutines.version'] = '1.10.2'
 
 spotless {
     java {
@@ -86,4 +89,5 @@ tasks.named('generateJava') {
     packageName = 'io.spring.graphql' // The package name to use to generate sources
     typeMapping = ['PageInfo': 'graphql.relay.PageInfo'] // Reuse the Relay type instead of generating one
 }
+
 
