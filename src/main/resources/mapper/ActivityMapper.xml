@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.ActivityMapper">
+    <insert id="insert">
+        insert into activities(id, lp_id, user_id, type, notes, created_at)
+        values(
+          #{activity.id},
+          #{activity.lpId},
+          #{activity.userId},
+          #{activity.type},
+          #{activity.notes},
+          #{activity.createdAt})
+    </insert>
+    <delete id="delete">
+        delete from activities where id = #{id}
+    </delete>
+
+    <sql id="selectActivity">
+        select
+        A.id activityId,
+        A.lp_id activityLpId,
+        A.user_id activityUserId,
+        A.type activityType,
+        A.notes activityNotes,
+        A.created_at activityCreatedAt
+        from activities A
+    </sql>
+
+    <select id="findById" resultMap="activity">
+        <include refid="selectActivity"/>
+        where A.id = #{id}
+    </select>
+
+    <select id="findByLpId" resultMap="activity">
+        <include refid="selectActivity"/>
+        where A.lp_id = #{lpId}
+        order by A.created_at desc
+    </select>
+
+    <resultMap id="activity" type="io.spring.core.lp.Activity">
+        <id column="activityId" property="id"/>
+        <result column="activityLpId" property="lpId"/>
+        <result column="activityUserId" property="userId"/>
+        <result column="activityType" property="type"/>
+        <result column="activityNotes" property="notes"/>
+        <result column="activityCreatedAt" property="createdAt"/>
+    </resultMap>
+</mapper>

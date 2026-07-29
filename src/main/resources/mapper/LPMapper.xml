@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.LPMapper">
+    <insert id="insert">
+        insert into lps(id, user_id, name, company, email, stage, created_at, updated_at)
+        values(
+          #{lp.id},
+          #{lp.userId},
+          #{lp.name},
+          #{lp.company},
+          #{lp.email},
+          #{lp.stage},
+          #{lp.createdAt},
+          #{lp.updatedAt})
+    </insert>
+    <update id="update">
+        update lps
+        set name = #{lp.name},
+            company = #{lp.company},
+            email = #{lp.email},
+            stage = #{lp.stage},
+            updated_at = #{lp.updatedAt}
+        where id = #{lp.id}
+    </update>
+    <delete id="delete">
+        delete from lps where id = #{id}
+    </delete>
+    <insert id="insertRelationship">
+        insert into lp_relationships (lp_id, contact_id, role)
+        values(#{relationship.lpId}, #{relationship.contactId}, #{relationship.role})
+    </insert>
+    <delete id="deleteRelationship">
+        delete from lp_relationships
+        where lp_id = #{relationship.lpId} and contact_id = #{relationship.contactId}
+    </delete>
+
+    <sql id="selectLP">
+        select
+        L.id lpId,
+        L.user_id lpUserId,
+        L.name lpName,
+        L.company lpCompany,
+        L.email lpEmail,
+        L.stage lpStage,
+        L.created_at lpCreatedAt,
+        L.updated_at lpUpdatedAt
+        from lps L
+    </sql>
+
+    <select id="findById" resultMap="lp">
+        <include refid="selectLP"/>
+        where L.id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="lp">
+        <include refid="selectLP"/>
+        where L.user_id = #{userId}
+        order by L.created_at desc
+    </select>
+
+    <select id="findRelationship" resultMap="relationship">
+        select lp_id, contact_id, role from lp_relationships
+        where lp_id = #{lpId} and contact_id = #{contactId}
+    </select>
+
+    <select id="findRelationships" resultMap="relationship">
+        select lp_id, contact_id, role from lp_relationships where lp_id = #{lpId}
+    </select>
+
+    <resultMap id="lp" type="io.spring.core.lp.LP">
+        <id column="lpId" property="id"/>
+        <result column="lpUserId" property="userId"/>
+        <result column="lpName" property="name"/>
+        <result column="lpCompany" property="company"/>
+        <result column="lpEmail" property="email"/>
+        <result column="lpStage" property="stage"/>
+        <result column="lpCreatedAt" property="createdAt"/>
+        <result column="lpUpdatedAt" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="relationship" type="io.spring.core.lp.Relationship">
+        <result column="lp_id" property="lpId"/>
+        <result column="contact_id" property="contactId"/>
+        <result column="role" property="role"/>
+    </resultMap>
+</mapper>
