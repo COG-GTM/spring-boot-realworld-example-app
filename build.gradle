@@ -67,9 +67,9 @@ jacoco {
 
 def jacocoExcludes = [
     'io/spring/graphql/types/**',
-    'io/spring/graphql/DgsConstants**',
+    'io/spring/graphql/DgsConstants*',
     'io/spring/graphql/client/**',
-    'io/spring/Application*'
+    'io/spring/RealWorldApplication*'
 ]
 
 tasks.named('jacocoTestReport') {
