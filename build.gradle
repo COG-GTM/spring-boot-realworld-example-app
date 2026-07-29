@@ -23,6 +23,14 @@ repositories {
     mavenCentral()
 }
 
+// Patch releases of managed transitive dependencies that fix known CVEs.
+ext['jackson-bom.version'] = '2.21.5'
+ext['tomcat.version'] = '10.1.56'
+ext['logback.version'] = '1.5.36'
+ext['commons-lang3.version'] = '3.18.0'
+ext['log4j2.version'] = '2.25.5'
+ext['kotlin.version'] = '2.1.0'
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -30,6 +38,11 @@ configurations {
 }
 
 dependencies {
+    constraints {
+        // Pulled in by the DGS platform below the version that fixes CVE-2024-7254.
+        implementation 'com.google.protobuf:protobuf-java:4.27.5'
+    }
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
