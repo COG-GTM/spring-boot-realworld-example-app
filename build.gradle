@@ -10,6 +10,15 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
+// Spring Boot BOM versions overridden to pick up CVE fixes the BOM has not
+// caught up with yet. Each property covers every artifact of that library, so
+// the modules stay aligned.
+ext['tomcat.version'] = '10.1.56'
+ext['logback.version'] = '1.5.36'
+ext['jackson-bom.version'] = '2.21.5'
+ext['log4j2.version'] = '2.25.5'
+ext['commons-lang3.version'] = '3.18.0'
+
 spotless {
     java {
         target project.fileTree(project.rootDir) {
@@ -30,16 +39,7 @@ configurations {
 }
 
 dependencies {
-    // Transitive dependencies patched ahead of the versions the Spring Boot BOM
-    // and the DGS starter pin, for CVEs Snyk reports against them. Declared
-    // explicitly because the BOM overrides plain dependency constraints.
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.56'
-    implementation 'ch.qos.logback:logback-classic:1.5.36'
-    implementation 'ch.qos.logback:logback-core:1.5.36'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.21.5'
-    implementation 'org.apache.logging.log4j:log4j-api:2.25.5'
-    implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.25.5'
-    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    // Not covered by the Boot BOM: pulled in transitively by the DGS starter.
     implementation 'com.google.protobuf:protobuf-java:4.27.5'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
