@@ -76,7 +76,7 @@ public class WebSecurityConfigTest {
   }
 
   @Test
-  public void should_permit_cors_preflight_on_protected_paths() throws Exception {
+  public void should_permit_options_requests_on_protected_paths() throws Exception {
     mvc.perform(options("/user")).andExpect(status().isOk());
   }
 

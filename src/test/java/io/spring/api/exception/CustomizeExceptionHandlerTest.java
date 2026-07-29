@@ -136,6 +136,25 @@ public class CustomizeExceptionHandlerTest {
   }
 
   @Test
+  public void should_lose_the_field_name_of_a_constraint_on_a_method_parameter() throws Exception {
+    // A violation on the parameter itself has a two segment path ("directlyValidated.arg0"), which
+    // getParam strips down to an empty field name.
+    ExecutableValidator executableValidator =
+        Validation.buildDefaultValidatorFactory().getValidator().forExecutables();
+    TestController target = new TestController();
+    Method method = TestController.class.getMethod("directlyValidated", String.class);
+    Set<ConstraintViolation<TestController>> violations =
+        executableValidator.validateParameters(target, method, new Object[] {""});
+
+    ErrorResource errorResource =
+        handler.handleConstraintViolation(new ConstraintViolationException(violations), webRequest);
+
+    assertThat(errorResource.getFieldErrors())
+        .extracting(FieldErrorResource::getField, FieldErrorResource::getCode)
+        .containsExactly(tuple("", "NotBlank"));
+  }
+
+  @Test
   public void should_render_invalid_request_through_mvc_as_realworld_error_body() throws Exception {
     mvc.perform(get("/invalid-request"))
         .andExpect(status().isUnprocessableEntity())
@@ -220,6 +239,10 @@ public class CustomizeExceptionHandlerTest {
     }
 
     public String validated(@Valid RegisterFixture fixture) {
+      return "ok";
+    }
+
+    public String directlyValidated(@NotBlank String value) {
       return "ok";
     }
   }
