@@ -98,7 +98,7 @@ public class UserTest {
   }
 
   @Test
-  public void should_not_keep_id_unchanged_after_update() {
+  public void should_keep_id_unchanged_after_update() {
     User user = new User("john@example.com", "john", "123", "bio", "image");
     String id = user.getId();
 
