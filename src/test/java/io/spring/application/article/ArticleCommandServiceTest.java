@@ -3,6 +3,7 @@ package io.spring.application.article;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -276,7 +277,7 @@ public class ArticleCommandServiceTest {
 
   @Test
   public void should_reject_new_article_param_with_a_duplicated_title() {
-    when(articleQueryService.findBySlug(eq("duplicated-title"), any()))
+    when(articleQueryService.findBySlug(eq("duplicated-title"), isNull()))
         .thenReturn(Optional.of(new ArticleData()));
     NewArticleParam duplicated =
         NewArticleParam.builder()
