@@ -46,7 +46,7 @@ public class WebSecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                    .dispatcherTypeMatchers(DispatcherType.ERROR)
+                    .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.ASYNC)
                     .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()

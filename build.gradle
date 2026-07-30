@@ -8,11 +8,12 @@ plugins {
 
 version = '0.0.1-SNAPSHOT'
 
-// Security patch overrides for Spring Boot managed dependencies
-ext['logback.version'] = '1.5.38'
-ext['jackson-bom.version'] = '2.21.5'
-ext['tomcat.version'] = '10.1.57'
-ext['commons-lang3.version'] = '3.19.0'
+// Security patch overrides for Spring Boot managed dependencies.
+// Drop each pin once the Spring Boot BOM manages a version >= the one below.
+ext['logback.version'] = '1.5.38' // SNYK-JAVA-CHQOSLOGBACK-17675439 (fixed in 1.5.36)
+ext['jackson-bom.version'] = '2.21.5' // SNYK-JAVA-COMFASTERXMLJACKSONCORE-17972608
+ext['tomcat.version'] = '10.1.57' // SNYK-JAVA-ORGAPACHETOMCATEMBED-17732890, -17733746
+ext['commons-lang3.version'] = '3.19.0' // SNYK-JAVA-ORGAPACHECOMMONS-10734078 (fixed in 3.18.0)
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
