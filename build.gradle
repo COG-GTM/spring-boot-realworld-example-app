@@ -7,8 +7,11 @@ plugins {
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-targetCompatibility = '11'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 spotless {
     java {
@@ -58,6 +61,10 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.named('bootBuildImage') {
+    environment.put('BP_JVM_VERSION', '17')
 }
 
 tasks.named('clean') {
