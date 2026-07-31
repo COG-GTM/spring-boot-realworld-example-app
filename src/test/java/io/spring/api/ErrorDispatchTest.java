@@ -11,7 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    // every connection to jdbc:sqlite::memory: opens its own database, so requests have to
+    // reuse the connection Flyway migrated
+    properties = "spring.datasource.hikari.maximum-pool-size=1")
 public class ErrorDispatchTest {
 
   @Autowired private TestRestTemplate restTemplate;
