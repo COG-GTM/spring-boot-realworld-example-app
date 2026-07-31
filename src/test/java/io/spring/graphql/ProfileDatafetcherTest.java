@@ -15,6 +15,7 @@ import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
 import io.spring.core.user.User;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(classes = {DgsAutoConfiguration.class, ProfileDatafetcher.class})
+@SpringBootTest(
+    classes = {
+      DgsAutoConfiguration.class,
+      GraphQLCustomizeExceptionHandler.class,
+      ProfileDatafetcher.class
+    })
 class ProfileDatafetcherTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;

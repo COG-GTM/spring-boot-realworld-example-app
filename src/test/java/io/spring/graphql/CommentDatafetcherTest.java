@@ -23,6 +23,7 @@ import io.spring.application.data.CommentData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @SpringBootTest(
     classes = {
       DgsAutoConfiguration.class,
+      GraphQLCustomizeExceptionHandler.class,
       ArticleDatafetcher.class,
       CommentDatafetcher.class,
       ProfileDatafetcher.class
@@ -113,6 +115,7 @@ class CommentDatafetcherTest extends GraphQLTestBase {
         .findByArticleIdWithCursor(eq(articleData.getId()), isNull(), captor.capture());
     assertThat(hasPreviousPage).isTrue();
     assertThat(captor.getValue().getDirection()).isEqualTo(Direction.PREV);
+    assertThat(captor.getValue().getLimit()).isEqualTo(1);
     assertThat(captor.getValue().getCursor().getMillis()).isEqualTo(cursorTime.getMillis());
   }
 

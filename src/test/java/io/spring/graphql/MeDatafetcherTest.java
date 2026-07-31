@@ -16,6 +16,7 @@ import io.spring.application.data.ProfileData;
 import io.spring.application.data.UserData;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 
 @SpringBootTest(
-    classes = {DgsAutoConfiguration.class, MeDatafetcher.class, ProfileDatafetcher.class})
+    classes = {
+      DgsAutoConfiguration.class,
+      GraphQLCustomizeExceptionHandler.class,
+      MeDatafetcher.class,
+      ProfileDatafetcher.class
+    })
 class MeDatafetcherTest extends GraphQLTestBase {
 
   private static final String TOKEN = "jwt-token";

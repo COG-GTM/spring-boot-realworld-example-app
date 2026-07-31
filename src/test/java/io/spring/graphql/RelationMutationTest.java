@@ -17,6 +17,7 @@ import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.graphql.exception.AuthenticationException;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(classes = {DgsAutoConfiguration.class, RelationMutation.class})
+@SpringBootTest(
+    classes = {
+      DgsAutoConfiguration.class,
+      GraphQLCustomizeExceptionHandler.class,
+      RelationMutation.class
+    })
 class RelationMutationTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;

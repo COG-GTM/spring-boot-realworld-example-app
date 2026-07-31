@@ -27,6 +27,7 @@ import io.spring.core.favorite.ArticleFavorite;
 import io.spring.core.favorite.ArticleFavoriteRepository;
 import io.spring.core.user.User;
 import io.spring.graphql.exception.AuthenticationException;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Arrays;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @SpringBootTest(
     classes = {
       DgsAutoConfiguration.class,
+      GraphQLCustomizeExceptionHandler.class,
       ArticleMutation.class,
       ArticleDatafetcher.class,
       ProfileDatafetcher.class

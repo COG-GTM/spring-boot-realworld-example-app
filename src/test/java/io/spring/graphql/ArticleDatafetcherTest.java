@@ -22,6 +22,7 @@ import io.spring.application.data.ArticleData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +36,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest(
-    classes = {DgsAutoConfiguration.class, ArticleDatafetcher.class, ProfileDatafetcher.class})
+    classes = {
+      DgsAutoConfiguration.class,
+      GraphQLCustomizeExceptionHandler.class,
+      ArticleDatafetcher.class,
+      ProfileDatafetcher.class
+    })
 class ArticleDatafetcherTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;

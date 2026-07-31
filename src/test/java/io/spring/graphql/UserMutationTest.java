@@ -10,8 +10,8 @@ import static org.mockito.Mockito.when;
 import com.jayway.jsonpath.DocumentContext;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
+import com.netflix.graphql.types.errors.ErrorType;
 import graphql.ExecutionResult;
-import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.application.UserQueryService;
 import io.spring.application.user.RegisterParam;
 import io.spring.application.user.UpdateUserCommand;
@@ -20,6 +20,8 @@ import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,7 +37,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-@SpringBootTest(classes = {DgsAutoConfiguration.class, UserMutation.class, MeDatafetcher.class})
+@SpringBootTest(
+    classes = {
+      DgsAutoConfiguration.class,
+      GraphQLCustomizeExceptionHandler.class,
+      UserMutation.class,
+      MeDatafetcher.class
+    })
 class UserMutationTest extends GraphQLTestBase {
 
   private static final String TOKEN = "jwt-token";
@@ -78,17 +86,17 @@ class UserMutationTest extends GraphQLTestBase {
   @Test
   void should_return_error_payload_when_registration_is_invalid() {
     anonymous();
-    when(userService.createUser(any(RegisterParam.class))).thenThrow(invalidEmailViolation());
+    when(userService.createUser(any(RegisterParam.class))).thenThrow(blankRegistrationViolation());
 
     DocumentContext context =
         dgsQueryExecutor.executeAndGetDocumentContext(
-            "mutation { createUser(input: {email: \"invalid\", username: \"john\", password: \"123\"}) { ... on Error { message errors { key value } } } }");
+            "mutation { createUser(input: {email: \"\", username: \"\", password: \"\"}) { ... on Error { message errors { key value } } } }");
 
     assertThat(context.read("data.createUser.message", String.class)).isEqualTo("BAD_REQUEST");
     assertThat(context.<List<String>>read("data.createUser.errors[*].key"))
-        .containsExactly("email");
-    assertThat(context.<List<String>>read("data.createUser.errors[0].value"))
-        .containsExactly("should be an email");
+        .containsExactlyInAnyOrder("email", "password");
+    assertThat(context.<List<List<String>>>read("data.createUser.errors[*].value"))
+        .allSatisfy(messages -> assertThat(messages).containsExactly("can't be empty"));
   }
 
   @Test
@@ -119,7 +127,7 @@ class UserMutationTest extends GraphQLTestBase {
                 "mutation { login(email: \"%s\", password: \"wrong\") { user { token } } }",
                 user.getEmail()));
 
-    assertFailedWith(result, InvalidAuthenticationException.class);
+    assertUnauthenticated(result);
   }
 
   @Test
@@ -131,7 +139,7 @@ class UserMutationTest extends GraphQLTestBase {
         dgsQueryExecutor.execute(
             "mutation { login(email: \"ghost@test.com\", password: \"123\") { user { token } } }");
 
-    assertFailedWith(result, InvalidAuthenticationException.class);
+    assertUnauthenticated(result);
   }
 
   @Test
@@ -165,10 +173,18 @@ class UserMutationTest extends GraphQLTestBase {
     verify(userService, never()).updateUser(any());
   }
 
-  private ConstraintViolationException invalidEmailViolation() {
+  private void assertUnauthenticated(ExecutionResult result) {
+    assertThat(result.getErrors()).hasSize(1);
+    assertThat(result.getErrors().get(0).getMessage()).isEqualTo("invalid email or password");
+    assertThat(result.getErrors().get(0).getExtensions())
+        .containsEntry("errorType", ErrorType.UNAUTHENTICATED.name());
+  }
+
+  private ConstraintViolationException blankRegistrationViolation() {
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    Set<ConstraintViolation<UpdateUserParam>> violations =
-        validator.validate(UpdateUserParam.builder().email("invalid").build());
+    Set<ConstraintViolation<RegisterParam>> violations = new HashSet<>();
+    violations.addAll(validator.validateValue(RegisterParam.class, "email", ""));
+    violations.addAll(validator.validateValue(RegisterParam.class, "password", ""));
     return new ConstraintViolationException(violations);
   }
 }
