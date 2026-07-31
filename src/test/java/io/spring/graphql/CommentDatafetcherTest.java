@@ -102,18 +102,19 @@ class CommentDatafetcherTest extends GraphQLTestBase {
         .thenReturn(
             new CursorPager<>(Collections.singletonList(commentData), Direction.PREV, true));
 
-    Boolean hasPreviousPage =
-        dgsQueryExecutor.executeAndExtractJsonPath(
+    DocumentContext context =
+        dgsQueryExecutor.executeAndGetDocumentContext(
             String.format(
                 "{ article(slug: \"%s\") { comments(last: 1, before: \"%d\") { pageInfo { hasPreviousPage hasNextPage } } } }",
-                articleData.getSlug(), cursorTime.getMillis()),
-            "data.article.comments.pageInfo.hasPreviousPage");
+                articleData.getSlug(), cursorTime.getMillis()));
 
     ArgumentCaptor<CursorPageParameter<DateTime>> captor =
         ArgumentCaptor.forClass(CursorPageParameter.class);
     verify(commentQueryService)
         .findByArticleIdWithCursor(eq(articleData.getId()), isNull(), captor.capture());
-    assertThat(hasPreviousPage).isTrue();
+    assertThat(context.read("data.article.comments.pageInfo.hasPreviousPage", Boolean.class))
+        .isTrue();
+    assertThat(context.read("data.article.comments.pageInfo.hasNextPage", Boolean.class)).isFalse();
     assertThat(captor.getValue().getDirection()).isEqualTo(Direction.PREV);
     assertThat(captor.getValue().getLimit()).isEqualTo(1);
     assertThat(captor.getValue().getCursor().getMillis()).isEqualTo(cursorTime.getMillis());

@@ -75,13 +75,17 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
     when(articleQueryService.findBySlug(eq(articleData.getSlug()), isNull()))
         .thenReturn(Optional.of(articleData));
 
-    String slug =
-        dgsQueryExecutor.executeAndExtractJsonPath(
+    DocumentContext context =
+        dgsQueryExecutor.executeAndGetDocumentContext(
             String.format(
-                "{ article(slug: \"%s\") { slug title body author { username } } }",
-                articleData.getSlug()),
-            "data.article.slug");
-    assertThat(slug).isEqualTo(articleData.getSlug());
+                "{ article(slug: \"%s\") { slug title body author { username bio } } }",
+                articleData.getSlug()));
+
+    assertThat(context.read("data.article.slug", String.class)).isEqualTo(articleData.getSlug());
+    assertThat(context.read("data.article.title", String.class)).isEqualTo(articleData.getTitle());
+    assertThat(context.read("data.article.author.username", String.class))
+        .isEqualTo(author.getUsername());
+    assertThat(context.read("data.article.author.bio", String.class)).isEqualTo(author.getBio());
   }
 
   @Test
@@ -118,7 +122,8 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
   void should_query_articles_backward_with_last_and_before_cursor() {
     anonymous();
     DateTime cursorTime = articleData.getUpdatedAt();
-    when(articleQueryService.findRecentArticlesWithCursor(any(), any(), any(), any(), isNull()))
+    when(articleQueryService.findRecentArticlesWithCursor(
+            eq("java"), eq("john"), eq("jane"), any(), isNull()))
         .thenReturn(
             new CursorPager<>(Collections.singletonList(articleData), Direction.PREV, true));
 

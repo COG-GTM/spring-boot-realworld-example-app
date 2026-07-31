@@ -28,6 +28,9 @@ import org.junit.jupiter.api.Test;
 
 class GraphQLCustomizeExceptionHandlerTest {
 
+  private static final Validator VALIDATOR =
+      Validation.buildDefaultValidatorFactory().getValidator();
+
   private final GraphQLCustomizeExceptionHandler handler = new GraphQLCustomizeExceptionHandler();
 
   @Test
@@ -74,9 +77,8 @@ class GraphQLCustomizeExceptionHandlerTest {
   }
 
   private ConstraintViolationException invalidEmailViolation() {
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     Set<ConstraintViolation<UpdateUserParam>> violations =
-        validator.validate(UpdateUserParam.builder().email("invalid").build());
+        VALIDATOR.validate(UpdateUserParam.builder().email("invalid").build());
     return new ConstraintViolationException(violations);
   }
 

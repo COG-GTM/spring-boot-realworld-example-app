@@ -47,6 +47,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 class UserMutationTest extends GraphQLTestBase {
 
   private static final String TOKEN = "jwt-token";
+  private static final Validator VALIDATOR =
+      Validation.buildDefaultValidatorFactory().getValidator();
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
 
@@ -181,10 +183,9 @@ class UserMutationTest extends GraphQLTestBase {
   }
 
   private ConstraintViolationException blankRegistrationViolation() {
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     Set<ConstraintViolation<RegisterParam>> violations = new HashSet<>();
-    violations.addAll(validator.validateValue(RegisterParam.class, "email", ""));
-    violations.addAll(validator.validateValue(RegisterParam.class, "password", ""));
+    violations.addAll(VALIDATOR.validateValue(RegisterParam.class, "email", ""));
+    violations.addAll(VALIDATOR.validateValue(RegisterParam.class, "password", ""));
     return new ConstraintViolationException(violations);
   }
 }
