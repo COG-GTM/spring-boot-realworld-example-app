@@ -22,8 +22,7 @@ public class DefaultJwtService implements JwtService {
   public DefaultJwtService(
       @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
     this.sessionTime = sessionTime;
-    this.signingKey =
-        new SecretKeySpec(secret.getBytes(), Jwts.SIG.HS512.key().build().getAlgorithm());
+    this.signingKey = new SecretKeySpec(secret.getBytes(), "HmacSHA512");
   }
 
   @Override
