@@ -43,11 +43,11 @@ public class WebSecurityConfig {
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
-                auth.dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD)
+                auth.dispatcherTypeMatchers(DispatcherType.ERROR)
                     .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()
-                    .requestMatchers("/graphiql")
+                    .requestMatchers("/graphiql", "/graphiql/**")
                     .permitAll()
                     .requestMatchers("/graphql")
                     .permitAll()
