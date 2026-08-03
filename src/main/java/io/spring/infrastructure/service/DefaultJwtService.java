@@ -30,7 +30,7 @@ public class DefaultJwtService implements JwtService {
     return Jwts.builder()
         .subject(user.getId())
         .expiration(expireTimeFromNow())
-        .signWith(signingKey)
+        .signWith(signingKey, Jwts.SIG.HS512)
         .compact();
   }
 
