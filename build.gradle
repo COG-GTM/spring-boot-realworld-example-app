@@ -73,10 +73,11 @@ def generatedSourceRoots = {
 
 def generatedClassExcludes = {
     generatedSourceRoots().collectMany { root ->
-        fileTree(root).matching { include '**/*.java' }.files.collect {
+        fileTree(root).matching { include '**/*.java' }.files.collectMany {
             // Ant patterns are always '/'-separated, unlike Path.toString() on Windows.
             def relative = root.toPath().relativize(it.toPath()).collect { it.toString() }.join('/')
-            relative.replaceFirst(/\.java$/, '*.class')
+            def base = relative.replaceFirst(/\.java$/, '')
+            [base + '.class', base + '$*.class']
         }
     }
 }
