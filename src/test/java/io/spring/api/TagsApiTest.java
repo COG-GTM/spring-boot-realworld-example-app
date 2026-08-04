@@ -56,7 +56,7 @@ public class TagsApiTest extends TestWithCurrentUser {
   }
 
   @Test
-  public void should_get_tags_without_authentication() throws Exception {
+  public void should_get_tags_for_an_authenticated_user() throws Exception {
     when(tagsQueryService.allTags()).thenReturn(Collections.singletonList("java"));
 
     RestAssuredMockMvc.given()
