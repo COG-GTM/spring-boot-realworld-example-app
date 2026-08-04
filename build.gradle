@@ -61,12 +61,24 @@ jacoco {
     toolVersion = '0.8.11'
 }
 
-// DGS codegen output under build/generated is not hand-written code.
-def jacocoExcludes = ['io/spring/graphql/types/**', 'io/spring/graphql/DgsConstants*']
+// DGS codegen output is not hand-written code, so it is kept out of the coverage
+// denominator. The exclusions are derived from whatever generateJava actually emitted
+// rather than hardcoded, so they survive changes to the codegen package or artifact set.
+// Resolved lazily: by the time a jacoco task reads this, compileJava has run generateJava.
+def generatedSourceRoot = layout.buildDirectory.dir('generated')
+
+def generatedClassExcludes = {
+    def root = generatedSourceRoot.get().asFile
+    if (!root.exists()) return []
+    fileTree(root).matching { include '**/*.java' }.files.collect {
+        root.toPath().relativize(it.toPath()).toString().replaceFirst(/\.java$/, '*.class')
+    }
+}
 
 def coveredClassDirectories = {
-    files(sourceSets.main.output.classesDirs.collect {
-        fileTree(dir: it, exclude: jacocoExcludes)
+    files({
+        def excludes = generatedClassExcludes()
+        sourceSets.main.output.classesDirs.collect { fileTree(dir: it, exclude: excludes) }
     })
 }
 
