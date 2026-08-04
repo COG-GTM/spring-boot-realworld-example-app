@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.Test;
 
 public class CommentTest {
@@ -36,5 +37,21 @@ public class CommentTest {
     assertThat(a, is(a));
     assertThat(a, is(not(b)));
     assertThat(a.hashCode(), is(a.hashCode()));
+  }
+
+  @Test
+  public void should_be_equal_when_only_id_matches_despite_other_fields() throws Exception {
+    Comment a = new Comment("body-a", "user-1", "article-1");
+    Comment b = new Comment("body-b", "user-2", "article-2");
+    setId(b, a.getId());
+
+    assertThat(a, is(b));
+    assertThat(a.hashCode(), is(b.hashCode()));
+  }
+
+  private static void setId(Comment comment, String id) throws Exception {
+    Field field = Comment.class.getDeclaredField("id");
+    field.setAccessible(true);
+    field.set(comment, id);
   }
 }

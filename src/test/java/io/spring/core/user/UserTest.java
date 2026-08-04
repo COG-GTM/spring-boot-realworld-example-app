@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.Test;
 
 public class UserTest {
@@ -92,7 +93,7 @@ public class UserTest {
   }
 
   @Test
-  public void should_leave_all_fields_untouched_for_blank_arguments() {
+  public void should_leave_all_fields_untouched_for_empty_or_null_arguments() {
     User user = newUser();
 
     user.update("", "", "", "", "");
@@ -113,5 +114,21 @@ public class UserTest {
     assertThat(a, is(a));
     assertThat(a, is(not(b)));
     assertThat(a.hashCode(), is(a.hashCode()));
+  }
+
+  @Test
+  public void should_be_equal_when_only_id_matches_despite_other_fields() throws Exception {
+    User a = new User("a@test.com", "a", "pa", "bio-a", "image-a.png");
+    User b = new User("b@test.com", "b", "pb", "bio-b", "image-b.png");
+    setId(b, a.getId());
+
+    assertThat(a, is(b));
+    assertThat(a.hashCode(), is(b.hashCode()));
+  }
+
+  private static void setId(User user, String id) throws Exception {
+    Field field = User.class.getDeclaredField("id");
+    field.setAccessible(true);
+    field.set(user, id);
   }
 }
