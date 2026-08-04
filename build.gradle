@@ -78,6 +78,7 @@ tasks.named('test') {
 tasks.named('jacocoTestReport') {
     dependsOn tasks.named('test')
     classDirectories.setFrom(coveredClassDirectories())
+    sourceDirectories.setFrom(files('src/main/java'))
     reports {
         xml.required = true
         html.required = true
