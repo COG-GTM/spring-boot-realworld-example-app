@@ -80,7 +80,7 @@ public class UserTest {
   }
 
   @Test
-  public void should_update_all_fields_when_all_non_blank() {
+  public void should_update_all_fields_when_all_non_empty() {
     User user = newUser();
 
     user.update("new@test.com", "newname", "newpass", "new bio", "new-image.png");
@@ -104,6 +104,19 @@ public class UserTest {
     assertThat(user.getPassword(), is("oldpass"));
     assertThat(user.getBio(), is("old bio"));
     assertThat(user.getImage(), is("old-image.png"));
+  }
+
+  @Test
+  public void should_overwrite_fields_with_whitespace_only_arguments() {
+    User user = newUser();
+
+    user.update(" ", " ", " ", " ", " ");
+
+    assertThat(user.getEmail(), is(" "));
+    assertThat(user.getUsername(), is(" "));
+    assertThat(user.getPassword(), is(" "));
+    assertThat(user.getBio(), is(" "));
+    assertThat(user.getImage(), is(" "));
   }
 
   @Test
