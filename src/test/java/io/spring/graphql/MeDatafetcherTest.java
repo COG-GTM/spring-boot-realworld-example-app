@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
+import com.netflix.graphql.dgs.exceptions.DgsInvalidInputArgumentException;
+import graphql.ExecutionResult;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.UserQueryService;
 import io.spring.application.data.ProfileData;
@@ -13,6 +15,7 @@ import io.spring.application.data.UserData;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -77,6 +80,38 @@ class MeDatafetcherTest extends GraphQLTestBase {
     assertThat(profile.get("bio")).isEqualTo("my bio");
     assertThat(profile.get("image")).isEqualTo("i.png");
     assertThat(profile.get("following")).isEqualTo(false);
+  }
+
+  @Test
+  void should_error_when_the_authorization_header_is_missing() {
+    authenticate(user);
+
+    ExecutionResult result = dgsQueryExecutor.execute("{ me { email username token } }");
+
+    assertSingleErrorFrom(result, DgsInvalidInputArgumentException.class);
+  }
+
+  /**
+   * {@code getMe} reads the token as {@code authorization.split(" ")[1]} without validating the
+   * header, so a header carrying no scheme blows up instead of being rejected as unauthenticated.
+   * Pinned here so a fix to that parsing is a deliberate change.
+   */
+  @Test
+  void should_currently_fail_when_the_authorization_header_has_no_scheme() {
+    authenticate(user);
+    UserData userData = new UserData(user.getId(), user.getEmail(), user.getUsername(), "", "");
+    when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(userData));
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", "jwt-token-value");
+    ExecutionResult result =
+        dgsQueryExecutor.execute(
+            "{ me { email username token } }",
+            Collections.emptyMap(),
+            Collections.emptyMap(),
+            headers);
+
+    assertSingleErrorFrom(result, ArrayIndexOutOfBoundsException.class);
   }
 
   @Test

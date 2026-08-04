@@ -30,6 +30,9 @@ public abstract class GraphQLTestBase {
   @AfterEach
   void clearSecurityContextAfterTest() {
     SecurityContextHolder.clearContext();
+    if (exceptionHandler != null) {
+      exceptionHandler.clear();
+    }
   }
 
   protected void authenticate(User user) {
