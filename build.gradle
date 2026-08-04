@@ -61,17 +61,21 @@ jacoco {
     toolVersion = '0.8.11'
 }
 
-// DGS codegen output is not hand-written code, so it is kept out of the coverage
-// denominator. The exclusions are derived from whatever generateJava actually emitted
-// rather than hardcoded, so they survive changes to the codegen package or artifact set.
+// Generated sources (DGS codegen) are not hand-written code, so they are kept out of the
+// coverage denominator. A generated source root is any main source root under the build
+// directory; the excludes are derived from what it actually contains, so neither the codegen
+// package, its output layout, nor the set of emitted artifacts is hardcoded here.
 // Resolved lazily: by the time a jacoco task reads this, compileJava has run generateJava.
-def generatedSourceRoot = layout.buildDirectory.dir('generated')
+def generatedSourceRoots = {
+    def buildPath = layout.buildDirectory.get().asFile.toPath()
+    sourceSets.main.java.srcDirs.findAll { it.exists() && it.toPath().startsWith(buildPath) }
+}
 
 def generatedClassExcludes = {
-    def root = generatedSourceRoot.get().asFile
-    if (!root.exists()) return []
-    fileTree(root).matching { include '**/*.java' }.files.collect {
-        root.toPath().relativize(it.toPath()).toString().replaceFirst(/\.java$/, '*.class')
+    generatedSourceRoots().collectMany { root ->
+        fileTree(root).matching { include '**/*.java' }.files.collect {
+            root.toPath().relativize(it.toPath()).toString().replaceFirst(/\.java$/, '*.class')
+        }
     }
 }
 
@@ -90,7 +94,7 @@ tasks.named('test') {
 tasks.named('jacocoTestReport') {
     dependsOn tasks.named('test')
     classDirectories.setFrom(coveredClassDirectories())
-    sourceDirectories.setFrom(files('src/main/java'))
+    sourceDirectories.setFrom(files({ sourceSets.main.java.srcDirs - generatedSourceRoots() }))
     reports {
         xml.required = true
         html.required = true
