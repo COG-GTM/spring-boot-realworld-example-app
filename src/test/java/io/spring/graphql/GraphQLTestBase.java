@@ -13,8 +13,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public abstract class GraphQLTestBase {
 
   @BeforeEach
+  void clearSecurityContextBeforeTest() {
+    SecurityContextHolder.clearContext();
+  }
+
   @AfterEach
-  void clearSecurityContext() {
+  void clearSecurityContextAfterTest() {
     SecurityContextHolder.clearContext();
   }
 

@@ -10,11 +10,11 @@ import static org.mockito.Mockito.when;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
-import io.spring.TestHelper;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.NewArticleParam;
 import io.spring.application.data.ArticleData;
+import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.favorite.ArticleFavorite;
@@ -22,7 +22,7 @@ import io.spring.core.favorite.ArticleFavoriteRepository;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -75,28 +75,37 @@ class ArticleMutationTest extends GraphQLTestBase {
   void should_resolve_payload_article_from_mutation_local_context() {
     authenticate(author);
     Article created = article();
-    ArticleData data = TestHelper.getArticleDataFromArticleAndUser(created, author);
+    ArticleData data =
+        new ArticleData(
+            created.getId(),
+            created.getSlug(),
+            created.getTitle(),
+            created.getDescription(),
+            created.getBody(),
+            false,
+            3,
+            created.getCreatedAt(),
+            created.getUpdatedAt(),
+            Arrays.asList("java"),
+            new ProfileData(author.getId(), author.getUsername(), "", "", false));
     when(articleCommandService.createArticle(any(NewArticleParam.class), eq(author)))
         .thenReturn(created);
     when(articleQueryService.findById(eq(created.getId()), eq(author)))
         .thenReturn(Optional.of(data));
 
-    String query =
-        "mutation { createArticle(input: {title: \"Title\", description: \"Desc\", body: \"Body\"})"
-            + " { article { slug title description body tagList } } }";
+    Map<String, Object> article =
+        dgsQueryExecutor.executeAndExtractJsonPath(
+            "mutation { createArticle(input: {title: \"Title\", description: \"Desc\","
+                + " body: \"Body\", tagList: [\"java\"]})"
+                + " { article { slug title description body tagList favoritesCount } } }",
+            "data.createArticle.article");
 
-    assertThat(
-            dgsQueryExecutor.<String>executeAndExtractJsonPath(
-                query, "data.createArticle.article.slug"))
-        .isEqualTo(created.getSlug());
-    assertThat(
-            dgsQueryExecutor.<String>executeAndExtractJsonPath(
-                query, "data.createArticle.article.title"))
-        .isEqualTo("Title");
-    assertThat(
-            dgsQueryExecutor.<List<String>>executeAndExtractJsonPath(
-                query, "data.createArticle.article.tagList"))
-        .containsExactly("joda");
+    assertThat(article.get("slug")).isEqualTo(created.getSlug());
+    assertThat(article.get("title")).isEqualTo("Title");
+    assertThat(article.get("description")).isEqualTo("Desc");
+    assertThat(article.get("body")).isEqualTo("Body");
+    assertThat(article.get("tagList")).isEqualTo(Arrays.asList("java"));
+    assertThat(article.get("favoritesCount")).isEqualTo(3);
   }
 
   @Test

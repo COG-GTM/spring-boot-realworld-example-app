@@ -15,7 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest(classes = {DgsAutoConfiguration.class, TagDatafetcher.class})
-class TagDatafetcherTest {
+class TagDatafetcherTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
 

@@ -8,11 +8,13 @@ import static org.mockito.Mockito.when;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
+import graphql.GraphQLError;
 import io.spring.application.user.RegisterParam;
 import io.spring.application.user.UpdateUserCommand;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +29,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-@SpringBootTest(classes = {DgsAutoConfiguration.class, UserMutation.class, MeDatafetcher.class})
+@SpringBootTest(
+    classes = {
+      DgsAutoConfiguration.class,
+      UserMutation.class,
+      MeDatafetcher.class,
+      GraphQLCustomizeExceptionHandler.class
+    })
 class UserMutationTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -101,7 +109,10 @@ class UserMutationTest extends GraphQLTestBase {
 
     ExecutionResult result = dgsQueryExecutor.execute(query);
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertThat(result.getErrors()).hasSize(1);
+    GraphQLError error = result.getErrors().get(0);
+    assertThat(error.getMessage()).isEqualTo("invalid email or password");
+    assertThat(error.getExtensions().get("errorType")).hasToString("UNAUTHENTICATED");
   }
 
   @Test
