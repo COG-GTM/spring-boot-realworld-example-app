@@ -92,7 +92,10 @@ def generatedClassExcludes = {
 }
 
 def handWrittenSourceDirectories = {
-    files({ sourceSets.main.java.srcDirs - generatedSourceRoots() })
+    files({
+        def buildPath = layout.buildDirectory.get().asFile.toPath()
+        sourceSets.main.java.srcDirs.findAll { !it.toPath().startsWith(buildPath) }
+    })
 }
 
 def coveredClassDirectories = {
