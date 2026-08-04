@@ -3,10 +3,10 @@ package io.spring.graphql;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
@@ -24,6 +24,7 @@ import io.spring.application.data.CommentData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import io.spring.graphql.types.Article;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest(
-    classes = {DgsAutoConfiguration.class, ArticleDatafetcher.class, ProfileDatafetcher.class})
+    classes = {
+      DgsAutoConfiguration.class,
+      ArticleDatafetcher.class,
+      ProfileDatafetcher.class,
+      GraphQLCustomizeExceptionHandler.class
+    })
 class ArticleDatafetcherTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -67,16 +73,15 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
             + data.getSlug()
             + "\") { slug title body favorited favoritesCount author { username bio } } }";
 
-    assertThat(dgsQueryExecutor.<String>executeAndExtractJsonPath(query, "data.article.slug"))
-        .isEqualTo(data.getSlug());
-    assertThat(dgsQueryExecutor.<String>executeAndExtractJsonPath(query, "data.article.title"))
-        .isEqualTo(data.getTitle());
-    assertThat(dgsQueryExecutor.<String>executeAndExtractJsonPath(query, "data.article.body"))
-        .isEqualTo(data.getBody());
-    assertThat(
-            dgsQueryExecutor.<String>executeAndExtractJsonPath(
-                query, "data.article.author.username"))
-        .isEqualTo("author");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
+
+    assertThat(context.read("data.article.slug", String.class)).isEqualTo(data.getSlug());
+    assertThat(context.read("data.article.title", String.class)).isEqualTo(data.getTitle());
+    assertThat(context.read("data.article.body", String.class)).isEqualTo(data.getBody());
+    assertThat(context.read("data.article.favorited", Boolean.class)).isFalse();
+    assertThat(context.read("data.article.author.username", String.class)).isEqualTo("author");
+    assertThat(context.read("data.article.author.bio", String.class)).isEqualTo("author bio");
+    verify(articleQueryService).findBySlug(eq(data.getSlug()), eq(null));
   }
 
   @Test
@@ -103,17 +108,14 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
         "{ articles(first: 10) { edges { node { slug author { username } } }"
             + " pageInfo { hasNextPage hasPreviousPage } } }";
 
-    List<String> slugs =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.articles.edges[*].node.slug");
-    List<String> usernames =
-        dgsQueryExecutor.executeAndExtractJsonPath(
-            query, "data.articles.edges[*].node.author.username");
-    Boolean hasNext =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.articles.pageInfo.hasNextPage");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-    assertThat(slugs).containsExactly(data.getSlug());
-    assertThat(usernames).containsExactly("author");
-    assertThat(hasNext).isFalse();
+    assertThat(context.<List<String>>read("data.articles.edges[*].node.slug"))
+        .containsExactly(data.getSlug());
+    assertThat(context.<List<String>>read("data.articles.edges[*].node.author.username"))
+        .containsExactly("author");
+    assertThat(context.read("data.articles.pageInfo.hasNextPage", Boolean.class)).isFalse();
+    assertThat(context.read("data.articles.pageInfo.hasPreviousPage", Boolean.class)).isFalse();
   }
 
   @Test
@@ -140,16 +142,13 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
             + "\", withTag: \"java\", authoredBy: \"author\", favoritedBy: \"fan\")"
             + " { edges { cursor node { slug } } pageInfo { hasPreviousPage hasNextPage } } }";
 
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
+
+    assertThat(context.read("data.articles.pageInfo.hasPreviousPage", Boolean.class)).isTrue();
+    assertThat(context.read("data.articles.pageInfo.hasNextPage", Boolean.class)).isFalse();
     ArgumentCaptor<CursorPageParameter<DateTime>> captor =
         ArgumentCaptor.forClass(CursorPageParameter.class);
-    Boolean hasPrevious =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.articles.pageInfo.hasPreviousPage");
-    Boolean hasNext =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.articles.pageInfo.hasNextPage");
-
-    assertThat(hasPrevious).isTrue();
-    assertThat(hasNext).isFalse();
-    verify(articleQueryService, atLeastOnce())
+    verify(articleQueryService)
         .findRecentArticlesWithCursor(
             eq("java"), eq("author"), eq("fan"), captor.capture(), eq(null));
     assertThat(captor.getValue().getDirection()).isEqualTo(Direction.PREV);
@@ -245,15 +244,17 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
               + cursor
               + "\") { edges { node { slug } } pageInfo { hasPreviousPage } } } } }";
 
-      List<String> slugs =
-          dgsQueryExecutor.executeAndExtractJsonPath(
-              query, "data.profile.profile." + field + ".edges[*].node.slug");
-      Boolean hasPrevious =
-          dgsQueryExecutor.executeAndExtractJsonPath(
-              query, "data.profile.profile." + field + ".pageInfo.hasPreviousPage");
+      DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-      assertThat(slugs).as(field).containsExactly(data.getSlug());
-      assertThat(hasPrevious).as(field).isTrue();
+      assertThat(
+              context.<List<String>>read("data.profile.profile." + field + ".edges[*].node.slug"))
+          .as(field)
+          .containsExactly(data.getSlug());
+      assertThat(
+              context.read(
+                  "data.profile.profile." + field + ".pageInfo.hasPreviousPage", Boolean.class))
+          .as(field)
+          .isTrue();
     }
   }
 
@@ -293,7 +294,7 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
     assertThat(hasPrevious).isTrue();
     ArgumentCaptor<CursorPageParameter<DateTime>> captor =
         ArgumentCaptor.forClass(CursorPageParameter.class);
-    verify(articleQueryService, atLeastOnce()).findUserFeedWithCursor(eq(author), captor.capture());
+    verify(articleQueryService).findUserFeedWithCursor(eq(author), captor.capture());
     assertThat(captor.getValue().getDirection()).isEqualTo(Direction.PREV);
     assertThat(captor.getValue().getCursor().getMillis())
         .isEqualTo(data.getUpdatedAt().getMillis());
@@ -309,15 +310,12 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
         "{ articles(first: 10) { edges { node { slug } }"
             + " pageInfo { startCursor endCursor hasNextPage } } }";
 
-    List<Object> edges = dgsQueryExecutor.executeAndExtractJsonPath(query, "data.articles.edges");
-    String startCursor =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.articles.pageInfo.startCursor");
-    String endCursor =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.articles.pageInfo.endCursor");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-    assertThat(edges).isEmpty();
-    assertThat(startCursor).isNull();
-    assertThat(endCursor).isNull();
+    assertThat(context.<List<Object>>read("data.articles.edges")).isEmpty();
+    assertThat(context.read("data.articles.pageInfo.startCursor", String.class)).isNull();
+    assertThat(context.read("data.articles.pageInfo.endCursor", String.class)).isNull();
+    assertThat(context.read("data.articles.pageInfo.hasNextPage", Boolean.class)).isFalse();
   }
 
   @Test
@@ -355,12 +353,11 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
 
     String query = "{ feed(first: 5) { edges { node { slug } } pageInfo { hasNextPage } } }";
 
-    List<String> slugs =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.feed.edges[*].node.slug");
-    Boolean hasNext =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.feed.pageInfo.hasNextPage");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-    assertThat(slugs).containsExactly(data.getSlug());
-    assertThat(hasNext).isTrue();
+    assertThat(context.<List<String>>read("data.feed.edges[*].node.slug"))
+        .containsExactly(data.getSlug());
+    assertThat(context.read("data.feed.pageInfo.hasNextPage", Boolean.class)).isTrue();
+    verify(articleQueryService).findUserFeedWithCursor(eq(author), any());
   }
 }

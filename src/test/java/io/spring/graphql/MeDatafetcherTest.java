@@ -12,6 +12,7 @@ import io.spring.application.data.ProfileData;
 import io.spring.application.data.UserData;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 
 @SpringBootTest(
-    classes = {DgsAutoConfiguration.class, MeDatafetcher.class, ProfileDatafetcher.class})
+    classes = {
+      DgsAutoConfiguration.class,
+      MeDatafetcher.class,
+      ProfileDatafetcher.class,
+      GraphQLCustomizeExceptionHandler.class
+    })
 class MeDatafetcherTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;

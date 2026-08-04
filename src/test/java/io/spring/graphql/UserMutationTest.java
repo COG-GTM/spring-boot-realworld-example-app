@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
@@ -76,12 +77,12 @@ class UserMutationTest extends GraphQLTestBase {
         "mutation { createUser(input: {email: \"new@example.com\", username: \"taken\","
             + " password: \"secret123\"}) { ... on Error { message errors { key value } } } }";
 
-    String message = dgsQueryExecutor.executeAndExtractJsonPath(query, "data.createUser.message");
-    java.util.List<String> values =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.createUser.errors[0].value");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-    assertThat(message).isEqualTo("BAD_REQUEST");
-    assertThat(values).contains("already exist");
+    assertThat(context.read("data.createUser.message", String.class)).isEqualTo("BAD_REQUEST");
+    assertThat(context.read("data.createUser.errors[0].key", String.class)).isEqualTo("username");
+    assertThat(context.<java.util.List<String>>read("data.createUser.errors[0].value"))
+        .contains("already exist");
   }
 
   @Test

@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
@@ -12,6 +13,7 @@ import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
 import io.spring.core.user.User;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -19,7 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(classes = {DgsAutoConfiguration.class, ProfileDatafetcher.class})
+@SpringBootTest(
+    classes = {
+      DgsAutoConfiguration.class,
+      ProfileDatafetcher.class,
+      GraphQLCustomizeExceptionHandler.class
+    })
 class ProfileDatafetcherTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -38,15 +45,13 @@ class ProfileDatafetcherTest extends GraphQLTestBase {
     when(profileQueryService.findByUsername(eq("targetuser"), eq(current)))
         .thenReturn(Optional.of(profileData));
 
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(QUERY);
+
     String path = "data.profile.profile";
-    assertThat(dgsQueryExecutor.<String>executeAndExtractJsonPath(QUERY, path + ".username"))
-        .isEqualTo("targetuser");
-    assertThat(dgsQueryExecutor.<String>executeAndExtractJsonPath(QUERY, path + ".bio"))
-        .isEqualTo("a bio");
-    assertThat(dgsQueryExecutor.<String>executeAndExtractJsonPath(QUERY, path + ".image"))
-        .isEqualTo("https://image/t.png");
-    assertThat(dgsQueryExecutor.<Boolean>executeAndExtractJsonPath(QUERY, path + ".following"))
-        .isTrue();
+    assertThat(context.read(path + ".username", String.class)).isEqualTo("targetuser");
+    assertThat(context.read(path + ".bio", String.class)).isEqualTo("a bio");
+    assertThat(context.read(path + ".image", String.class)).isEqualTo("https://image/t.png");
+    assertThat(context.read(path + ".following", Boolean.class)).isTrue();
   }
 
   @Test

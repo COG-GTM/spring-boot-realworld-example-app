@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import io.spring.application.TagsQueryService;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(classes = {DgsAutoConfiguration.class, TagDatafetcher.class})
+@SpringBootTest(
+    classes = {
+      DgsAutoConfiguration.class,
+      TagDatafetcher.class,
+      GraphQLCustomizeExceptionHandler.class
+    })
 class TagDatafetcherTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;

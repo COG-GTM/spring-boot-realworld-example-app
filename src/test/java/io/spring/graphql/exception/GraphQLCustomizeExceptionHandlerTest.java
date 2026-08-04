@@ -107,16 +107,21 @@ class GraphQLCustomizeExceptionHandlerTest {
     assertThat(items.get(0).getValue()).containsExactly("too short");
   }
 
+  /**
+   * Known defect, pinned here so a fix is a deliberate change: {@code getParam} drops the first two
+   * segments of a multi-segment path, so a two-segment path leaves an empty key behind even though
+   * the schema declares {@code ErrorItem.key} as non-null and clients cannot use it.
+   */
   @Test
-  void should_produce_an_empty_key_for_a_two_segment_property_path() {
+  void should_currently_produce_an_empty_key_for_a_two_segment_property_path() {
     ConstraintViolationException cve =
         new ConstraintViolationException(violations(violation("createUser.email", "too short")));
 
     Error error = GraphQLCustomizeExceptionHandler.getErrorsAsData(cve);
 
-    // getParam drops the first two segments, so a two-segment path leaves nothing behind.
     assertThat(error.getErrors()).hasSize(1);
     assertThat(error.getErrors().get(0).getKey()).isEmpty();
+    assertThat(error.getErrors().get(0).getValue()).containsExactly("too short");
   }
 
   private DataFetcherExceptionHandlerParameters parametersFor(Throwable throwable) {

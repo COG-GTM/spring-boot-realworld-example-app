@@ -3,10 +3,10 @@ package io.spring.graphql;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
@@ -22,6 +22,7 @@ import io.spring.application.data.CommentData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +39,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
       DgsAutoConfiguration.class,
       CommentDatafetcher.class,
       ArticleDatafetcher.class,
-      ProfileDatafetcher.class
+      ProfileDatafetcher.class,
+      GraphQLCustomizeExceptionHandler.class
     })
 class CommentDatafetcherTest extends GraphQLTestBase {
 
@@ -86,22 +88,16 @@ class CommentDatafetcherTest extends GraphQLTestBase {
             + "\") { comments(first: 10) { edges { cursor node { id body author { username } } }"
             + " pageInfo { hasNextPage } } } }";
 
-    List<String> bodies =
-        dgsQueryExecutor.executeAndExtractJsonPath(
-            query, "data.article.comments.edges[*].node.body");
-    List<String> ids =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.article.comments.edges[*].node.id");
-    List<String> authors =
-        dgsQueryExecutor.executeAndExtractJsonPath(
-            query, "data.article.comments.edges[*].node.author.username");
-    Boolean hasNext =
-        dgsQueryExecutor.executeAndExtractJsonPath(
-            query, "data.article.comments.pageInfo.hasNextPage");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-    assertThat(bodies).containsExactly("first comment", "second comment");
-    assertThat(ids).containsExactly("c1", "c2");
-    assertThat(authors).containsExactly("author", "author");
-    assertThat(hasNext).isFalse();
+    assertThat(context.<List<String>>read("data.article.comments.edges[*].node.body"))
+        .containsExactly("first comment", "second comment");
+    assertThat(context.<List<String>>read("data.article.comments.edges[*].node.id"))
+        .containsExactly("c1", "c2");
+    assertThat(context.<List<String>>read("data.article.comments.edges[*].node.author.username"))
+        .containsExactly("author", "author");
+    assertThat(context.read("data.article.comments.pageInfo.hasNextPage", Boolean.class)).isFalse();
+    verify(commentQueryService).findByArticleIdWithCursor(eq(article.getId()), eq(null), any());
   }
 
   @Test
@@ -126,7 +122,7 @@ class CommentDatafetcherTest extends GraphQLTestBase {
     assertThat(hasPrevious).isTrue();
     ArgumentCaptor<CursorPageParameter<DateTime>> captor =
         ArgumentCaptor.forClass(CursorPageParameter.class);
-    verify(commentQueryService, atLeastOnce())
+    verify(commentQueryService)
         .findByArticleIdWithCursor(eq(article.getId()), eq(author), captor.capture());
     assertThat(captor.getValue().getDirection()).isEqualTo(Direction.PREV);
     assertThat(captor.getValue().getLimit()).isEqualTo(3);
@@ -161,13 +157,10 @@ class CommentDatafetcherTest extends GraphQLTestBase {
             + "\") { comments(first: 10) { edges { node { id } }"
             + " pageInfo { startCursor endCursor } } } }";
 
-    List<Object> edges =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.article.comments.edges");
-    String startCursor =
-        dgsQueryExecutor.executeAndExtractJsonPath(
-            query, "data.article.comments.pageInfo.startCursor");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-    assertThat(edges).isEmpty();
-    assertThat(startCursor).isNull();
+    assertThat(context.<List<Object>>read("data.article.comments.edges")).isEmpty();
+    assertThat(context.read("data.article.comments.pageInfo.startCursor", String.class)).isNull();
+    assertThat(context.read("data.article.comments.pageInfo.endCursor", String.class)).isNull();
   }
 }

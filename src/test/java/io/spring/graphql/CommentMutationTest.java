@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
@@ -21,6 +22,7 @@ import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
 import io.spring.core.user.User;
 import io.spring.graphql.exception.AuthenticationException;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Arrays;
 import java.util.Optional;
 import org.joda.time.DateTime;
@@ -31,7 +33,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest(
-    classes = {DgsAutoConfiguration.class, CommentMutation.class, CommentDatafetcher.class})
+    classes = {
+      DgsAutoConfiguration.class,
+      CommentMutation.class,
+      CommentDatafetcher.class,
+      GraphQLCustomizeExceptionHandler.class
+    })
 class CommentMutationTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -67,13 +74,12 @@ class CommentMutationTest extends GraphQLTestBase {
             + article.getSlug()
             + "\", body: \"great post\") { comment { id body } } }";
 
-    String body = dgsQueryExecutor.executeAndExtractJsonPath(query, "data.addComment.comment.body");
-    String id = dgsQueryExecutor.executeAndExtractJsonPath(query, "data.addComment.comment.id");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-    assertThat(body).isEqualTo("great post");
-    assertThat(id).isEqualTo("comment-id");
+    assertThat(context.read("data.addComment.comment.body", String.class)).isEqualTo("great post");
+    assertThat(context.read("data.addComment.comment.id", String.class)).isEqualTo("comment-id");
     ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
-    verify(commentRepository, org.mockito.Mockito.atLeastOnce()).save(captor.capture());
+    verify(commentRepository).save(captor.capture());
     assertThat(captor.getValue().getBody()).isEqualTo("great post");
     assertThat(captor.getValue().getUserId()).isEqualTo(author.getId());
     assertThat(captor.getValue().getArticleId()).isEqualTo(article.getId());

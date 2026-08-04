@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
@@ -17,6 +18,7 @@ import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.graphql.exception.AuthenticationException;
+import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,7 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(classes = {DgsAutoConfiguration.class, RelationMutation.class})
+@SpringBootTest(
+    classes = {
+      DgsAutoConfiguration.class,
+      RelationMutation.class,
+      GraphQLCustomizeExceptionHandler.class
+    })
 class RelationMutationTest extends GraphQLTestBase {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -46,16 +53,14 @@ class RelationMutationTest extends GraphQLTestBase {
     String query =
         "mutation { followUser(username: \"targetuser\") { profile { username following } } }";
 
-    String username =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.followUser.profile.username");
-    Boolean following =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.followUser.profile.following");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-    assertThat(username).isEqualTo("targetuser");
-    assertThat(following).isTrue();
+    assertThat(context.read("data.followUser.profile.username", String.class))
+        .isEqualTo("targetuser");
+    assertThat(context.read("data.followUser.profile.following", Boolean.class)).isTrue();
 
     ArgumentCaptor<FollowRelation> captor = ArgumentCaptor.forClass(FollowRelation.class);
-    verify(userRepository, org.mockito.Mockito.atLeastOnce()).saveRelation(captor.capture());
+    verify(userRepository).saveRelation(captor.capture());
     assertThat(captor.getValue().getUserId()).isEqualTo(current.getId());
     assertThat(captor.getValue().getTargetId()).isEqualTo(target.getId());
   }
@@ -99,11 +104,12 @@ class RelationMutationTest extends GraphQLTestBase {
     String query =
         "mutation { unfollowUser(username: \"targetuser\") { profile { username following } } }";
 
-    Boolean following =
-        dgsQueryExecutor.executeAndExtractJsonPath(query, "data.unfollowUser.profile.following");
+    DocumentContext context = dgsQueryExecutor.executeAndGetDocumentContext(query);
 
-    assertThat(following).isFalse();
-    verify(userRepository, org.mockito.Mockito.atLeastOnce()).removeRelation(eq(relation));
+    assertThat(context.read("data.unfollowUser.profile.username", String.class))
+        .isEqualTo("targetuser");
+    assertThat(context.read("data.unfollowUser.profile.following", Boolean.class)).isFalse();
+    verify(userRepository).removeRelation(eq(relation));
   }
 
   @Test
