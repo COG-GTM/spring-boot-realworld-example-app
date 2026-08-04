@@ -46,11 +46,11 @@ public class WebSecurityConfig {
         .authorizeHttpRequests(
             requests ->
                 requests
-                    .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD)
+                    .dispatcherTypeMatchers(DispatcherType.ERROR)
                     .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()
-                    .requestMatchers("/graphiql")
+                    .requestMatchers("/graphiql", "/graphiql/**")
                     .permitAll()
                     .requestMatchers("/graphql")
                     .permitAll()
