@@ -17,6 +17,7 @@ import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.executable.ExecutableValidator;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -45,6 +46,11 @@ public class CustomizeExceptionHandlerTest {
             .setControllerAdvice(new CustomizeExceptionHandler())
             .build();
     objectMapper = new ObjectMapper();
+  }
+
+  @AfterAll
+  public static void tearDown() {
+    VALIDATOR_FACTORY.close();
   }
 
   @Test
