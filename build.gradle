@@ -4,6 +4,7 @@ plugins {
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
+    id 'jacoco'
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -56,8 +57,88 @@ dependencies {
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
 }
 
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+// Generated sources (DGS codegen) are not hand-written code, so they are kept out of the
+// coverage denominator. A generated source root is any main source root under the build
+// directory; the excludes are derived from what it actually contains, so neither the codegen
+// package, its output layout, nor the set of emitted artifacts is hardcoded here.
+// Resolved lazily: by the time a jacoco task reads this, compileJava has run generateJava.
+def generatedSourceRoots = {
+    def buildPath = layout.buildDirectory.get().asFile.toPath()
+    def registered = sourceSets.main.java.srcDirs.findAll { it.toPath().startsWith(buildPath) }
+    if (registered.isEmpty() && tasks.findByName('generateJava') != null) {
+        // Codegen no longer contributes a main source root, so the excludes below would
+        // silently be empty and generated code would re-enter the denominator.
+        throw new GradleException('Codegen is configured but registers no source root under ' +
+            "${buildPath}; jacoco cannot identify generated code. Update generatedSourceRoots.")
+    }
+    // Registration is what matters above; a root that has not been written yet simply
+    // contributes no excludes, which is correct because it has no compiled classes either.
+    registered.findAll { it.exists() }
+}
+
+def generatedClassExcludes = {
+    generatedSourceRoots().collectMany { root ->
+        fileTree(root).matching { include '**/*.java' }.files.collectMany {
+            // Ant patterns are always '/'-separated, unlike Path.toString() on Windows.
+            def relative = root.toPath().relativize(it.toPath()).collect { it.toString() }.join('/')
+            def base = relative.replaceFirst(/\.java$/, '')
+            [base + '.class', base + '$*.class']
+        }
+    }
+}
+
+def handWrittenSourceDirectories = {
+    files({
+        def buildPath = layout.buildDirectory.get().asFile.toPath()
+        sourceSets.main.java.srcDirs.findAll { !it.toPath().startsWith(buildPath) }
+    })
+}
+
+def coveredClassDirectories = {
+    files({
+        def excludes = generatedClassExcludes()
+        sourceSets.main.output.classesDirs.collect { fileTree(dir: it, exclude: excludes) }
+    })
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    classDirectories.setFrom(coveredClassDirectories())
+    sourceDirectories.setFrom(handWrittenSourceDirectories())
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+// A ratchet: raise the minimum as coverage rises, never lower it to make a build pass.
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('jacocoTestReport')
+    classDirectories.setFrom(coveredClassDirectories())
+    sourceDirectories.setFrom(handWrittenSourceDirectories())
+    violationRules {
+        rule {
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.50
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
 }
 
 tasks.named('clean') {
