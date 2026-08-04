@@ -68,14 +68,16 @@ jacoco {
 // Resolved lazily: by the time a jacoco task reads this, compileJava has run generateJava.
 def generatedSourceRoots = {
     def buildPath = layout.buildDirectory.get().asFile.toPath()
-    def roots = sourceSets.main.java.srcDirs.findAll { it.exists() && it.toPath().startsWith(buildPath) }
-    if (roots.isEmpty() && tasks.findByName('generateJava') != null) {
-        // Codegen ran but its output is no longer a main source root, so the excludes below
-        // would silently be empty and generated code would re-enter the denominator.
-        throw new GradleException('Codegen is configured but produced no source root under ' +
+    def registered = sourceSets.main.java.srcDirs.findAll { it.toPath().startsWith(buildPath) }
+    if (registered.isEmpty() && tasks.findByName('generateJava') != null) {
+        // Codegen no longer contributes a main source root, so the excludes below would
+        // silently be empty and generated code would re-enter the denominator.
+        throw new GradleException('Codegen is configured but registers no source root under ' +
             "${buildPath}; jacoco cannot identify generated code. Update generatedSourceRoots.")
     }
-    roots
+    // Registration is what matters above; a root that has not been written yet simply
+    // contributes no excludes, which is correct because it has no compiled classes either.
+    registered.findAll { it.exists() }
 }
 
 def generatedClassExcludes = {
