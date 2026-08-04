@@ -3,6 +3,7 @@ package io.spring.api.exception;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,11 +60,7 @@ public class CustomizeExceptionHandlerTest {
     ResultActions result =
         mvc.perform(get("/test/invalid-request"))
             .andExpect(status().isUnprocessableEntity())
-            .andExpect(
-                mvcResult ->
-                    assertEquals(
-                        MediaType.APPLICATION_JSON_VALUE,
-                        mvcResult.getResponse().getContentType()));
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
 
     assertJsonBody(
         "{\"errors\":{"
