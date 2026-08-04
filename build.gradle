@@ -121,6 +121,7 @@ tasks.named('jacocoTestReport') {
     }
 }
 
+// A ratchet: raise the minimum as coverage rises, never lower it to make a build pass.
 tasks.named('jacocoTestCoverageVerification') {
     dependsOn tasks.named('jacocoTestReport')
     classDirectories.setFrom(coveredClassDirectories())
@@ -130,10 +131,14 @@ tasks.named('jacocoTestCoverageVerification') {
             limit {
                 counter = 'INSTRUCTION'
                 value = 'COVEREDRATIO'
-                minimum = 0.40
+                minimum = 0.50
             }
         }
     }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
 }
 
 tasks.named('clean') {
