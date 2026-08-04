@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
+import io.spring.api.exception.NoAuthorizationException;
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.NewArticleParam;
@@ -21,6 +23,7 @@ import io.spring.core.favorite.ArticleFavorite;
 import io.spring.core.favorite.ArticleFavoriteRepository;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.graphql.exception.AuthenticationException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -122,7 +125,7 @@ class ArticleMutationTest extends GraphQLTestBase {
             "mutation { createArticle(input: {title: \"Title\", description: \"Desc\","
                 + " body: \"Body\"}) { article { slug } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, ResourceNotFoundException.class);
   }
 
   @Test
@@ -134,7 +137,7 @@ class ArticleMutationTest extends GraphQLTestBase {
             "mutation { createArticle(input: {title: \"T\", description: \"D\", body: \"B\"})"
                 + " { __typename } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, AuthenticationException.class);
     verify(articleCommandService, never()).createArticle(any(), any());
   }
 
@@ -169,7 +172,7 @@ class ArticleMutationTest extends GraphQLTestBase {
                 + article.getSlug()
                 + "\", changes: {title: \"New\"}) { __typename } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, NoAuthorizationException.class);
     verify(articleCommandService, never()).updateArticle(any(), any());
   }
 
@@ -182,7 +185,7 @@ class ArticleMutationTest extends GraphQLTestBase {
         dgsQueryExecutor.execute(
             "mutation { updateArticle(slug: \"missing\", changes: {title: \"New\"}) { __typename } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, ResourceNotFoundException.class);
   }
 
   @Test
@@ -244,7 +247,7 @@ class ArticleMutationTest extends GraphQLTestBase {
         dgsQueryExecutor.execute(
             "mutation { deleteArticle(slug: \"" + article.getSlug() + "\") { success } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, NoAuthorizationException.class);
     verify(articleRepository, never()).remove(any());
   }
 }

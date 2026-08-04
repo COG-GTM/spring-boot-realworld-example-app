@@ -145,7 +145,7 @@ class CommentDatafetcherTest extends GraphQLTestBase {
                 + article.getSlug()
                 + "\") { comments { edges { node { id } } } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, IllegalArgumentException.class);
   }
 
   @Test

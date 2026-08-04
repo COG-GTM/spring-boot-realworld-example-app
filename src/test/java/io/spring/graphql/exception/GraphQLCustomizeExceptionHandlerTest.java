@@ -107,6 +107,18 @@ class GraphQLCustomizeExceptionHandlerTest {
     assertThat(items.get(0).getValue()).containsExactly("too short");
   }
 
+  @Test
+  void should_produce_an_empty_key_for_a_two_segment_property_path() {
+    ConstraintViolationException cve =
+        new ConstraintViolationException(violations(violation("createUser.email", "too short")));
+
+    Error error = GraphQLCustomizeExceptionHandler.getErrorsAsData(cve);
+
+    // getParam drops the first two segments, so a two-segment path leaves nothing behind.
+    assertThat(error.getErrors()).hasSize(1);
+    assertThat(error.getErrors().get(0).getKey()).isEmpty();
+  }
+
   private DataFetcherExceptionHandlerParameters parametersFor(Throwable throwable) {
     ExecutionStepInfo stepInfo =
         ExecutionStepInfo.newExecutionStepInfo()

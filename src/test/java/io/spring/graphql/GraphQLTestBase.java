@@ -1,5 +1,8 @@
 package io.spring.graphql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import graphql.ExecutionResult;
 import io.spring.core.user.User;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
@@ -26,6 +29,16 @@ public abstract class GraphQLTestBase {
     SecurityContextHolder.getContext()
         .setAuthentication(
             new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList()));
+  }
+
+  /**
+   * Asserts the query produced exactly one error and that it was raised by the given exception,
+   * rather than by an unrelated validation or parse failure in the query document.
+   */
+  protected void assertSingleErrorFrom(
+      ExecutionResult result, Class<? extends Throwable> exceptionType) {
+    assertThat(result.getErrors()).hasSize(1);
+    assertThat(result.getErrors().get(0).getMessage()).contains(exceptionType.getName());
   }
 
   /** Mimics what Spring Security puts in the context for an unauthenticated request. */

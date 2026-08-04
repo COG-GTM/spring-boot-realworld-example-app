@@ -10,11 +10,13 @@ import static org.mockito.Mockito.when;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.graphql.exception.AuthenticationException;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -66,7 +68,7 @@ class RelationMutationTest extends GraphQLTestBase {
         dgsQueryExecutor.execute(
             "mutation { followUser(username: \"targetuser\") { profile { username } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, AuthenticationException.class);
     verify(userRepository, never()).saveRelation(any());
   }
 
@@ -79,7 +81,7 @@ class RelationMutationTest extends GraphQLTestBase {
         dgsQueryExecutor.execute(
             "mutation { followUser(username: \"ghost\") { profile { username } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, ResourceNotFoundException.class);
     verify(userRepository, never()).saveRelation(any());
   }
 
@@ -115,7 +117,7 @@ class RelationMutationTest extends GraphQLTestBase {
         dgsQueryExecutor.execute(
             "mutation { unfollowUser(username: \"targetuser\") { profile { username } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, ResourceNotFoundException.class);
     verify(userRepository, never()).removeRelation(any());
   }
 }

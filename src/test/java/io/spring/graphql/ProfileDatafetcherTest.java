@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
 import io.spring.core.user.User;
@@ -68,7 +69,7 @@ class ProfileDatafetcherTest extends GraphQLTestBase {
 
     ExecutionResult result = dgsQueryExecutor.execute(QUERY);
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, ResourceNotFoundException.class);
     Map<String, Object> data = result.getData();
     assertThat(data.get("profile")).isNull();
   }

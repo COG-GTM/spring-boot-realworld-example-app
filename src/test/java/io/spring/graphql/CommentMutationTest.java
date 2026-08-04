@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
+import io.spring.api.exception.NoAuthorizationException;
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.CommentQueryService;
 import io.spring.application.data.CommentData;
 import io.spring.application.data.ProfileData;
@@ -18,6 +20,7 @@ import io.spring.core.article.ArticleRepository;
 import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
 import io.spring.core.user.User;
+import io.spring.graphql.exception.AuthenticationException;
 import java.util.Arrays;
 import java.util.Optional;
 import org.joda.time.DateTime;
@@ -84,7 +87,7 @@ class CommentMutationTest extends GraphQLTestBase {
         dgsQueryExecutor.execute(
             "mutation { addComment(slug: \"s\", body: \"x\") { comment { id } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, AuthenticationException.class);
     verify(commentRepository, never()).save(any());
   }
 
@@ -97,7 +100,7 @@ class CommentMutationTest extends GraphQLTestBase {
         dgsQueryExecutor.execute(
             "mutation { addComment(slug: \"missing\", body: \"x\") { comment { id } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, ResourceNotFoundException.class);
     verify(commentRepository, never()).save(any());
   }
 
@@ -140,7 +143,7 @@ class CommentMutationTest extends GraphQLTestBase {
                 + comment.getId()
                 + "\") { success } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, NoAuthorizationException.class);
     verify(commentRepository, never()).remove(any());
   }
 
@@ -157,7 +160,7 @@ class CommentMutationTest extends GraphQLTestBase {
                 + article.getSlug()
                 + "\", id: \"ghost\") { success } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, ResourceNotFoundException.class);
     verify(commentRepository, never()).remove(any());
   }
 }

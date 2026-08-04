@@ -13,6 +13,7 @@ import graphql.ExecutionResult;
 import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironmentImpl;
 import io.spring.TestHelper;
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
@@ -85,7 +86,7 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
 
     ExecutionResult result = dgsQueryExecutor.execute("{ article(slug: \"missing\") { slug } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, ResourceNotFoundException.class);
   }
 
   @Test
@@ -121,7 +122,7 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
 
     ExecutionResult result = dgsQueryExecutor.execute("{ articles { edges { node { slug } } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, IllegalArgumentException.class);
   }
 
   @Test
@@ -220,7 +221,7 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
             "{ profile(username: \"author\") { profile { feed(first: 10)"
                 + " { edges { node { slug } } } } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertSingleErrorFrom(result, ResourceNotFoundException.class);
   }
 
   @Test
@@ -261,15 +262,16 @@ class ArticleDatafetcherTest extends GraphQLTestBase {
     anonymous();
     stubAuthorProfile();
 
-    assertThat(dgsQueryExecutor.execute("{ feed { edges { node { slug } } } }").getErrors())
-        .isNotEmpty();
+    assertSingleErrorFrom(
+        dgsQueryExecutor.execute("{ feed { edges { node { slug } } } }"),
+        IllegalArgumentException.class);
     for (String field : new String[] {"articles", "favorites", "feed"}) {
       ExecutionResult result =
           dgsQueryExecutor.execute(
               "{ profile(username: \"author\") { profile { "
                   + field
                   + " { edges { node { slug } } } } } }");
-      assertThat(result.getErrors()).as(field).isNotEmpty();
+      assertSingleErrorFrom(result, IllegalArgumentException.class);
     }
   }
 
