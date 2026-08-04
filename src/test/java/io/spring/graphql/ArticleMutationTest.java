@@ -39,7 +39,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
       DgsAutoConfiguration.class,
       ArticleMutation.class,
       ArticleDatafetcher.class,
-      GraphQLCustomizeExceptionHandler.class
+      GraphQLCustomizeExceptionHandler.class,
+      RecordingExceptionHandler.class
     })
 class ArticleMutationTest extends GraphQLTestBase {
 

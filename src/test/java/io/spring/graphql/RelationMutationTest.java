@@ -30,7 +30,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
     classes = {
       DgsAutoConfiguration.class,
       RelationMutation.class,
-      GraphQLCustomizeExceptionHandler.class
+      GraphQLCustomizeExceptionHandler.class,
+      RecordingExceptionHandler.class
     })
 class RelationMutationTest extends GraphQLTestBase {
 

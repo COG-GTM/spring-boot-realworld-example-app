@@ -37,7 +37,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
       DgsAutoConfiguration.class,
       CommentMutation.class,
       CommentDatafetcher.class,
-      GraphQLCustomizeExceptionHandler.class
+      GraphQLCustomizeExceptionHandler.class,
+      RecordingExceptionHandler.class
     })
 class CommentMutationTest extends GraphQLTestBase {
 

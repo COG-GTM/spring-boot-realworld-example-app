@@ -40,7 +40,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
       CommentDatafetcher.class,
       ArticleDatafetcher.class,
       ProfileDatafetcher.class,
-      GraphQLCustomizeExceptionHandler.class
+      GraphQLCustomizeExceptionHandler.class,
+      RecordingExceptionHandler.class
     })
 class CommentDatafetcherTest extends GraphQLTestBase {
 

@@ -35,7 +35,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
       DgsAutoConfiguration.class,
       UserMutation.class,
       MeDatafetcher.class,
-      GraphQLCustomizeExceptionHandler.class
+      GraphQLCustomizeExceptionHandler.class,
+      RecordingExceptionHandler.class
     })
 class UserMutationTest extends GraphQLTestBase {
 

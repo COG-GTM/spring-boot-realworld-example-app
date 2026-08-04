@@ -26,7 +26,8 @@ import org.springframework.http.HttpHeaders;
       DgsAutoConfiguration.class,
       MeDatafetcher.class,
       ProfileDatafetcher.class,
-      GraphQLCustomizeExceptionHandler.class
+      GraphQLCustomizeExceptionHandler.class,
+      RecordingExceptionHandler.class
     })
 class MeDatafetcherTest extends GraphQLTestBase {
 
