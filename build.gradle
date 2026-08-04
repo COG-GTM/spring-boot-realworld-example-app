@@ -68,7 +68,14 @@ jacoco {
 // Resolved lazily: by the time a jacoco task reads this, compileJava has run generateJava.
 def generatedSourceRoots = {
     def buildPath = layout.buildDirectory.get().asFile.toPath()
-    sourceSets.main.java.srcDirs.findAll { it.exists() && it.toPath().startsWith(buildPath) }
+    def roots = sourceSets.main.java.srcDirs.findAll { it.exists() && it.toPath().startsWith(buildPath) }
+    if (roots.isEmpty() && tasks.findByName('generateJava') != null) {
+        // Codegen ran but its output is no longer a main source root, so the excludes below
+        // would silently be empty and generated code would re-enter the denominator.
+        throw new GradleException('Codegen is configured but produced no source root under ' +
+            "${buildPath}; jacoco cannot identify generated code. Update generatedSourceRoots.")
+    }
+    roots
 }
 
 def generatedClassExcludes = {
@@ -80,6 +87,10 @@ def generatedClassExcludes = {
             [base + '.class', base + '$*.class']
         }
     }
+}
+
+def handWrittenSourceDirectories = {
+    files({ sourceSets.main.java.srcDirs - generatedSourceRoots() })
 }
 
 def coveredClassDirectories = {
@@ -97,7 +108,7 @@ tasks.named('test') {
 tasks.named('jacocoTestReport') {
     dependsOn tasks.named('test')
     classDirectories.setFrom(coveredClassDirectories())
-    sourceDirectories.setFrom(files({ sourceSets.main.java.srcDirs - generatedSourceRoots() }))
+    sourceDirectories.setFrom(handWrittenSourceDirectories())
     reports {
         xml.required = true
         html.required = true
@@ -108,6 +119,7 @@ tasks.named('jacocoTestReport') {
 tasks.named('jacocoTestCoverageVerification') {
     dependsOn tasks.named('jacocoTestReport')
     classDirectories.setFrom(coveredClassDirectories())
+    sourceDirectories.setFrom(handWrittenSourceDirectories())
     violationRules {
         rule {
             limit {
