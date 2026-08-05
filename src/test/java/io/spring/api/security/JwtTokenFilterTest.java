@@ -156,11 +156,14 @@ public class JwtTokenFilterTest {
   }
 
   /**
-   * The filter only splits the header on whitespace and takes the second part, so any prefix is
-   * accepted. This test documents the current behavior.
+   * Characterization test, NOT a specification: {@code getTokenString} splits the header on
+   * whitespace and takes index 1 without checking the scheme, so any prefix is accepted instead of
+   * only the RealWorld {@code Token} scheme. If the scheme check is ever tightened, this test is
+   * expected to fail and should be replaced by a strict assertion — it is not a regression.
    */
   @Test
-  public void should_authenticate_with_any_header_prefix() throws Exception {
+  public void currently_authenticates_with_any_header_prefix_scheme_is_not_validated()
+      throws Exception {
     request.addHeader("Authorization", "Bearer valid-jwt");
     when(jwtService.getSubFromToken(eq("valid-jwt"))).thenReturn(Optional.of(user.getId()));
     when(userRepository.findById(eq(user.getId()))).thenReturn(Optional.of(user));
