@@ -62,8 +62,8 @@ public class FollowRelationTest {
 
   @Test
   public void should_expose_both_ids_in_to_string() {
-    FollowRelation relation = new FollowRelation("userId", "targetId");
+    FollowRelation relation = new FollowRelation("u-1", "t-2");
 
-    assertThat(relation.toString()).contains("userId").contains("targetId");
+    assertThat(relation.toString()).contains("u-1").contains("t-2");
   }
 }

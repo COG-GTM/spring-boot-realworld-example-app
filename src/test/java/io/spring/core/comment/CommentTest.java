@@ -13,6 +13,7 @@ public class CommentTest {
   public void should_generate_id_and_created_at_and_keep_all_fields_from_constructor() {
     DateTime before = new DateTime();
     Comment comment = new Comment("content", "userId", "articleId");
+    DateTime after = new DateTime();
 
     assertThat(comment.getId()).isNotNull();
     assertThat(UUID.fromString(comment.getId()).toString()).isEqualTo(comment.getId());
@@ -20,7 +21,7 @@ public class CommentTest {
     assertThat(comment.getUserId()).isEqualTo("userId");
     assertThat(comment.getArticleId()).isEqualTo("articleId");
     assertThat(comment.getCreatedAt()).isNotNull();
-    assertThat(comment.getCreatedAt().isBefore(before)).isFalse();
+    assertThat(comment.getCreatedAt().getMillis()).isBetween(before.getMillis(), after.getMillis());
   }
 
   @Test

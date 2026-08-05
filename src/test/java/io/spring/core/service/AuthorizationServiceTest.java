@@ -40,6 +40,11 @@ public class AuthorizationServiceTest {
     assertThat(AuthorizationService.canWriteArticle(author, authorless)).isFalse();
   }
 
+  /**
+   * Characterization of the current implementation: {@code user.getId().equals(...)} dereferences a
+   * null id. It is not a desired guarantee -- adding defensive null handling to {@link
+   * AuthorizationService} should come with an update to this test.
+   */
   @Test
   public void should_throw_when_checking_article_permission_for_an_id_less_user() {
     assertThatExceptionOfType(NullPointerException.class)
@@ -83,6 +88,7 @@ public class AuthorizationServiceTest {
     assertThat(AuthorizationService.canWriteComment(otherUser, authorless, comment)).isFalse();
   }
 
+  /** Characterization of the current implementation, see the article permission case above. */
   @Test
   public void should_throw_when_checking_comment_permission_for_an_id_less_user() {
     Comment comment = new Comment("body", otherUser.getId(), article.getId());
