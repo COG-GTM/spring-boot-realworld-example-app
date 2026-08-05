@@ -111,6 +111,8 @@ public class UserServiceValidationTest {
         .isThrownBy(
             () -> userService.createUser(new RegisterParam("aisensiy@gmail.com", "aisensiy", "")))
         .satisfies(e -> assertThat(messagesOf(e)).contains("can't be empty"));
+
+    verify(userRepository, never()).save(any(User.class));
   }
 
   @Test
