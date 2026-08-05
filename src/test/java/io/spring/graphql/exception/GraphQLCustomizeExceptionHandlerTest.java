@@ -55,8 +55,7 @@ public class GraphQLCustomizeExceptionHandlerTest {
     @SuppressWarnings("unchecked")
     Map<String, Object> extensions = (Map<String, Object>) error.getExtensions();
     assertThat(extensions).containsKeys("email", "username");
-    assertThat((List<String>) extensions.get("email"))
-        .containsExactly("must be a well-formed email address");
+    assertThat((List<String>) extensions.get("email")).containsExactly("must be a valid email");
     assertThat((List<String>) extensions.get("username")).containsExactly("can't be empty");
   }
 
@@ -118,7 +117,8 @@ public class GraphQLCustomizeExceptionHandlerTest {
   }
 
   private static class RegistrationForm {
-    @Email private final String email;
+    @Email(message = "must be a valid email")
+    private final String email;
 
     @NotBlank(message = "can't be empty")
     private final String username;
