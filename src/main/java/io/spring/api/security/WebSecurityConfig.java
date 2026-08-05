@@ -49,6 +49,8 @@ public class WebSecurityConfig {
                 authorize
                     .requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()
+                    .requestMatchers("/error")
+                    .permitAll()
                     .requestMatchers("/graphiql")
                     .permitAll()
                     .requestMatchers("/graphql")
