@@ -40,7 +40,7 @@ The secret key is stored in `application.properties`.
 
 # Database
 
-It uses a PostgreSQL database, managed by Flyway migrations in `src/main/resources/db/migration`. The connection is configured in `application.properties` and can be overridden with the `DB_URL`, `DB_USERNAME` and `DB_PASSWORD` environment variables.
+It uses a PostgreSQL database, managed by Flyway migrations in `src/main/resources/db/migration`. `DB_USERNAME` and `DB_PASSWORD` are required; `DB_URL` defaults to `jdbc:postgresql://localhost:5432/realworld`.
 
 Tests run against a throwaway PostgreSQL container started by [Testcontainers](https://www.testcontainers.org/), so a Docker daemon is required to run `./gradlew test`.
 
@@ -49,7 +49,7 @@ Tests run against a throwaway PostgreSQL container started by [Testcontainers](h
 You'll need Java 11 and a running PostgreSQL instance.
 
     docker run --name realworld-db -e POSTGRES_DB=realworld -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:15-alpine
-    ./gradlew bootRun
+    DB_USERNAME=postgres DB_PASSWORD=postgres ./gradlew bootRun
 
 To test that it works, open a browser tab at http://localhost:8080/tags .  
 Alternatively, you can run
@@ -61,7 +61,10 @@ Alternatively, you can run
 You'll need Docker installed.
 	
     ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+    docker run -p 8081:8080 --link realworld-db \
+      -e DB_URL=jdbc:postgresql://realworld-db:5432/realworld \
+      -e DB_USERNAME=postgres -e DB_PASSWORD=postgres \
+      spring-boot-realworld-example-app
 
 # Try it out with a RealWorld frontend
 

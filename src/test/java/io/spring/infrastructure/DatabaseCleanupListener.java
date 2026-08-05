@@ -19,10 +19,10 @@ public class DatabaseCleanupListener extends AbstractTestExecutionListener {
   @Override
   public void beforeTestClass(TestContext testContext) throws Exception {
     ApplicationContext context = testContext.getApplicationContext();
-    if (context.getBeanNamesForType(DataSource.class).length == 0) {
+    DataSource dataSource = context.getBeanProvider(DataSource.class).getIfUnique();
+    if (dataSource == null) {
       return;
     }
-    DataSource dataSource = context.getBean(DataSource.class);
     try (Connection connection = dataSource.getConnection();
         Statement statement = connection.createStatement()) {
       List<String> tables = applicationTables(statement);
