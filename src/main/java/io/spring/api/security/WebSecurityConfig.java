@@ -3,6 +3,7 @@ package io.spring.api.security;
 import static java.util.Arrays.asList;
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -46,9 +47,11 @@ public class WebSecurityConfig {
         .authorizeHttpRequests(
             requests ->
                 requests
+                    .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.ASYNC)
+                    .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()
-                    .requestMatchers("/graphiql")
+                    .requestMatchers("/graphiql", "/graphiql/**")
                     .permitAll()
                     .requestMatchers("/graphql")
                     .permitAll()
