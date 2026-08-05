@@ -115,9 +115,9 @@ public class AuthorizationServiceTest {
   }
 
   @Test
-  public void should_not_allow_write_article_when_ids_differ_only_by_case() {
+  public void should_not_allow_write_article_when_id_is_only_a_prefix_of_author_id() {
     User user = newUser("user");
-    Article article = newArticle(user.getId().toUpperCase());
+    Article article = newArticle(user.getId() + "-suffix");
 
     assertThat(AuthorizationService.canWriteArticle(user, article), is(false));
   }
