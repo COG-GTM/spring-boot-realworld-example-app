@@ -56,6 +56,10 @@ dependencies {
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
 }
 
+tasks.named('spotlessJava') {
+    mustRunAfter 'generateJava', 'compileJava', 'processResources'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
