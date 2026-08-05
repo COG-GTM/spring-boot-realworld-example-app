@@ -1,7 +1,6 @@
 package io.spring.application.article;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -127,7 +126,7 @@ public class ArticleCommandServiceTest {
     assertThat(article.getDescription()).isEqualTo("old desc");
     assertThat(article.getBody()).isEqualTo("old body");
     assertThat(article.getSlug()).isEqualTo(originalSlug);
-    verify(articleRepository, times(1)).save(any(Article.class));
+    verify(articleRepository, times(1)).save(article);
   }
 
   @Test

@@ -61,6 +61,9 @@ public class UserServiceValidationTest {
 
   @Test
   public void should_reject_register_param_with_invalid_email() {
+    when(userRepository.findByEmail("not-an-email")).thenReturn(Optional.empty());
+    when(userRepository.findByUsername("aisensiy")).thenReturn(Optional.empty());
+
     assertThatExceptionOfType(ConstraintViolationException.class)
         .isThrownBy(
             () -> userService.createUser(new RegisterParam("not-an-email", "aisensiy", "123")))
