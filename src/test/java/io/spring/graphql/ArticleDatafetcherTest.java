@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,6 +53,7 @@ class ArticleDatafetcherTest {
 
   @BeforeEach
   void setUp() {
+    SecurityContextHolder.clearContext();
     articleQueryService = mock(ArticleQueryService.class);
     userRepository = mock(UserRepository.class);
     articleDatafetcher = new ArticleDatafetcher(articleQueryService, userRepository);
@@ -345,7 +345,6 @@ class ArticleDatafetcherTest {
     DataFetcherResult<Article> result = articleDatafetcher.getCommentArticle(dfe);
 
     assertThat(result.getData().getSlug(), is("carticle-slug"));
-    assertThat(result.getData(), is(notNullValue()));
   }
 
   @Test

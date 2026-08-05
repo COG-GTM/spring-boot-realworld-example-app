@@ -51,6 +51,7 @@ class ArticleMutationTest {
 
   @BeforeEach
   void setUp() {
+    SecurityContextHolder.clearContext();
     articleCommandService = mock(ArticleCommandService.class);
     articleFavoriteRepository = mock(ArticleFavoriteRepository.class);
     articleRepository = mock(ArticleRepository.class);
