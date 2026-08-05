@@ -51,7 +51,7 @@ public class WebSecurityConfig {
                     .permitAll()
                     .requestMatchers("/error")
                     .permitAll()
-                    .requestMatchers("/graphiql")
+                    .requestMatchers("/graphiql", "/graphiql/**")
                     .permitAll()
                     .requestMatchers("/graphql")
                     .permitAll()
