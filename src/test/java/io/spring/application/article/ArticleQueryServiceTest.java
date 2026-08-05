@@ -108,6 +108,41 @@ public class ArticleQueryServiceTest extends DbTestBase {
   }
 
   @Test
+  public void should_paginate_article_list_with_offset_and_limit() {
+    Article secondArticle =
+        new Article(
+            "second article",
+            "desc",
+            "body",
+            Arrays.asList("test"),
+            user.getId(),
+            new DateTime().minusHours(1));
+    articleRepository.save(secondArticle);
+    Article thirdArticle =
+        new Article(
+            "third article",
+            "desc",
+            "body",
+            Arrays.asList("test"),
+            user.getId(),
+            new DateTime().minusHours(2));
+    articleRepository.save(thirdArticle);
+
+    ArticleDataList firstPage =
+        queryService.findRecentArticles(null, null, null, new Page(0, 2), user);
+    Assertions.assertEquals(firstPage.getCount(), 3);
+    Assertions.assertEquals(firstPage.getArticleDatas().size(), 2);
+    Assertions.assertEquals(firstPage.getArticleDatas().get(0).getId(), article.getId());
+    Assertions.assertEquals(firstPage.getArticleDatas().get(1).getId(), secondArticle.getId());
+
+    ArticleDataList secondPage =
+        queryService.findRecentArticles(null, null, null, new Page(2, 2), user);
+    Assertions.assertEquals(secondPage.getCount(), 3);
+    Assertions.assertEquals(secondPage.getArticleDatas().size(), 1);
+    Assertions.assertEquals(secondPage.getArticleDatas().get(0).getId(), thirdArticle.getId());
+  }
+
+  @Test
   public void should_get_default_article_list_by_cursor() {
     Article anotherArticle =
         new Article(

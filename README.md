@@ -40,12 +40,15 @@ The secret key is stored in `application.properties`.
 
 # Database
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
+It uses a PostgreSQL database, managed by Flyway migrations in `src/main/resources/db/migration`. The connection is configured in `application.properties` and can be overridden with the `DB_URL`, `DB_USERNAME` and `DB_PASSWORD` environment variables.
+
+Tests run against a throwaway PostgreSQL container started by [Testcontainers](https://www.testcontainers.org/), so a Docker daemon is required to run `./gradlew test`.
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 11 and a running PostgreSQL instance.
 
+    docker run --name realworld-db -e POSTGRES_DB=realworld -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:15-alpine
     ./gradlew bootRun
 
 To test that it works, open a browser tab at http://localhost:8080/tags .  
