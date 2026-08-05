@@ -6,7 +6,9 @@ import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -15,6 +17,7 @@ import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.TagsQueryService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.UserRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +75,23 @@ public class TagsApiTest {
     when(tagsQueryService.allTags()).thenReturn(asList("reactjs"));
 
     given()
+        .when()
+        .get("/tags")
+        .prettyPeek()
+        .then()
+        .statusCode(200)
+        .body("tags", contains("reactjs"));
+
+    verifyNoInteractions(jwtService, userRepository);
+  }
+
+  @Test
+  public void should_get_tags_with_invalid_token() {
+    when(tagsQueryService.allTags()).thenReturn(asList("reactjs"));
+    when(jwtService.getSubFromToken(eq("invalid-token"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token invalid-token")
         .when()
         .get("/tags")
         .prettyPeek()
