@@ -6,11 +6,13 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
@@ -18,6 +20,7 @@ import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
+import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.data.ArticleData;
@@ -35,9 +38,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -45,15 +50,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 class ArticleDatafetcherTest {
 
+  private static final DateTime BASE_TIME = new DateTime(2020, 1, 1, 0, 0, DateTimeZone.UTC);
+
   private ArticleQueryService articleQueryService;
   private UserRepository userRepository;
   private ArticleDatafetcher articleDatafetcher;
 
   private User currentUser;
+  private int fixtureCount;
 
   @BeforeEach
   void setUp() {
     SecurityContextHolder.clearContext();
+    fixtureCount = 0;
     articleQueryService = mock(ArticleQueryService.class);
     userRepository = mock(UserRepository.class);
     articleDatafetcher = new ArticleDatafetcher(articleQueryService, userRepository);
@@ -90,8 +99,11 @@ class ArticleDatafetcherTest {
     return new DgsDataFetchingEnvironment(inner);
   }
 
+  // Each fixture gets its own timestamps so that cursors, which derive from updatedAt, differ.
   private ArticleData articleData(String seed) {
-    DateTime now = new DateTime();
+    DateTime createdAt = BASE_TIME.plusMinutes(fixtureCount);
+    DateTime updatedAt = createdAt.plusDays(1);
+    fixtureCount++;
     return new ArticleData(
         seed + "-id",
         seed + "-slug",
@@ -100,14 +112,27 @@ class ArticleDatafetcherTest {
         "body " + seed,
         false,
         3,
-        now,
-        now,
+        createdAt,
+        updatedAt,
         Arrays.asList("java", seed),
         new ProfileData("author-id", "author", "author bio", "author image", false));
   }
 
   private CursorPager<ArticleData> pagerWith(List<ArticleData> data, Direction direction) {
     return new CursorPager<>(data, direction, false);
+  }
+
+  private CursorPager<ArticleData> pagerWith(
+      List<ArticleData> data, Direction direction, boolean hasExtra) {
+    return new CursorPager<>(data, direction, hasExtra);
+  }
+
+  @SuppressWarnings("unchecked")
+  private CursorPageParameter<DateTime> captureFeedPageParameter(User expectedUser) {
+    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService).findUserFeedWithCursor(eq(expectedUser), captor.capture());
+    return captor.getValue();
   }
 
   // ----- getFeed -----
@@ -133,10 +158,20 @@ class ArticleDatafetcherTest {
         articleDatafetcher.getFeed(
             10, null, null, null, dgsEnv(mock(DataFetchingEnvironment.class)));
 
+    CursorPageParameter<DateTime> page = captureFeedPageParameter(currentUser);
+    assertThat(page.getDirection(), is(Direction.NEXT));
+    assertThat(page.getCursor(), is(nullValue()));
+    assertThat(page.getLimit(), is(10));
+
     ArticlesConnection connection = result.getData();
     assertThat(connection.getEdges(), hasSize(2));
     assertThat(connection.getEdges().get(0).getNode().getTitle(), is("title a1"));
     assertThat(connection.getEdges().get(0).getCursor(), is(a1.getCursor().toString()));
+    assertThat(connection.getEdges().get(1).getNode().getTitle(), is("title a2"));
+    assertThat(connection.getEdges().get(1).getCursor(), is(a2.getCursor().toString()));
+    assertThat(a2.getCursor().toString(), is(not(a1.getCursor().toString())));
+    assertThat(connection.getPageInfo().getStartCursor().getValue(), is(a1.getCursor().toString()));
+    assertThat(connection.getPageInfo().getEndCursor().getValue(), is(a2.getCursor().toString()));
     assertThat(connection.getPageInfo().isHasNextPage(), is(false));
 
     @SuppressWarnings("unchecked")
@@ -148,15 +183,21 @@ class ArticleDatafetcherTest {
   void getFeed_backward_uses_prev_direction_and_anonymous_user() {
     setAnonymous();
     ArticleData a1 = articleData("a1");
-    CursorPager<ArticleData> pager = pagerWith(Collections.singletonList(a1), Direction.PREV);
+    CursorPager<ArticleData> pager = pagerWith(Collections.singletonList(a1), Direction.PREV, true);
     when(articleQueryService.findUserFeedWithCursor(eq(null), any())).thenReturn(pager);
 
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.getFeed(
             null, null, 5, "100", dgsEnv(mock(DataFetchingEnvironment.class)));
 
+    CursorPageParameter<DateTime> page = captureFeedPageParameter(null);
+    assertThat(page.getDirection(), is(Direction.PREV));
+    assertThat(page.getLimit(), is(5));
+    assertThat(page.getCursor().getMillis(), is(100L));
+
     assertThat(result.getData().getEdges(), hasSize(1));
-    assertThat(result.getData().getPageInfo().isHasPreviousPage(), is(false));
+    assertThat(result.getData().getPageInfo().isHasPreviousPage(), is(true));
+    assertThat(result.getData().getPageInfo().isHasNextPage(), is(false));
   }
 
   // ----- userFeed -----
