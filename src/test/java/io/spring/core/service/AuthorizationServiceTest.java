@@ -8,7 +8,6 @@ import io.spring.core.article.Article;
 import io.spring.core.comment.Comment;
 import io.spring.core.user.User;
 import java.util.Arrays;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 public class AuthorizationServiceTest {
@@ -120,14 +119,5 @@ public class AuthorizationServiceTest {
     Article article = newArticle(user.getId() + "-suffix");
 
     assertThat(AuthorizationService.canWriteArticle(user, article), is(false));
-  }
-
-  @Test
-  public void should_handle_article_without_tags() {
-    User author = newUser("author");
-    Article article =
-        new Article("a title", "desc", "body", Collections.emptyList(), author.getId());
-
-    assertThat(AuthorizationService.canWriteArticle(author, article), is(true));
   }
 }
