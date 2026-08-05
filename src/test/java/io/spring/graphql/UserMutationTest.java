@@ -84,7 +84,7 @@ public class UserMutationTest {
   }
 
   @Test
-  public void should_return_errors_as_data_when_register_param_is_invalid() {
+  public void should_return_errors_as_data_when_create_user_violates_constraints() {
     when(userService.createUser(any())).thenThrow(invalidEmailException());
 
     DataFetcherResult<UserResult> result = userMutation.createUser(new CreateUserInput("", "", ""));
