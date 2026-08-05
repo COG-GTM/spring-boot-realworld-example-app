@@ -57,7 +57,7 @@ dependencies {
 }
 
 tasks.named('spotlessJava') {
-    mustRunAfter 'generateJava', 'compileJava', 'processResources'
+    mustRunAfter 'generateJava', 'compileJava', 'processResources', 'compileTestJava', 'processTestResources'
 }
 
 tasks.named('test') {
