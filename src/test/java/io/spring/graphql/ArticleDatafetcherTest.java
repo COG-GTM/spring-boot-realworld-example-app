@@ -262,7 +262,12 @@ class ArticleDatafetcherTest {
     when(articleQueryService.findUserFeedWithCursor(eq(target), any())).thenReturn(pager);
 
     DataFetcherResult<ArticlesConnection> result =
-        articleDatafetcher.userFeed(10, null, null, null, dfe);
+        articleDatafetcher.userFeed(10, "300", null, null, dfe);
+
+    CursorPageParameter<DateTime> page = captureFeedPageParameter(target);
+    assertThat(page.getDirection(), is(Direction.NEXT));
+    assertThat(page.getLimit(), is(10));
+    assertThat(page.getCursor().getMillis(), is(300L));
 
     assertThat(result.getData().getEdges(), hasSize(1));
     assertThat(result.getData().getEdges().get(0).getNode().getSlug(), is("f1-slug"));
@@ -302,7 +307,12 @@ class ArticleDatafetcherTest {
         .thenReturn(pager);
 
     DataFetcherResult<ArticlesConnection> result =
-        articleDatafetcher.userFavorites(10, null, null, null, dfe);
+        articleDatafetcher.userFavorites(10, "300", null, null, dfe);
+
+    CursorPageParameter<DateTime> page = captureRecentPageParameter(null, null, "bob", currentUser);
+    assertThat(page.getDirection(), is(Direction.NEXT));
+    assertThat(page.getLimit(), is(10));
+    assertThat(page.getCursor().getMillis(), is(300L));
 
     assertThat(result.getData().getEdges(), hasSize(1));
     assertThat(result.getData().getEdges().get(0).getNode().getSlug(), is("fav-slug"));
@@ -351,7 +361,12 @@ class ArticleDatafetcherTest {
         .thenReturn(pager);
 
     DataFetcherResult<ArticlesConnection> result =
-        articleDatafetcher.userArticles(10, null, null, null, dfe);
+        articleDatafetcher.userArticles(10, "300", null, null, dfe);
+
+    CursorPageParameter<DateTime> page = captureRecentPageParameter(null, "bob", null, currentUser);
+    assertThat(page.getDirection(), is(Direction.NEXT));
+    assertThat(page.getLimit(), is(10));
+    assertThat(page.getCursor().getMillis(), is(300L));
 
     assertThat(result.getData().getEdges(), hasSize(1));
   }

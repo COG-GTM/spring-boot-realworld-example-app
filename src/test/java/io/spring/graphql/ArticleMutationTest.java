@@ -79,7 +79,11 @@ class ArticleMutationTest {
   }
 
   private Article articleOwnedBy(User user) {
-    return new Article("title", "description", "body", Arrays.asList("java"), user.getId());
+    return articleOwnedBy(user, "title");
+  }
+
+  private Article articleOwnedBy(User user, String title) {
+    return new Article(title, "description", "body", Arrays.asList("java"), user.getId());
   }
 
   // ----- createArticle -----
@@ -182,7 +186,7 @@ class ArticleMutationTest {
     setCurrentUser(currentUser);
     Article article = articleOwnedBy(currentUser);
     when(articleRepository.findBySlug(article.getSlug())).thenReturn(Optional.of(article));
-    Article updated = articleOwnedBy(currentUser);
+    Article updated = articleOwnedBy(currentUser, "new title");
     when(articleCommandService.updateArticle(eq(article), any(UpdateArticleParam.class)))
         .thenReturn(updated);
     UpdateArticleInput changes =
@@ -202,6 +206,7 @@ class ArticleMutationTest {
     assertThat(param.getBody(), is("new body"));
     assertThat(param.getDescription(), is("new desc"));
     assertThat(result.getLocalContext(), is(sameInstance(updated)));
+    assertThat(((Article) result.getLocalContext()).getSlug(), is("new-title"));
   }
 
   // ----- favoriteArticle -----
