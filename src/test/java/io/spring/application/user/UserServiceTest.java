@@ -133,7 +133,14 @@ public class UserServiceTest {
   @Test
   public void should_ignore_null_fields_on_update() {
     User targetUser = new User("old@example.com", "old", "old-password", "old bio", "old image");
-    UpdateUserParam param = new UpdateUserParam(null, null, "new", null, null);
+    UpdateUserParam param =
+        UpdateUserParam.builder()
+            .email(null)
+            .password(null)
+            .username("new")
+            .bio(null)
+            .image(null)
+            .build();
 
     userService.updateUser(new UpdateUserCommand(targetUser, param));
 
@@ -145,8 +152,13 @@ public class UserServiceTest {
     assertThat(targetUser.getImage(), is("old image"));
   }
 
+  /**
+   * Pins current behavior: unlike {@code createUser}, {@code updateUser} stores the new password
+   * without running it through the {@link PasswordEncoder}. If that is fixed in main source, this
+   * test must be updated.
+   */
   @Test
-  public void should_not_encode_password_on_update() {
+  public void should_currently_store_update_password_unencoded() {
     User targetUser = new User("old@example.com", "old", "old-password", "old bio", "old image");
     UpdateUserParam param = UpdateUserParam.builder().password("plain-new-password").build();
 
