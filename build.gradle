@@ -63,6 +63,15 @@ jacoco {
 
 def jacocoExcludes = ['io/spring/graphql/types/**']
 
+// Keep the report and the verification measuring the same denominator.
+tasks.withType(JacocoReportBase).configureEach {
+    classDirectories.setFrom(
+        files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExcludes)
+        })
+    )
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 	finalizedBy jacocoTestReport
@@ -74,11 +83,6 @@ tasks.named('jacocoTestReport') {
         xml.required = true
         html.required = true
     }
-    classDirectories.setFrom(
-        files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: jacocoExcludes)
-        })
-    )
 }
 
 tasks.named('jacocoTestCoverageVerification') {
@@ -92,11 +96,6 @@ tasks.named('jacocoTestCoverageVerification') {
             }
         }
     }
-    classDirectories.setFrom(
-        files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: jacocoExcludes)
-        })
-    )
 }
 
 tasks.named('clean') {
