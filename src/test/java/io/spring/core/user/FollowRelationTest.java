@@ -73,9 +73,9 @@ public class FollowRelationTest {
 
   @Test
   public void should_render_all_fields_in_to_string() {
-    FollowRelation relation = new FollowRelation("userId", "targetId");
+    FollowRelation relation = new FollowRelation("u-1", "t-2");
 
-    assertThat(relation.toString().contains("userId"), is(true));
-    assertThat(relation.toString().contains("targetId"), is(true));
+    assertThat(relation.toString().contains("userId=u-1"), is(true));
+    assertThat(relation.toString().contains("targetId=t-2"), is(true));
   }
 }

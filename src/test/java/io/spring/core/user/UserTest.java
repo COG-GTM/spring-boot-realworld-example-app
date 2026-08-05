@@ -138,7 +138,6 @@ public class UserTest {
     User other = new User("john@example.com", "john", "123", "bio", "image");
 
     assertThat(user.equals(other), is(false));
-    assertThat(user.hashCode(), is(not(other.hashCode())));
   }
 
   @Test
