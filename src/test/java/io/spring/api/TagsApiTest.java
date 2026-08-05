@@ -98,5 +98,8 @@ public class TagsApiTest {
         .then()
         .statusCode(200)
         .body("tags", contains("reactjs"));
+
+    verify(jwtService).getSubFromToken(eq("invalid-token"));
+    verifyNoInteractions(userRepository);
   }
 }
