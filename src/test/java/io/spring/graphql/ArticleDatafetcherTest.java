@@ -191,6 +191,25 @@ class ArticleDatafetcherTest {
   }
 
   @Test
+  void getFeed_forward_parses_after_cursor() {
+    setCurrentUser(currentUser);
+    CursorPager<ArticleData> pager =
+        pagerWith(Collections.singletonList(articleData("a1")), Direction.NEXT, true);
+    when(articleQueryService.findUserFeedWithCursor(eq(currentUser), any())).thenReturn(pager);
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.getFeed(
+            7, "300", null, null, dgsEnv(mock(DataFetchingEnvironment.class)));
+
+    CursorPageParameter<DateTime> page = captureFeedPageParameter(currentUser);
+    assertThat(page.getDirection(), is(Direction.NEXT));
+    assertThat(page.getLimit(), is(7));
+    assertThat(page.getCursor().getMillis(), is(300L));
+    assertThat(result.getData().getPageInfo().isHasNextPage(), is(true));
+    assertThat(result.getData().getPageInfo().isHasPreviousPage(), is(false));
+  }
+
+  @Test
   void getFeed_backward_uses_prev_direction_and_anonymous_user() {
     setAnonymous();
     ArticleData a1 = articleData("a1");
@@ -379,7 +398,13 @@ class ArticleDatafetcherTest {
         .thenReturn(pager);
 
     DataFetcherResult<ArticlesConnection> result =
-        articleDatafetcher.getArticles(10, null, null, null, "author", "fav", "tag", dfe);
+        articleDatafetcher.getArticles(10, "300", null, null, "author", "fav", "tag", dfe);
+
+    CursorPageParameter<DateTime> page =
+        captureRecentPageParameter("tag", "author", "fav", currentUser);
+    assertThat(page.getDirection(), is(Direction.NEXT));
+    assertThat(page.getLimit(), is(10));
+    assertThat(page.getCursor().getMillis(), is(300L));
 
     List<String> slugs = new ArrayList<>();
     result.getData().getEdges().forEach(e -> slugs.add(e.getNode().getSlug()));
