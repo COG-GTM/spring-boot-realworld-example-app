@@ -35,6 +35,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 public class CommentDatafetcherTest extends GraphQLTestBase {
 
   private static final DateTime TIME = new DateTime(2022, 2, 2, 10, 0, DateTimeZone.UTC);
+  private static final DateTime UPDATE_TIME = new DateTime(2022, 3, 3, 11, 0, DateTimeZone.UTC);
   private static final String TIME_ISO = "2022-02-02T10:00:00.000Z";
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -67,6 +68,10 @@ public class CommentDatafetcherTest extends GraphQLTestBase {
     assertThat(context.read("$.data.article.comments.edges[0].node.body", String.class))
         .isEqualTo("body 1");
     assertThat(context.read("$.data.article.comments.edges[0].node.createdAt", String.class))
+        .isEqualTo(TIME_ISO);
+    // buildCommentResult prints createdAt into both timestamp fields, so the fixture's distinct
+    // updatedAt (UPDATE_TIME) never reaches the response.
+    assertThat(context.read("$.data.article.comments.edges[0].node.updatedAt", String.class))
         .isEqualTo(TIME_ISO);
     assertThat(context.read("$.data.article.comments.edges[0].cursor", String.class))
         .isEqualTo(String.valueOf(TIME.getMillis()));
@@ -167,6 +172,6 @@ public class CommentDatafetcherTest extends GraphQLTestBase {
 
   private CommentData commentData(String seed) {
     return new CommentData(
-        "comment-" + seed, "body " + seed, "article-id", TIME, TIME, profileData);
+        "comment-" + seed, "body " + seed, "article-id", TIME, UPDATE_TIME, profileData);
   }
 }

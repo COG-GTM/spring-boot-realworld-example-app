@@ -33,6 +33,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 public class CommentMutationTest extends GraphQLTestBase {
 
   private static final DateTime TIME = new DateTime(2022, 2, 2, 10, 0, DateTimeZone.UTC);
+  private static final DateTime UPDATE_TIME = new DateTime(2022, 3, 3, 11, 0, DateTimeZone.UTC);
   private static final String TIME_ISO = "2022-02-02T10:00:00.000Z";
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
@@ -51,7 +52,7 @@ public class CommentMutationTest extends GraphQLTestBase {
         .thenReturn(
             Optional.of(
                 new CommentData(
-                    "comment-id", "a comment", article.getId(), TIME, TIME, profileData)));
+                    "comment-id", "a comment", article.getId(), TIME, UPDATE_TIME, profileData)));
 
     DocumentContext context =
         dgsQueryExecutor.executeAndGetDocumentContext(
@@ -62,6 +63,10 @@ public class CommentMutationTest extends GraphQLTestBase {
     assertThat(context.read("$.data.addComment.comment.id", String.class)).isEqualTo("comment-id");
     assertThat(context.read("$.data.addComment.comment.body", String.class)).isEqualTo("a comment");
     assertThat(context.read("$.data.addComment.comment.createdAt", String.class))
+        .isEqualTo(TIME_ISO);
+    // buildCommentResult prints createdAt into both timestamp fields, so the fixture's distinct
+    // updatedAt (UPDATE_TIME) never reaches the response.
+    assertThat(context.read("$.data.addComment.comment.updatedAt", String.class))
         .isEqualTo(TIME_ISO);
 
     ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);

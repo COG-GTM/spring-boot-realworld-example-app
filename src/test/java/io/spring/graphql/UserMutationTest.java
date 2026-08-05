@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -174,9 +175,11 @@ public class UserMutationTest extends GraphQLTestBase {
   }
 
   private ConstraintViolationException constraintViolationException() {
-    Set<ConstraintViolation<RegistrationForm>> violations =
-        Validation.buildDefaultValidatorFactory().getValidator().validate(new RegistrationForm(""));
-    return new ConstraintViolationException(violations);
+    try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+      Set<ConstraintViolation<RegistrationForm>> violations =
+          factory.getValidator().validate(new RegistrationForm(""));
+      return new ConstraintViolationException(violations);
+    }
   }
 
   private static class RegistrationForm {

@@ -21,7 +21,7 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
-import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
@@ -96,10 +96,11 @@ public class GraphQLCustomizeExceptionHandlerTest {
   }
 
   private ConstraintViolationException constraintViolationException() {
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    Set<ConstraintViolation<RegistrationForm>> violations =
-        validator.validate(new RegistrationForm("not-an-email", ""));
-    return new ConstraintViolationException(violations);
+    try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+      Set<ConstraintViolation<RegistrationForm>> violations =
+          factory.getValidator().validate(new RegistrationForm("not-an-email", ""));
+      return new ConstraintViolationException(violations);
+    }
   }
 
   private DataFetcherExceptionHandlerParameters parametersFor(Throwable exception) {
