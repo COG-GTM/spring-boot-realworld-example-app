@@ -135,6 +135,17 @@ class ArticleDatafetcherTest {
     return captor.getValue();
   }
 
+  @SuppressWarnings("unchecked")
+  private CursorPageParameter<DateTime> captureRecentPageParameter(
+      String withTag, String authoredBy, String favoritedBy, User expectedUser) {
+    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService)
+        .findRecentArticlesWithCursor(
+            eq(withTag), eq(authoredBy), eq(favoritedBy), captor.capture(), eq(expectedUser));
+    return captor.getValue();
+  }
+
   // ----- getFeed -----
 
   @Test
@@ -238,6 +249,26 @@ class ArticleDatafetcherTest {
     assertThat(result.getData().getEdges().get(0).getNode().getSlug(), is("f1-slug"));
   }
 
+  @Test
+  void userFeed_backward_uses_prev_direction() {
+    Profile profile = Profile.newBuilder().username("target").build();
+    DgsDataFetchingEnvironment dfe = dgsEnvWithSource(profile);
+    User target = new User("t@example.com", "target", "123", "", "");
+    when(userRepository.findByUsername("target")).thenReturn(Optional.of(target));
+    CursorPager<ArticleData> pager =
+        pagerWith(Collections.singletonList(articleData("f1")), Direction.PREV, true);
+    when(articleQueryService.findUserFeedWithCursor(eq(target), any())).thenReturn(pager);
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.userFeed(null, null, 5, "200", dfe);
+
+    CursorPageParameter<DateTime> page = captureFeedPageParameter(target);
+    assertThat(page.getDirection(), is(Direction.PREV));
+    assertThat(page.getLimit(), is(5));
+    assertThat(page.getCursor().getMillis(), is(200L));
+    assertThat(result.getData().getPageInfo().isHasPreviousPage(), is(true));
+  }
+
   // ----- userFavorites -----
 
   @Test
@@ -256,6 +287,27 @@ class ArticleDatafetcherTest {
 
     assertThat(result.getData().getEdges(), hasSize(1));
     assertThat(result.getData().getEdges().get(0).getNode().getSlug(), is("fav-slug"));
+  }
+
+  @Test
+  void userFavorites_backward_passes_username_as_favoritedBy() {
+    setCurrentUser(currentUser);
+    Profile profile = Profile.newBuilder().username("bob").build();
+    DgsDataFetchingEnvironment dfe = dgsEnvWithSource(profile);
+    CursorPager<ArticleData> pager =
+        pagerWith(Collections.singletonList(articleData("fav")), Direction.PREV, true);
+    when(articleQueryService.findRecentArticlesWithCursor(
+            eq(null), eq(null), eq("bob"), any(), eq(currentUser)))
+        .thenReturn(pager);
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.userFavorites(null, null, 5, "200", dfe);
+
+    CursorPageParameter<DateTime> page = captureRecentPageParameter(null, null, "bob", currentUser);
+    assertThat(page.getDirection(), is(Direction.PREV));
+    assertThat(page.getLimit(), is(5));
+    assertThat(page.getCursor().getMillis(), is(200L));
+    assertThat(result.getData().getPageInfo().isHasPreviousPage(), is(true));
   }
 
   @Test
@@ -286,6 +338,27 @@ class ArticleDatafetcherTest {
   }
 
   @Test
+  void userArticles_backward_passes_username_as_author() {
+    setCurrentUser(currentUser);
+    Profile profile = Profile.newBuilder().username("bob").build();
+    DgsDataFetchingEnvironment dfe = dgsEnvWithSource(profile);
+    CursorPager<ArticleData> pager =
+        pagerWith(Collections.singletonList(articleData("art")), Direction.PREV, true);
+    when(articleQueryService.findRecentArticlesWithCursor(
+            eq(null), eq("bob"), eq(null), any(), eq(currentUser)))
+        .thenReturn(pager);
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.userArticles(null, null, 5, "200", dfe);
+
+    CursorPageParameter<DateTime> page = captureRecentPageParameter(null, "bob", null, currentUser);
+    assertThat(page.getDirection(), is(Direction.PREV));
+    assertThat(page.getLimit(), is(5));
+    assertThat(page.getCursor().getMillis(), is(200L));
+    assertThat(result.getData().getPageInfo().isHasPreviousPage(), is(true));
+  }
+
+  @Test
   void userArticles_should_throw_when_first_and_last_both_null() {
     DgsDataFetchingEnvironment dfe = dgsEnv(mock(DataFetchingEnvironment.class));
     assertThrows(
@@ -311,6 +384,27 @@ class ArticleDatafetcherTest {
     List<String> slugs = new ArrayList<>();
     result.getData().getEdges().forEach(e -> slugs.add(e.getNode().getSlug()));
     assertThat(slugs, contains("g1-slug", "g2-slug"));
+  }
+
+  @Test
+  void getArticles_backward_passes_all_filters() {
+    setCurrentUser(currentUser);
+    DgsDataFetchingEnvironment dfe = dgsEnv(mock(DataFetchingEnvironment.class));
+    CursorPager<ArticleData> pager =
+        pagerWith(Collections.singletonList(articleData("g1")), Direction.PREV, true);
+    when(articleQueryService.findRecentArticlesWithCursor(
+            eq("tag"), eq("author"), eq("fav"), any(), eq(currentUser)))
+        .thenReturn(pager);
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.getArticles(null, null, 5, "200", "author", "fav", "tag", dfe);
+
+    CursorPageParameter<DateTime> page =
+        captureRecentPageParameter("tag", "author", "fav", currentUser);
+    assertThat(page.getDirection(), is(Direction.PREV));
+    assertThat(page.getLimit(), is(5));
+    assertThat(page.getCursor().getMillis(), is(200L));
+    assertThat(result.getData().getPageInfo().isHasPreviousPage(), is(true));
   }
 
   @Test
