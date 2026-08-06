@@ -17,10 +17,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 public class GraphQLJacksonConfig {
 
   @Bean
-  public GraphQlHttpHandler graphQlHttpHandler(WebGraphQlHandler webGraphQlHandler) {
-    ObjectMapper objectMapper =
-        new ObjectMapper().disable(DeserializationFeature.UNWRAP_ROOT_VALUE);
+  public GraphQlHttpHandler graphQlHttpHandler(
+      WebGraphQlHandler webGraphQlHandler, ObjectMapper objectMapper) {
+    ObjectMapper graphQlObjectMapper =
+        objectMapper.copy().disable(DeserializationFeature.UNWRAP_ROOT_VALUE);
     return new GraphQlHttpHandler(
-        webGraphQlHandler, new MappingJackson2HttpMessageConverter(objectMapper));
+        webGraphQlHandler, new MappingJackson2HttpMessageConverter(graphQlObjectMapper));
   }
 }
