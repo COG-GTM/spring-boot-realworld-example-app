@@ -59,24 +59,21 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
-	finalizedBy jacocoTestReport
+	finalizedBy tasks.named('jacocoTestReport')
 }
 
-jacocoTestReport {
-    dependsOn test
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
     reports {
         xml.required = true
         html.required = true
     }
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                'io/spring/graphql/types/**',
-                'io/spring/graphql/DgsConstants*',
-                'io/spring/graphql/client/**'
-            ])
-        }))
-    }
+    classDirectories.setFrom(files(sourceSets.main.output.classesDirs.collect {
+        fileTree(dir: it, exclude: [
+            'io/spring/graphql/types/**',
+            'io/spring/graphql/DgsConstants*'
+        ])
+    }))
 }
 
 tasks.named('clean') {
