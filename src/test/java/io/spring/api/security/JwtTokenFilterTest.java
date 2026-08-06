@@ -38,6 +38,7 @@ public class JwtTokenFilterTest {
 
   @BeforeEach
   public void setUp() {
+    SecurityContextHolder.clearContext();
     filter = new JwtTokenFilter();
     userRepository = mock(UserRepository.class);
     jwtService = mock(JwtService.class);
