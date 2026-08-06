@@ -50,6 +50,41 @@ public class MyBatisUserRepositoryTest extends DbTestBase {
   }
 
   @Test
+  public void should_find_user_by_id_success() {
+    userRepository.save(user);
+
+    Optional<User> optional = userRepository.findById(user.getId());
+    Assertions.assertTrue(optional.isPresent());
+    Assertions.assertEquals(optional.get(), user);
+  }
+
+  @Test
+  public void should_get_empty_optional_for_unknown_user() {
+    Assertions.assertFalse(userRepository.findById("not-exists-id").isPresent());
+    Assertions.assertFalse(userRepository.findByUsername("not-exists-username").isPresent());
+    Assertions.assertFalse(userRepository.findByEmail("not-exists@email.com").isPresent());
+  }
+
+  @Test
+  public void should_update_existing_user_instead_of_inserting_a_new_one() {
+    userRepository.save(user);
+
+    String originalUsername = user.getUsername();
+    user.update("updated@email.com", "updatedUsername", "", "new bio", "new image");
+    userRepository.save(user);
+
+    Assertions.assertFalse(userRepository.findByUsername(originalUsername).isPresent());
+    Assertions.assertFalse(userRepository.findByEmail("aisensiy@163.com").isPresent());
+
+    Optional<User> optional = userRepository.findById(user.getId());
+    Assertions.assertTrue(optional.isPresent());
+    Assertions.assertEquals(optional.get().getUsername(), "updatedUsername");
+    Assertions.assertEquals(optional.get().getEmail(), "updated@email.com");
+    Assertions.assertEquals(optional.get().getBio(), "new bio");
+    Assertions.assertEquals(optional.get().getImage(), "new image");
+  }
+
+  @Test
   public void should_create_new_user_follow_success() {
     User other = new User("other@example.com", "other", "123", "", "");
     userRepository.save(other);
@@ -68,6 +103,39 @@ public class MyBatisUserRepositoryTest extends DbTestBase {
     userRepository.saveRelation(followRelation);
 
     userRepository.removeRelation(followRelation);
+    Assertions.assertFalse(userRepository.findRelation(user.getId(), other.getId()).isPresent());
+  }
+
+  @Test
+  public void should_not_duplicate_follow_relation_when_saved_twice() {
+    User other = new User("other@example.com", "other", "123", "", "");
+    userRepository.save(other);
+
+    FollowRelation followRelation = new FollowRelation(user.getId(), other.getId());
+    userRepository.saveRelation(followRelation);
+    userRepository.saveRelation(followRelation);
+
+    userRepository.removeRelation(followRelation);
+    Assertions.assertFalse(userRepository.findRelation(user.getId(), other.getId()).isPresent());
+  }
+
+  @Test
+  public void should_get_empty_relation_when_user_is_not_followed() {
+    User other = new User("other@example.com", "other", "123", "", "");
+    userRepository.save(other);
+    userRepository.save(user);
+
+    Assertions.assertFalse(userRepository.findRelation(user.getId(), other.getId()).isPresent());
+  }
+
+  @Test
+  public void should_do_nothing_when_removing_a_relation_that_does_not_exist() {
+    User other = new User("other@example.com", "other", "123", "", "");
+    userRepository.save(other);
+    userRepository.save(user);
+
+    userRepository.removeRelation(new FollowRelation(user.getId(), other.getId()));
+
     Assertions.assertFalse(userRepository.findRelation(user.getId(), other.getId()).isPresent());
   }
 }
