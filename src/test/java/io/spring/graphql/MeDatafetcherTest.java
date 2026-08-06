@@ -13,6 +13,7 @@ import io.spring.application.UserQueryService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,11 +76,11 @@ public class MeDatafetcherTest extends DgsTestBase {
   public void should_return_null_when_user_is_anonymous() {
     authenticateAnonymously();
 
-    Object me =
+    Map<String, Object> data =
         dgsQueryExecutor.executeAndExtractJsonPath(
-            "{ me { email } }", "data.me", authorizationHeader("jwt-token"));
+            "{ me { email } }", "data", authorizationHeader("jwt-token"));
 
-    assertThat(me).isNull();
+    assertThat(data).containsEntry("me", null);
   }
 
   @Test

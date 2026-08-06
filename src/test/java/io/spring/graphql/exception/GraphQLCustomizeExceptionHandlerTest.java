@@ -40,20 +40,21 @@ public class GraphQLCustomizeExceptionHandlerTest {
 
   @MockBean private TagsQueryService tagsQueryService;
 
+  private static final Validator VALIDATOR =
+      Validation.buildDefaultValidatorFactory().getValidator();
+
   static class UserUpdater {
     public void update(@Valid UpdateUserParam param) {}
   }
 
   private static ConstraintViolationException invalidEmailViolation() {
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     Set<ConstraintViolation<UpdateUserParam>> violations =
-        validator.validate(UpdateUserParam.builder().email("not-an-email").build());
+        VALIDATOR.validate(UpdateUserParam.builder().email("not-an-email").build());
     return new ConstraintViolationException(violations);
   }
 
   private static ConstraintViolationException invalidMethodParameterViolation() throws Exception {
-    ExecutableValidator validator =
-        Validation.buildDefaultValidatorFactory().getValidator().forExecutables();
+    ExecutableValidator validator = VALIDATOR.forExecutables();
     UserUpdater updater = new UserUpdater();
     Set<ConstraintViolation<UserUpdater>> violations =
         validator.validateParameters(

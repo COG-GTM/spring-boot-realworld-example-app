@@ -54,6 +54,9 @@ public class UserMutationTest extends DgsTestBase {
   @MockBean private ProfileQueryService profileQueryService;
   @MockBean private JwtService jwtService;
 
+  private static final Validator VALIDATOR =
+      Validation.buildDefaultValidatorFactory().getValidator();
+
   private User user;
 
   @BeforeEach
@@ -64,9 +67,8 @@ public class UserMutationTest extends DgsTestBase {
   }
 
   private static ConstraintViolationException emailViolation() {
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     Set<ConstraintViolation<UpdateUserParam>> violations =
-        validator.validate(UpdateUserParam.builder().email("not-an-email").build());
+        VALIDATOR.validate(UpdateUserParam.builder().email("not-an-email").build());
     return new ConstraintViolationException(violations);
   }
 
@@ -190,12 +192,11 @@ public class UserMutationTest extends DgsTestBase {
 
   @Test
   public void should_return_null_when_updating_user_anonymously() {
-    Object updated =
+    Map<String, Object> data =
         dgsQueryExecutor.executeAndExtractJsonPath(
-            "mutation { updateUser(changes: {bio: \"new bio\"}) { user { email } } }",
-            "data.updateUser");
+            "mutation { updateUser(changes: {bio: \"new bio\"}) { user { email } } }", "data");
 
-    assertThat(updated).isNull();
+    assertThat(data).containsEntry("updateUser", null);
     verify(userService, never()).updateUser(any());
   }
 }

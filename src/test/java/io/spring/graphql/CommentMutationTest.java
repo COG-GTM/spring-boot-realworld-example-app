@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.netflix.graphql.dgs.DgsQueryExecutor;
 import com.netflix.graphql.dgs.autoconfig.DgsAutoConfiguration;
 import graphql.ExecutionResult;
+import graphql.GraphQLError;
 import io.spring.TestHelper;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.CommentQueryService;
@@ -222,6 +223,9 @@ public class CommentMutationTest extends DgsTestBase {
                 + article.getSlug()
                 + "\", body: \"b\") { comment { id article { slug } } } }");
 
-    assertThat(result.getErrors()).isNotEmpty();
+    assertThat(result.getErrors()).hasSize(1);
+    GraphQLError error = result.getErrors().get(0);
+    assertThat(error.getPath()).containsExactly("addComment", "comment", "article");
+    assertThat(error.getMessage()).contains(ClassCastException.class.getName());
   }
 }
