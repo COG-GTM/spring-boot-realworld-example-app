@@ -4,6 +4,7 @@ import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.DbTestBase;
+import io.spring.infrastructure.mybatis.readservice.UserRelationshipQueryService;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Import;
 @Import(MyBatisUserRepository.class)
 public class MyBatisUserRepositoryTest extends DbTestBase {
   @Autowired private UserRepository userRepository;
+  @Autowired private UserRelationshipQueryService userRelationshipQueryService;
   private User user;
 
   @BeforeEach
@@ -110,13 +112,13 @@ public class MyBatisUserRepositoryTest extends DbTestBase {
   public void should_not_duplicate_follow_relation_when_saved_twice() {
     User other = new User("other@example.com", "other", "123", "", "");
     userRepository.save(other);
+    userRepository.save(user);
 
     FollowRelation followRelation = new FollowRelation(user.getId(), other.getId());
     userRepository.saveRelation(followRelation);
     userRepository.saveRelation(followRelation);
 
-    userRepository.removeRelation(followRelation);
-    Assertions.assertFalse(userRepository.findRelation(user.getId(), other.getId()).isPresent());
+    Assertions.assertEquals(1, userRelationshipQueryService.followedUsers(user.getId()).size());
   }
 
   @Test

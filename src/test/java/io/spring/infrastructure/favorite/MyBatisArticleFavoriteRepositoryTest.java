@@ -3,6 +3,7 @@ package io.spring.infrastructure.favorite;
 import io.spring.core.favorite.ArticleFavorite;
 import io.spring.core.favorite.ArticleFavoriteRepository;
 import io.spring.infrastructure.DbTestBase;
+import io.spring.infrastructure.mybatis.readservice.ArticleFavoritesReadService;
 import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +17,8 @@ public class MyBatisArticleFavoriteRepositoryTest extends DbTestBase {
 
   @Autowired
   private io.spring.infrastructure.mybatis.mapper.ArticleFavoriteMapper articleFavoriteMapper;
+
+  @Autowired private ArticleFavoritesReadService articleFavoritesReadService;
 
   @Test
   public void should_save_and_fetch_articleFavorite_success() {
@@ -56,9 +59,7 @@ public class MyBatisArticleFavoriteRepositoryTest extends DbTestBase {
     articleFavoriteRepository.save(new ArticleFavorite("123", "456"));
     articleFavoriteRepository.save(new ArticleFavorite("123", "456"));
 
-    articleFavoriteRepository.remove(new ArticleFavorite("123", "456"));
-
-    Assertions.assertFalse(articleFavoriteRepository.find("123", "456").isPresent());
+    Assertions.assertEquals(1, articleFavoritesReadService.articleFavoriteCount("123"));
   }
 
   @Test
