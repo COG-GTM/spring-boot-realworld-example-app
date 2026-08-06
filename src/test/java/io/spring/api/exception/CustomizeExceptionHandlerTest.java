@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -17,6 +18,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotBlank;
+import javax.validation.executable.ExecutableValidator;
 import org.hamcrest.Matchers;
 import org.hibernate.validator.HibernateValidator;
 import org.junit.jupiter.api.AfterAll;
@@ -65,6 +67,13 @@ public class CustomizeExceptionHandlerTest {
   @Test
   public void should_return_422_with_property_path_for_constraint_violation() throws Exception {
     mvc.perform(get("/test/constraint-violation"))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.errors.name").value(Matchers.contains("must not be blank")));
+  }
+
+  @Test
+  public void should_use_last_segment_of_a_nested_property_path() throws Exception {
+    mvc.perform(get("/test/nested-constraint-violation"))
         .andExpect(status().isUnprocessableEntity())
         .andExpect(jsonPath("$.errors.name").value(Matchers.contains("must not be blank")));
   }
@@ -131,6 +140,15 @@ public class CustomizeExceptionHandlerTest {
     @PostMapping("/test/valid-body")
     public String validBody(@Valid @RequestBody Payload payload) {
       return payload.getName();
+    }
+
+    @GetMapping("/test/nested-constraint-violation")
+    public void nestedConstraintViolation() throws NoSuchMethodException {
+      ExecutableValidator executableValidator = VALIDATOR_FACTORY.getValidator().forExecutables();
+      Method method = ThrowingController.class.getMethod("validBody", Payload.class);
+      Set<ConstraintViolation<ThrowingController>> violations =
+          executableValidator.validateParameters(this, method, new Object[] {new Payload()});
+      throw new ConstraintViolationException(violations);
     }
 
     @GetMapping("/test/invalid-authentication")

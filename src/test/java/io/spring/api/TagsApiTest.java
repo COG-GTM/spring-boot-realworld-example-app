@@ -51,11 +51,11 @@ public class TagsApiTest extends TestWithCurrentUser {
   }
 
   @Test
-  public void should_get_tags_without_authentication() {
+  public void should_get_tags_with_an_unknown_token() {
     when(tagsQueryService.allTags()).thenReturn(Collections.singletonList("java"));
 
     RestAssuredMockMvc.given()
-        .header("Authorization", "")
+        .header("Authorization", "Token unknown.jwt.token")
         .when()
         .get("/tags")
         .then()
