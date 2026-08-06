@@ -71,7 +71,7 @@ tasks.named('clean') {
 }
 
 tasks.named('bootBuildImage') {
-    environment.put('BP_JVM_VERSION', '17')
+    environment.put('BP_JVM_VERSION', java.toolchain.languageVersion.get().toString())
 }
 
 tasks.named('generateJava') {
