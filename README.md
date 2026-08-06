@@ -44,7 +44,9 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 17 installed.
+You'll need Java 17 installed. The build pins a Java 17 toolchain, so Gradle needs a JDK 17 it can
+discover locally — on an older JDK it fails with `No matching toolchains found` rather than silently
+building against an older target.
 
     ./gradlew bootRun
 
