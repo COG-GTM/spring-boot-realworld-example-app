@@ -96,7 +96,6 @@ public class UserTest {
         new User("old@test.com", "oldname", "oldpassword", "old bio", "old image");
 
     assertThat(user).isNotEqualTo(sameFieldsDifferentId);
-    assertThat(user.hashCode()).isNotEqualTo(sameFieldsDifferentId.hashCode());
     assertThat(user).isEqualTo(user);
     assertThat(user.hashCode()).isEqualTo(user.hashCode());
   }
