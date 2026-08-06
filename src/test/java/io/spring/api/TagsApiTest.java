@@ -2,6 +2,7 @@ package io.spring.api;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -10,6 +11,7 @@ import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.TagsQueryService;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,7 @@ public class TagsApiTest extends TestWithCurrentUser {
   @Test
   public void should_get_tags_with_an_unknown_token() {
     when(tagsQueryService.allTags()).thenReturn(Collections.singletonList("java"));
+    when(jwtService.getSubFromToken(eq("unknown.jwt.token"))).thenReturn(Optional.empty());
 
     RestAssuredMockMvc.given()
         .header("Authorization", "Token unknown.jwt.token")
