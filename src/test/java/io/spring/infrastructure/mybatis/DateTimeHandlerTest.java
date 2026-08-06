@@ -52,7 +52,9 @@ public class DateTimeHandlerTest {
 
     handler.setParameter(ps, 2, null, null);
 
-    verify(ps).setTimestamp(eq(2), isNull(), any(Calendar.class));
+    ArgumentCaptor<Calendar> calendarCaptor = ArgumentCaptor.forClass(Calendar.class);
+    verify(ps).setTimestamp(eq(2), isNull(), calendarCaptor.capture());
+    assertThat(calendarCaptor.getValue().getTimeZone()).isEqualTo(TimeZone.getTimeZone("UTC"));
   }
 
   @Test
