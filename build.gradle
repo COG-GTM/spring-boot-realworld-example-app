@@ -4,6 +4,7 @@ plugins {
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
+    id 'jacoco'
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -56,9 +57,49 @@ dependencies {
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
 }
 
+def jacocoExclusions = [
+    'io/spring/graphql/DgsConstants**',
+    'io/spring/graphql/types/**',
+    'io/spring/RealWorldApplication**'
+]
+
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
 }
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    afterEvaluate {
+        classDirectories.setFrom(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExclusions)
+        })
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn test
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.45
+            }
+        }
+    }
+    afterEvaluate {
+        classDirectories.setFrom(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExclusions)
+        })
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
 
 tasks.named('clean') {
     doFirst {
