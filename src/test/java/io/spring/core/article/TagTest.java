@@ -11,7 +11,7 @@ public class TagTest {
   public void should_assign_uuid_id_and_name() {
     Tag tag = new Tag("java");
 
-    assertThat(UUID.fromString(tag.getId())).isNotNull();
+    assertThat(UUID.fromString(tag.getId()).toString()).isEqualTo(tag.getId());
     assertThat(tag.getName()).isEqualTo("java");
   }
 

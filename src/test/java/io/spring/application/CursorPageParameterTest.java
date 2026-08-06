@@ -68,6 +68,6 @@ public class CursorPageParameterTest {
     assertThat(parameter.hashCode()).isEqualTo(same.hashCode());
     assertThat(parameter).isNotEqualTo(new CursorPageParameter<>("cursor", 10, Direction.PREV));
     assertThat(parameter).isNotEqualTo(null);
-    assertThat(parameter.toString()).contains("cursor");
+    assertThat(parameter.toString()).contains("cursor=cursor", "limit=10", "direction=NEXT");
   }
 }

@@ -9,6 +9,7 @@ import io.spring.core.user.User;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,9 +22,20 @@ public class CursorPagerTest {
   @BeforeEach
   public void setUp() {
     User user = TestHelper.userFixture("cursor");
-    first = TestHelper.commentDataFixture("first", user);
-    last = TestHelper.commentDataFixture("last", user);
+    DateTime createdAt = new DateTime();
+    first = commentAt("first", user, createdAt);
+    last = commentAt("last", user, createdAt.plusMinutes(1));
     data = Arrays.asList(first, last);
+  }
+
+  private CommentData commentAt(String seed, User user, DateTime createdAt) {
+    return new CommentData(
+        seed + "id",
+        "comment " + seed,
+        seed + "-article-id",
+        createdAt,
+        createdAt,
+        TestHelper.profileDataFixture(user));
   }
 
   @Test

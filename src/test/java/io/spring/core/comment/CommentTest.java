@@ -13,7 +13,7 @@ public class CommentTest {
     DateTime before = new DateTime().minusSeconds(1);
     Comment comment = new Comment("comment body", "user-id", "article-id");
 
-    assertThat(UUID.fromString(comment.getId())).isNotNull();
+    assertThat(UUID.fromString(comment.getId()).toString()).isEqualTo(comment.getId());
     assertThat(comment.getBody()).isEqualTo("comment body");
     assertThat(comment.getUserId()).isEqualTo("user-id");
     assertThat(comment.getArticleId()).isEqualTo("article-id");
