@@ -62,6 +62,11 @@ public class ArticleDatafetcherTest extends DgsTestBase {
     return new CursorPager<>(data, direction, more);
   }
 
+  private Map<String, Object> edgeNode(Map<String, Object> connection, int index) {
+    List<Map<String, Object>> edges = (List<Map<String, Object>>) connection.get("edges");
+    return (Map<String, Object>) edges.get(index).get("node");
+  }
+
   @Test
   public void should_return_feed_of_current_user_paging_forward() {
     authenticate(user);
@@ -79,10 +84,15 @@ public class ArticleDatafetcherTest extends DgsTestBase {
     assertThat(pageInfo.get("startCursor")).isEqualTo(articleData.getCursor().toString());
     assertThat(pageInfo.get("endCursor")).isEqualTo(articleData.getCursor().toString());
 
-    String slug =
-        dgsQueryExecutor.executeAndExtractJsonPath(
-            "{ feed(first: 10) { " + ARTICLES_FRAGMENT + " } }", "data.feed.edges[0].node.slug");
-    assertThat(slug).isEqualTo(articleData.getSlug());
+    Map<String, Object> node = edgeNode(connection, 0);
+    assertThat(node.get("slug")).isEqualTo(articleData.getSlug());
+
+    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService).findUserFeedWithCursor(eq(user), captor.capture());
+    assertThat(captor.getValue().getDirection()).isEqualTo(Direction.NEXT);
+    assertThat(captor.getValue().getLimit()).isEqualTo(10);
+    assertThat(captor.getValue().getCursor()).isNull();
   }
 
   @Test
@@ -167,6 +177,13 @@ public class ArticleDatafetcherTest extends DgsTestBase {
 
     assertThat(pageInfo.get("hasPreviousPage")).isEqualTo(true);
     assertThat(pageInfo.get("hasNextPage")).isEqualTo(false);
+
+    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService)
+        .findRecentArticlesWithCursor(isNull(), isNull(), isNull(), captor.capture(), isNull());
+    assertThat(captor.getValue().getDirection()).isEqualTo(Direction.PREV);
+    assertThat(captor.getValue().getLimit()).isEqualTo(3);
   }
 
   @Test
@@ -240,6 +257,14 @@ public class ArticleDatafetcherTest extends DgsTestBase {
             "data.profile.profile.favorites.pageInfo");
 
     assertThat(pageInfo.get("hasPreviousPage")).isEqualTo(true);
+
+    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService)
+        .findRecentArticlesWithCursor(
+            isNull(), isNull(), eq(user.getUsername()), captor.capture(), isNull());
+    assertThat(captor.getValue().getDirection()).isEqualTo(Direction.PREV);
+    assertThat(captor.getValue().getLimit()).isEqualTo(2);
   }
 
   @Test

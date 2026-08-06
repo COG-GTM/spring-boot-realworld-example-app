@@ -94,8 +94,10 @@ public class GraphQLCustomizeExceptionHandlerTest {
     ExecutionResult result = dgsQueryExecutor.execute("{ tags }");
 
     assertThat(result.getErrors()).hasSize(1);
-    assertThat(result.getErrors().get(0).getExtensions().get("errorType"))
-        .isNotEqualTo("UNAUTHENTICATED");
+    GraphQLError error = result.getErrors().get(0);
+    assertThat(error.getExtensions().get("errorType")).isEqualTo("INTERNAL");
+    assertThat(error.getMessage()).contains(ResourceNotFoundException.class.getName());
+    assertThat(error.getPath()).containsExactly("tags");
   }
 
   @Test
