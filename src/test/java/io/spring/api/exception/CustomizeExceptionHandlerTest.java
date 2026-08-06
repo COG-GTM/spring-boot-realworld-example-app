@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
@@ -14,8 +15,11 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotBlank;
 import org.hamcrest.Matchers;
+import org.hibernate.validator.HibernateValidator;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -30,6 +34,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 public class CustomizeExceptionHandlerTest {
 
+  private static final ValidatorFactory VALIDATOR_FACTORY =
+      Validation.byProvider(HibernateValidator.class)
+          .configure()
+          .defaultLocale(Locale.ENGLISH)
+          .buildValidatorFactory();
+
   private MockMvc mvc;
 
   @BeforeEach
@@ -38,6 +48,11 @@ public class CustomizeExceptionHandlerTest {
         MockMvcBuilders.standaloneSetup(new ThrowingController())
             .setControllerAdvice(new CustomizeExceptionHandler())
             .build();
+  }
+
+  @AfterAll
+  public static void tearDownAll() {
+    VALIDATOR_FACTORY.close();
   }
 
   @Test
@@ -108,7 +123,7 @@ public class CustomizeExceptionHandlerTest {
 
     @GetMapping("/test/constraint-violation")
     public void constraintViolation() {
-      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+      Validator validator = VALIDATOR_FACTORY.getValidator();
       Set<ConstraintViolation<Payload>> violations = validator.validate(new Payload());
       throw new ConstraintViolationException(violations);
     }
