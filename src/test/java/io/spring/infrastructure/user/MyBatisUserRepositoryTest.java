@@ -87,6 +87,21 @@ public class MyBatisUserRepositoryTest extends DbTestBase {
   }
 
   @Test
+  public void should_update_only_the_non_empty_fields() {
+    userRepository.save(user);
+
+    user.update("", "", "", "new bio", "");
+    userRepository.save(user);
+
+    Optional<User> optional = userRepository.findById(user.getId());
+    Assertions.assertTrue(optional.isPresent());
+    Assertions.assertEquals(optional.get().getBio(), "new bio");
+    Assertions.assertEquals(optional.get().getUsername(), "aisensiy");
+    Assertions.assertEquals(optional.get().getEmail(), "aisensiy@163.com");
+    Assertions.assertEquals(optional.get().getImage(), "default");
+  }
+
+  @Test
   public void should_create_new_user_follow_success() {
     User other = new User("other@example.com", "other", "123", "", "");
     userRepository.save(other);

@@ -56,10 +56,11 @@ public class MyBatisArticleFavoriteRepositoryTest extends DbTestBase {
 
   @Test
   public void should_not_duplicate_favorite_when_saved_twice() {
-    articleFavoriteRepository.save(new ArticleFavorite("123", "456"));
-    articleFavoriteRepository.save(new ArticleFavorite("123", "456"));
+    articleFavoriteRepository.save(new ArticleFavorite("duplicate-article", "456"));
+    articleFavoriteRepository.save(new ArticleFavorite("duplicate-article", "456"));
 
-    Assertions.assertEquals(1, articleFavoritesReadService.articleFavoriteCount("123"));
+    Assertions.assertEquals(
+        1, articleFavoritesReadService.articleFavoriteCount("duplicate-article"));
   }
 
   @Test
