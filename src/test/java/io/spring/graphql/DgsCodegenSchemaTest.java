@@ -39,7 +39,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class DgsCodegenSchemaTest {
 
   private static final String GENERATED_TYPES_PACKAGE = "io.spring.graphql.types";
-  private static final Set<String> ROOT_TYPES = Set.of("Query", "Mutation", "Subscription");
+  private static final Set<String> DEFAULT_ROOT_TYPES = Set.of("Query", "Mutation", "Subscription");
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
 
@@ -71,6 +71,18 @@ public class DgsCodegenSchemaTest {
     }
   }
 
+  /** Operation roots have no generated type; read them from {@code schema { ... }} if declared. */
+  private static Set<String> rootTypeNames(TypeDefinitionRegistry registry) {
+    return registry
+        .schemaDefinition()
+        .map(
+            definition ->
+                definition.getOperationTypeDefinitions().stream()
+                    .map(operation -> operation.getTypeName().getName())
+                    .collect(Collectors.toSet()))
+        .orElse(DEFAULT_ROOT_TYPES);
+  }
+
   private static Class<?> generatedClass(String typeName) {
     try {
       return Class.forName(GENERATED_TYPES_PACKAGE + "." + typeName);
@@ -89,10 +101,12 @@ public class DgsCodegenSchemaTest {
 
   @Test
   public void everySchemaTypeHasAGeneratedClass() throws IOException {
+    TypeDefinitionRegistry registry = schema();
+    Set<String> rootTypes = rootTypeNames(registry);
     List<String> typeNames =
-        schema().types().values().stream()
+        registry.types().values().stream()
             .map(TypeDefinition::getName)
-            .filter(name -> !ROOT_TYPES.contains(name))
+            .filter(name -> !rootTypes.contains(name))
             .collect(Collectors.toList());
 
     assertThat(typeNames).isNotEmpty();
@@ -101,8 +115,10 @@ public class DgsCodegenSchemaTest {
 
   @Test
   public void generatedObjectTypesExposeEverySchemaField() throws IOException {
-    for (TypeDefinition<?> type : schema().types().values()) {
-      if (ROOT_TYPES.contains(type.getName())) {
+    TypeDefinitionRegistry registry = schema();
+    Set<String> rootTypes = rootTypeNames(registry);
+    for (TypeDefinition<?> type : registry.types().values()) {
+      if (rootTypes.contains(type.getName())) {
         continue;
       }
       if (type instanceof ObjectTypeDefinition) {
