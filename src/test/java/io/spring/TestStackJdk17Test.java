@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
+import io.spring.application.ArticleQueryService;
+import io.spring.application.data.ArticleData;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import java.io.IOException;
@@ -37,24 +39,34 @@ class TestStackJdk17Test {
     assertTrue(
         running.isAtLeast(ClassFileVersion.JAVA_V17),
         "expected to run on JDK 17+, but byte-buddy sees " + running);
+    // Only trips when -Dnet.bytebuddy.experimental=true lets ofThisVm() report a version byte-buddy
+    // does not natively support; without the flag that case throws and is caught above.
     assertTrue(
         running.isAtMost(ClassFileVersion.latest()),
-        "byte-buddy only supports this JVM in experimental mode; bump net.bytebuddy:byte-buddy");
+        "byte-buddy supports this JVM only in experimental mode; bump net.bytebuddy:byte-buddy");
   }
 
   @Test
-  void mockitoShouldSubclassApplicationClassesCompiledForJava17() throws IOException {
+  void mockitoShouldMockApplicationTypesCompiledForJava17() throws IOException {
     ClassFileVersion compiled = ClassFileVersion.of(User.class);
     assertTrue(
         compiled.isAtLeast(ClassFileVersion.JAVA_V17),
         "expected application classes at Java 17+ bytecode, but found " + compiled);
 
-    UserRepository userRepository = mock(UserRepository.class);
     User user = new User("john@jacob.com", "johnjacob", "123", "", "");
-    when(userRepository.findByUsername(eq("johnjacob"))).thenReturn(Optional.of(user));
 
+    UserRepository userRepository = mock(UserRepository.class);
+    when(userRepository.findByUsername(eq("johnjacob"))).thenReturn(Optional.of(user));
     assertEquals(Optional.of(user), userRepository.findByUsername("johnjacob"));
     verify(userRepository).findByUsername("johnjacob");
+
+    // Subclassing a concrete class is the encapsulation-sensitive path: byte-buddy has to define
+    // the
+    // proxy against the target's own package rather than just implement an interface.
+    ArticleQueryService articleQueryService = mock(ArticleQueryService.class);
+    when(articleQueryService.findById(eq("article-id"), eq(user))).thenReturn(Optional.empty());
+    assertEquals(Optional.<ArticleData>empty(), articleQueryService.findById("article-id", user));
+    verify(articleQueryService).findById("article-id", user);
   }
 
   /**
