@@ -1,0 +1,162 @@
+package io.spring.graphql;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.netflix.graphql.dgs.DgsQueryExecutor;
+import graphql.language.FieldDefinition;
+import graphql.language.InputObjectTypeDefinition;
+import graphql.language.InputValueDefinition;
+import graphql.language.ObjectTypeDefinition;
+import graphql.language.TypeDefinition;
+import graphql.language.UnionTypeDefinition;
+import graphql.schema.idl.SchemaParser;
+import graphql.schema.idl.TypeDefinitionRegistry;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+/**
+ * Guards the Netflix DGS codegen output against the GraphQL schema. The codegen plugin is
+ * Kotlin-based and runs in the Gradle JVM, so a toolchain change can silently stop producing
+ * sources; these assertions fail loudly if the generated {@code io.spring.graphql.types} classes
+ * stop matching {@code schema.graphqls}.
+ */
+@SpringBootTest
+public class DgsCodegenSchemaTest {
+
+  private static final String GENERATED_TYPES_PACKAGE = "io.spring.graphql.types";
+  private static final Set<String> ROOT_TYPES = Set.of("Query", "Mutation", "Subscription");
+
+  @Autowired private DgsQueryExecutor dgsQueryExecutor;
+
+  /**
+   * Datafetchers read the security context directly, which over HTTP always holds at least an
+   * anonymous token. In-process execution bypasses the filter chain, so populate it here.
+   */
+  @BeforeEach
+  public void setUpAnonymousAuthentication() {
+    SecurityContextHolder.getContext()
+        .setAuthentication(
+            new AnonymousAuthenticationToken(
+                "dgs-codegen-test",
+                "anonymousUser",
+                AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS")));
+  }
+
+  @AfterEach
+  public void clearAuthentication() {
+    SecurityContextHolder.clearContext();
+  }
+
+  private static TypeDefinitionRegistry schema() throws IOException {
+    try (InputStreamReader reader =
+        new InputStreamReader(
+            new ClassPathResource("schema/schema.graphqls").getInputStream(),
+            StandardCharsets.UTF_8)) {
+      return new SchemaParser().parse(reader);
+    }
+  }
+
+  private static Class<?> generatedClass(String typeName) {
+    try {
+      return Class.forName(GENERATED_TYPES_PACKAGE + "." + typeName);
+    } catch (ClassNotFoundException e) {
+      throw new AssertionError(
+          "No generated class for schema type " + typeName + "; did generateJava run?", e);
+    }
+  }
+
+  private static Set<String> declaredFieldNames(Class<?> clazz) {
+    return Arrays.stream(clazz.getDeclaredFields())
+        .filter(field -> !field.isSynthetic())
+        .map(Field::getName)
+        .collect(Collectors.toSet());
+  }
+
+  @Test
+  public void everySchemaTypeHasAGeneratedClass() throws IOException {
+    List<String> typeNames =
+        schema().types().values().stream()
+            .map(TypeDefinition::getName)
+            .filter(name -> !ROOT_TYPES.contains(name))
+            .collect(Collectors.toList());
+
+    assertThat(typeNames).isNotEmpty();
+    typeNames.forEach(DgsCodegenSchemaTest::generatedClass);
+  }
+
+  @Test
+  public void generatedObjectTypesExposeEverySchemaField() throws IOException {
+    for (TypeDefinition<?> type : schema().types().values()) {
+      if (ROOT_TYPES.contains(type.getName())) {
+        continue;
+      }
+      if (type instanceof ObjectTypeDefinition) {
+        Set<String> generatedFields = declaredFieldNames(generatedClass(type.getName()));
+        List<String> schemaFields =
+            ((ObjectTypeDefinition) type)
+                .getFieldDefinitions().stream()
+                    .map(FieldDefinition::getName)
+                    .collect(Collectors.toList());
+        assertThat(generatedFields)
+            .as("generated fields of %s", type.getName())
+            .containsAll(schemaFields);
+      } else if (type instanceof InputObjectTypeDefinition) {
+        Set<String> generatedFields = declaredFieldNames(generatedClass(type.getName()));
+        List<String> schemaFields =
+            ((InputObjectTypeDefinition) type)
+                .getInputValueDefinitions().stream()
+                    .map(InputValueDefinition::getName)
+                    .collect(Collectors.toList());
+        assertThat(generatedFields)
+            .as("generated fields of %s", type.getName())
+            .containsAll(schemaFields);
+      }
+    }
+  }
+
+  @Test
+  public void generatedUnionMembersImplementTheUnionInterface() throws IOException {
+    for (TypeDefinition<?> type : schema().types().values()) {
+      if (!(type instanceof UnionTypeDefinition)) {
+        continue;
+      }
+      Class<?> unionClass = generatedClass(type.getName());
+      assertThat(unionClass.isInterface()).as("%s is an interface", type.getName()).isTrue();
+      ((UnionTypeDefinition) type)
+          .getMemberTypes().stream()
+              .map(graphql.language.TypeName.class::cast)
+              .forEach(
+                  member ->
+                      assertThat(unionClass.isAssignableFrom(generatedClass(member.getName())))
+                          .as("%s implements %s", member.getName(), type.getName())
+                          .isTrue());
+    }
+  }
+
+  @Test
+  public void datafetchersResolveAgainstTheGeneratedSchema() {
+    List<String> tags = dgsQueryExecutor.executeAndExtractJsonPath("{ tags }", "data.tags");
+    assertThat(tags).isNotNull();
+
+    List<Object> edges =
+        dgsQueryExecutor.executeAndExtractJsonPath(
+            "{ articles(first: 1) { edges { node { title slug } } pageInfo { hasNextPage } } }",
+            "data.articles.edges");
+    assertThat(edges).isNotNull();
+  }
+}
