@@ -1,12 +1,15 @@
 package io.spring.graphql;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 
 import com.netflix.graphql.dgs.DgsQueryExecutor;
+import graphql.ExecutionResult;
 import io.spring.graphql.types.Article;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,9 +23,11 @@ public class DgsRuntimeCompatibilityTest {
 
   @Test
   public void schema_is_assembled_and_a_query_is_executed() {
-    List<String> tags = dgsQueryExecutor.executeAndExtractJsonPath("{ tags }", "data.tags");
+    ExecutionResult result = dgsQueryExecutor.execute("{ tags }");
 
-    assertThat(tags, is(notNullValue()));
+    assertThat(result.getErrors(), is(empty()));
+    Map<String, Object> data = result.getData();
+    assertThat(data.get("tags"), is(instanceOf(List.class)));
   }
 
   @Test
