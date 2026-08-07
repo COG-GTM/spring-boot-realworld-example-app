@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+// jdbc:sqlite::memory: gives every pooled connection its own empty database, so the schema
+// Flyway migrates is only visible to a pool holding a single connection.
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(properties = "spring.datasource.hikari.maximum-pool-size=1")
 public class DgsRuntimeCompatibilityTest {
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
