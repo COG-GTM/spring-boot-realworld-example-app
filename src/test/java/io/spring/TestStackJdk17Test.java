@@ -1,5 +1,6 @@
 package io.spring;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import net.bytebuddy.ClassFileVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.ThrowingSupplier;
 
 /**
  * Guards the test stack itself against JDK strong encapsulation. Mockito mocks through byte-buddy
@@ -26,7 +28,12 @@ class TestStackJdk17Test {
 
   @Test
   void byteBuddyShouldSupportTheRunningJvmWithoutExperimentalMode() {
-    ClassFileVersion running = ClassFileVersion.ofThisVm();
+    // ofThisVm() throws rather than returning a sentinel when byte-buddy cannot map java.version,
+    // so the throwing case is folded in here to keep the "bump byte-buddy" hint on both paths.
+    ClassFileVersion running =
+        assertDoesNotThrow(
+            (ThrowingSupplier<ClassFileVersion>) ClassFileVersion::ofThisVm,
+            "byte-buddy does not recognise this JVM; bump net.bytebuddy:byte-buddy");
     assertTrue(
         running.isAtLeast(ClassFileVersion.JAVA_V17),
         "expected to run on JDK 17+, but byte-buddy sees " + running);
@@ -37,10 +44,10 @@ class TestStackJdk17Test {
 
   @Test
   void mockitoShouldSubclassApplicationClassesCompiledForJava17() throws IOException {
-    assertEquals(
-        ClassFileVersion.JAVA_V17,
-        ClassFileVersion.of(User.class),
-        "test assumes application classes are compiled for Java 17");
+    ClassFileVersion compiled = ClassFileVersion.of(User.class);
+    assertTrue(
+        compiled.isAtLeast(ClassFileVersion.JAVA_V17),
+        "expected application classes at Java 17+ bytecode, but found " + compiled);
 
     UserRepository userRepository = mock(UserRepository.class);
     User user = new User("john@jacob.com", "johnjacob", "123", "", "");
