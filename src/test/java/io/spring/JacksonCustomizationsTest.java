@@ -8,16 +8,25 @@ import io.spring.application.data.ProfileData;
 import java.time.Instant;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.json.JsonTest;
+import org.springframework.context.annotation.Import;
 
 /**
  * Pins the wire format of serialized timestamps. The strings asserted here are exactly what the
  * previous Joda based serializer ({@code ISODateTimeFormat.dateTime().withZoneUTC()}) emitted.
+ *
+ * <p>Runs against the Boot built {@code ObjectMapper} on purpose: {@code JavaTimeModule} is on the
+ * classpath and registers its own {@code Instant} serializer, so this also pins that {@link
+ * JacksonCustomizations.RealWorldModules} wins that contest.
  */
+@JsonTest
+@Import(JacksonCustomizations.class)
 public class JacksonCustomizationsTest {
 
-  private final ObjectMapper objectMapper =
-      new ObjectMapper().registerModule(new JacksonCustomizations.RealWorldModules());
+  @Autowired private ObjectMapper objectMapper;
 
+  /** A zero millisecond instant is where {@code JavaTimeModule} would diverge (no {@code .000}). */
   @Test
   public void should_serialize_instant_as_iso8601_utc_with_millis() throws Exception {
     assertEquals(

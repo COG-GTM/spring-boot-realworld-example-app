@@ -53,13 +53,14 @@ public class DateTimeHandlerTest extends DbTestBase {
         new Article("stored at", "desc", "body", Arrays.asList("java"), user.getId(), createdAt);
     articleRepository.save(article);
 
-    jdbcTemplate.query(
-        "select created_at, updated_at from articles where id = ?",
-        rs -> {
-          assertEquals(1609502400123L, rs.getLong("created_at"));
-          assertEquals(1609502400123L, rs.getLong("updated_at"));
-        },
-        article.getId());
+    assertEquals(
+        1609502400123L,
+        jdbcTemplate.queryForObject(
+            "select created_at from articles where id = ?", Long.class, article.getId()));
+    assertEquals(
+        1609502400123L,
+        jdbcTemplate.queryForObject(
+            "select updated_at from articles where id = ?", Long.class, article.getId()));
 
     assertEquals(createdAt, articleRepository.findById(article.getId()).get().getCreatedAt());
   }
