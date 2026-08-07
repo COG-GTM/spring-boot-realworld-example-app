@@ -34,6 +34,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Guards the Netflix DGS codegen output against the GraphQL schema. The codegen plugin is
@@ -44,6 +45,7 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
+@Transactional
 public class DgsCodegenSchemaTest {
 
   private static final String GENERATED_TYPES_PACKAGE = "io.spring.graphql.types";
@@ -176,9 +178,6 @@ public class DgsCodegenSchemaTest {
 
   @Test
   public void datafetchersResolveAgainstTheGeneratedSchema() {
-    List<String> tags = dgsQueryExecutor.executeAndExtractJsonPath("{ tags }", "data.tags");
-    assertThat(tags).isNotNull();
-
     io.spring.core.user.User author =
         new io.spring.core.user.User(
             "dgs-codegen@example.com", "dgs-codegen-user", "password", "", "");
@@ -207,5 +206,8 @@ public class DgsCodegenSchemaTest {
     assertThat(article.getBody()).isEqualTo("body");
     assertThat(article.getTagList()).containsExactly("dgs-codegen");
     assertThat(article.getFavoritesCount()).isZero();
+
+    List<String> tags = dgsQueryExecutor.executeAndExtractJsonPath("{ tags }", "data.tags");
+    assertThat(tags).contains("dgs-codegen");
   }
 }
