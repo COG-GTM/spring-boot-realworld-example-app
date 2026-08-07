@@ -8,9 +8,9 @@ import io.spring.application.article.NewArticleParam;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.user.User;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -34,7 +34,7 @@ public class LombokAnnotationProcessingTest {
 
   @Test
   public void data_generates_constructors_accessors_and_value_semantics() {
-    DateTime now = new DateTime();
+    Instant now = DateTimes.now();
     ProfileData author = new ProfileData("authorId", "author", "bio", "image", true);
     ArticleData first =
         new ArticleData(
@@ -59,8 +59,8 @@ public class LombokAnnotationProcessingTest {
     second.setBody("body");
     second.setFavorited(true);
     second.setFavoritesCount(3);
-    second.setCreatedAt(new DateTime(now.getMillis()));
-    second.setUpdatedAt(new DateTime(now.getMillis()));
+    second.setCreatedAt(Instant.ofEpochMilli(now.toEpochMilli()));
+    second.setUpdatedAt(Instant.ofEpochMilli(now.toEpochMilli()));
     second.setTagList(Collections.singletonList("java"));
     second.setProfileData(new ProfileData("authorId", "author", "bio", "image", true));
 
