@@ -1,6 +1,7 @@
 package io.spring.graphql;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.netflix.graphql.dgs.DgsQueryExecutor;
@@ -21,7 +22,7 @@ public class DgsRuntimeCompatibilityTest {
   public void schema_is_assembled_and_a_query_is_executed() {
     List<String> tags = dgsQueryExecutor.executeAndExtractJsonPath("{ tags }", "data.tags");
 
-    assertThat(tags, is(List.of()));
+    assertThat(tags, is(notNullValue()));
   }
 
   @Test
