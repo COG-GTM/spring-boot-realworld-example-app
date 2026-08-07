@@ -11,6 +11,9 @@ import graphql.language.TypeDefinition;
 import graphql.language.UnionTypeDefinition;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import io.spring.core.article.ArticleRepository;
+import io.spring.core.user.UserRepository;
+import io.spring.graphql.types.Article;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -18,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +46,8 @@ public class DgsCodegenSchemaTest {
   private static final Set<String> DEFAULT_ROOT_TYPES = Set.of("Query", "Mutation", "Subscription");
 
   @Autowired private DgsQueryExecutor dgsQueryExecutor;
+  @Autowired private ArticleRepository articleRepository;
+  @Autowired private UserRepository userRepository;
 
   /**
    * Datafetchers read the security context directly, which over HTTP always holds at least an
@@ -169,10 +175,37 @@ public class DgsCodegenSchemaTest {
     List<String> tags = dgsQueryExecutor.executeAndExtractJsonPath("{ tags }", "data.tags");
     assertThat(tags).isNotNull();
 
-    List<Object> edges =
-        dgsQueryExecutor.executeAndExtractJsonPath(
-            "{ articles(first: 1) { edges { node { title slug } } pageInfo { hasNextPage } } }",
-            "data.articles.edges");
-    assertThat(edges).isNotNull();
+    // UserRepository has no delete, and the suite shares an on-disk database, so keep the seeded
+    // rows unique per run rather than colliding on the users/articles unique constraints.
+    String seed = UUID.randomUUID().toString().substring(0, 8);
+    String title = "DGS codegen round trip " + seed;
+    io.spring.core.user.User author =
+        new io.spring.core.user.User(
+            "dgs-codegen-" + seed + "@example.com", "dgs-codegen-" + seed, "password", "", "");
+    userRepository.save(author);
+    io.spring.core.article.Article seeded =
+        new io.spring.core.article.Article(
+            title, "description", "body", List.of("dgs-codegen"), author.getId());
+    articleRepository.save(seeded);
+
+    try {
+      // Deserializing into the generated Article proves the runtime response binds to the codegen
+      // output field-for-field, not merely that the query executed without errors.
+      Article article =
+          dgsQueryExecutor.executeAndExtractJsonPathAsObject(
+              String.format(
+                  "{ article(slug: \"%s\") { title slug description body tagList favorited"
+                      + " favoritesCount } }",
+                  seeded.getSlug()),
+              "data.article",
+              Article.class);
+      assertThat(article.getTitle()).isEqualTo(title);
+      assertThat(article.getSlug()).isEqualTo(seeded.getSlug());
+      assertThat(article.getBody()).isEqualTo("body");
+      assertThat(article.getTagList()).containsExactly("dgs-codegen");
+      assertThat(article.getFavoritesCount()).isZero();
+    } finally {
+      articleRepository.remove(seeded);
+    }
   }
 }
