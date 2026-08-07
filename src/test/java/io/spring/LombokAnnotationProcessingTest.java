@@ -49,6 +49,8 @@ public class LombokAnnotationProcessingTest {
             now,
             Collections.singletonList("java"),
             author);
+    // Every reference type is a distinct-but-equal instance so the generated equals/hashCode are
+    // forced to compare by value rather than by identity.
     ArticleData second = new ArticleData();
     second.setId("id");
     second.setSlug("slug");
@@ -57,10 +59,10 @@ public class LombokAnnotationProcessingTest {
     second.setBody("body");
     second.setFavorited(true);
     second.setFavoritesCount(3);
-    second.setCreatedAt(now);
-    second.setUpdatedAt(now);
+    second.setCreatedAt(new DateTime(now.getMillis()));
+    second.setUpdatedAt(new DateTime(now.getMillis()));
     second.setTagList(Collections.singletonList("java"));
-    second.setProfileData(author);
+    second.setProfileData(new ProfileData("authorId", "author", "bio", "image", true));
 
     assertThat(second, is(first));
     assertThat(second.hashCode(), is(first.hashCode()));
