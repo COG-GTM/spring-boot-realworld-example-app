@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import io.spring.DateTimes;
 import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.ArticleQueryService;
@@ -20,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,8 +63,8 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             body,
             false,
             0,
-            new DateTime(),
-            new DateTime(),
+            DateTimes.now(),
+            DateTimes.now(),
             tagList,
             new ProfileData("userid", user.getUsername(), user.getBio(), user.getImage(), false));
 
@@ -132,8 +132,8 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             body,
             false,
             0,
-            new DateTime(),
-            new DateTime(),
+            DateTimes.now(),
+            DateTimes.now(),
             asList(tagList),
             new ProfileData("userid", user.getUsername(), user.getBio(), user.getImage(), false));
 
