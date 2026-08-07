@@ -60,9 +60,8 @@ class TestStackJdk17Test {
     assertEquals(Optional.of(user), userRepository.findByUsername("johnjacob"));
     verify(userRepository).findByUsername("johnjacob");
 
-    // Subclassing a concrete class is the encapsulation-sensitive path: byte-buddy has to define
-    // the
-    // proxy against the target's own package rather than just implement an interface.
+    // Subclassing a concrete class is the encapsulation-sensitive path: byte-buddy defines the
+    // proxy against the target's own package instead of merely implementing an interface.
     ArticleQueryService articleQueryService = mock(ArticleQueryService.class);
     when(articleQueryService.findById(eq("article-id"), eq(user))).thenReturn(Optional.empty());
     assertEquals(Optional.<ArticleData>empty(), articleQueryService.findById("article-id", user));
