@@ -21,17 +21,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Guards the Netflix DGS codegen output against the GraphQL schema. The codegen plugin is
@@ -39,7 +41,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * sources; these assertions fail loudly if the generated {@code io.spring.graphql.types} classes
  * stop matching {@code schema.graphqls}.
  */
+@ActiveProfiles("test")
 @SpringBootTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 public class DgsCodegenSchemaTest {
 
   private static final String GENERATED_TYPES_PACKAGE = "io.spring.graphql.types";
@@ -175,37 +179,33 @@ public class DgsCodegenSchemaTest {
     List<String> tags = dgsQueryExecutor.executeAndExtractJsonPath("{ tags }", "data.tags");
     assertThat(tags).isNotNull();
 
-    // UserRepository has no delete, and the suite shares an on-disk database, so keep the seeded
-    // rows unique per run rather than colliding on the users/articles unique constraints.
-    String seed = UUID.randomUUID().toString().substring(0, 8);
-    String title = "DGS codegen round trip " + seed;
     io.spring.core.user.User author =
         new io.spring.core.user.User(
-            "dgs-codegen-" + seed + "@example.com", "dgs-codegen-" + seed, "password", "", "");
+            "dgs-codegen@example.com", "dgs-codegen-user", "password", "", "");
     userRepository.save(author);
     io.spring.core.article.Article seeded =
         new io.spring.core.article.Article(
-            title, "description", "body", List.of("dgs-codegen"), author.getId());
+            "DGS codegen round trip",
+            "description",
+            "body",
+            List.of("dgs-codegen"),
+            author.getId());
     articleRepository.save(seeded);
 
-    try {
-      // Deserializing into the generated Article proves the runtime response binds to the codegen
-      // output field-for-field, not merely that the query executed without errors.
-      Article article =
-          dgsQueryExecutor.executeAndExtractJsonPathAsObject(
-              String.format(
-                  "{ article(slug: \"%s\") { title slug description body tagList favorited"
-                      + " favoritesCount } }",
-                  seeded.getSlug()),
-              "data.article",
-              Article.class);
-      assertThat(article.getTitle()).isEqualTo(title);
-      assertThat(article.getSlug()).isEqualTo(seeded.getSlug());
-      assertThat(article.getBody()).isEqualTo("body");
-      assertThat(article.getTagList()).containsExactly("dgs-codegen");
-      assertThat(article.getFavoritesCount()).isZero();
-    } finally {
-      articleRepository.remove(seeded);
-    }
+    // Deserializing into the generated Article proves the runtime response binds to the codegen
+    // output field-for-field, not merely that the query executed without errors.
+    Article article =
+        dgsQueryExecutor.executeAndExtractJsonPathAsObject(
+            String.format(
+                "{ article(slug: \"%s\") { title slug description body tagList favorited"
+                    + " favoritesCount } }",
+                seeded.getSlug()),
+            "data.article",
+            Article.class);
+    assertThat(article.getTitle()).isEqualTo("DGS codegen round trip");
+    assertThat(article.getSlug()).isEqualTo(seeded.getSlug());
+    assertThat(article.getBody()).isEqualTo("body");
+    assertThat(article.getTagList()).containsExactly("dgs-codegen");
+    assertThat(article.getFavoritesCount()).isZero();
   }
 }
