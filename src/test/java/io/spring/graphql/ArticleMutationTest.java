@@ -242,7 +242,7 @@ public class ArticleMutationTest {
     DataFetcherResult<ArticlePayload> result = articleMutation.unfavoriteArticle("title");
 
     verify(articleFavoriteRepository, never()).remove(any());
-    assertThat(result.getData()).isNotNull();
+    assertThat((Article) result.getLocalContext()).isSameAs(article);
   }
 
   @Test
