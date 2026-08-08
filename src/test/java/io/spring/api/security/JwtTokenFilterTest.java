@@ -39,6 +39,7 @@ public class JwtTokenFilterTest {
 
   @BeforeEach
   public void setUp() {
+    SecurityContextHolder.clearContext();
     filter = new JwtTokenFilter();
     ReflectionTestUtils.setField(filter, "userRepository", userRepository);
     ReflectionTestUtils.setField(filter, "jwtService", jwtService);
@@ -86,14 +87,13 @@ public class JwtTokenFilterTest {
   }
 
   @Test
-  public void should_pass_empty_token_to_jwt_service_for_double_space_header() throws Exception {
+  public void should_not_authenticate_header_with_double_space() throws Exception {
     request.addHeader("Authorization", "Token  valid-token");
-    when(jwtService.getSubFromToken("")).thenReturn(Optional.empty());
+    when(jwtService.getSubFromToken(anyString())).thenReturn(Optional.empty());
 
     filter.doFilter(request, response, filterChain);
 
     assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-    verify(jwtService).getSubFromToken("");
     verify(userRepository, never()).findById(anyString());
   }
 

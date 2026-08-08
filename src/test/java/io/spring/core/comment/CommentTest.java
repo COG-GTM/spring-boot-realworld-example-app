@@ -16,7 +16,9 @@ public class CommentTest {
     assertThat(comment.getBody()).isEqualTo("content");
     assertThat(comment.getUserId()).isEqualTo("user-id");
     assertThat(comment.getArticleId()).isEqualTo("article-id");
+    DateTime after = new DateTime().plusSeconds(1);
     assertThat(comment.getCreatedAt().isAfter(before)).isTrue();
+    assertThat(comment.getCreatedAt().isBefore(after)).isTrue();
   }
 
   @Test
