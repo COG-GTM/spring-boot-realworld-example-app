@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -110,5 +112,20 @@ public class JwtTokenFilterTest {
     assertThat(authentication.getAuthorities()).isEmpty();
     assertThat(authentication.getDetails()).isInstanceOf(WebAuthenticationDetails.class);
     assertThat(filterChain.getRequest()).isSameAs(request);
+  }
+
+  @Test
+  public void should_not_overwrite_existing_authentication() throws Exception {
+    Authentication existing =
+        new UsernamePasswordAuthenticationToken("existing", null, Collections.emptyList());
+    SecurityContextHolder.getContext().setAuthentication(existing);
+    request.addHeader("Authorization", "Token valid-token");
+    when(jwtService.getSubFromToken("valid-token")).thenReturn(Optional.of("123"));
+
+    filter.doFilter(request, response, filterChain);
+
+    assertThat(SecurityContextHolder.getContext().getAuthentication()).isSameAs(existing);
+    assertThat(filterChain.getRequest()).isSameAs(request);
+    verify(userRepository, never()).findById(anyString());
   }
 }
