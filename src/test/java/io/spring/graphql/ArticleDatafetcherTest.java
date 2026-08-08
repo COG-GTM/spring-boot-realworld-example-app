@@ -106,11 +106,13 @@ public class ArticleDatafetcherTest {
     return captor.getValue();
   }
 
-  private CursorPageParameter<DateTime> capturedRecentPageParameter() {
+  private CursorPageParameter<DateTime> capturedRecentPageParameter(
+      String tag, String authoredBy, String favoritedBy, User currentUser) {
     ArgumentCaptor<CursorPageParameter<DateTime>> captor =
         ArgumentCaptor.forClass(CursorPageParameter.class);
     verify(articleQueryService)
-        .findRecentArticlesWithCursor(any(), any(), any(), captor.capture(), any());
+        .findRecentArticlesWithCursor(
+            eq(tag), eq(authoredBy), eq(favoritedBy), captor.capture(), eq(currentUser));
     return captor.getValue();
   }
 
@@ -244,7 +246,8 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.userFavorites(3, "100", null, null, dgsDataFetchingEnvironment);
 
-    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    CursorPageParameter<DateTime> pageParameter =
+        capturedRecentPageParameter(null, null, "john", user);
     assertThat(pageParameter.getDirection()).isEqualTo(Direction.NEXT);
     assertThat(pageParameter.getLimit()).isEqualTo(3);
     assertThat(pageParameter.getCursor().getMillis()).isEqualTo(100L);
@@ -265,7 +268,8 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.userFavorites(null, null, 3, "9000", dgsDataFetchingEnvironment);
 
-    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    CursorPageParameter<DateTime> pageParameter =
+        capturedRecentPageParameter(null, null, "john", null);
     assertThat(pageParameter.getDirection()).isEqualTo(Direction.PREV);
     assertThat(pageParameter.getCursor().getMillis()).isEqualTo(9000L);
     assertThat(result.getData().getPageInfo().isHasPreviousPage()).isTrue();
@@ -293,7 +297,8 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.userArticles(4, null, null, null, dgsDataFetchingEnvironment);
 
-    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    CursorPageParameter<DateTime> pageParameter =
+        capturedRecentPageParameter(null, "john", null, user);
     assertThat(pageParameter.getDirection()).isEqualTo(Direction.NEXT);
     assertThat(pageParameter.getLimit()).isEqualTo(4);
     assertThat(pageParameter.getCursor()).isNull();
@@ -313,7 +318,8 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.userArticles(null, null, 4, "12000", dgsDataFetchingEnvironment);
 
-    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    CursorPageParameter<DateTime> pageParameter =
+        capturedRecentPageParameter(null, "john", null, user);
     assertThat(pageParameter.getDirection()).isEqualTo(Direction.PREV);
     assertThat(pageParameter.getCursor().getMillis()).isEqualTo(12000L);
     assertThat(result.getData().getPageInfo().isHasPreviousPage()).isTrue();
@@ -342,7 +348,8 @@ public class ArticleDatafetcherTest {
         articleDatafetcher.getArticles(
             2, "12000", null, null, "john", "jane", "java", dgsDataFetchingEnvironment);
 
-    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    CursorPageParameter<DateTime> pageParameter =
+        capturedRecentPageParameter("java", "john", "jane", user);
     assertThat(pageParameter.getDirection()).isEqualTo(Direction.NEXT);
     assertThat(pageParameter.getLimit()).isEqualTo(2);
     assertThat(pageParameter.getCursor().getMillis()).isEqualTo(12000L);
@@ -364,7 +371,8 @@ public class ArticleDatafetcherTest {
         articleDatafetcher.getArticles(
             null, null, 1, "16000", null, null, null, dgsDataFetchingEnvironment);
 
-    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    CursorPageParameter<DateTime> pageParameter =
+        capturedRecentPageParameter(null, null, null, null);
     assertThat(pageParameter.getDirection()).isEqualTo(Direction.PREV);
     assertThat(pageParameter.getLimit()).isEqualTo(1);
     assertThat(pageParameter.getCursor().getMillis()).isEqualTo(16000L);
