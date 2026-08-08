@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
@@ -84,8 +85,8 @@ public class ArticleDatafetcherTest {
         "article-id-" + slug,
         slug,
         "Title of " + slug,
-        "description",
-        "body",
+        "description of " + slug,
+        "body of " + slug,
         true,
         3,
         new DateTime(updatedAtMillis, DateTimeZone.UTC),
@@ -96,6 +97,21 @@ public class ArticleDatafetcherTest {
 
   private CursorPager<ArticleData> pagerOf(Direction direction, ArticleData... data) {
     return new CursorPager<>(Arrays.asList(data), direction, true);
+  }
+
+  private CursorPageParameter<DateTime> capturedFeedPageParameter(User expectedUser) {
+    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService).findUserFeedWithCursor(eq(expectedUser), captor.capture());
+    return captor.getValue();
+  }
+
+  private CursorPageParameter<DateTime> capturedRecentPageParameter() {
+    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService)
+        .findRecentArticlesWithCursor(any(), any(), any(), captor.capture(), any());
+    return captor.getValue();
   }
 
   @Test
@@ -115,13 +131,10 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.getFeed(10, "500", null, null, dgsDataFetchingEnvironment);
 
-    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
-        ArgumentCaptor.forClass(CursorPageParameter.class);
-    org.mockito.Mockito.verify(articleQueryService)
-        .findUserFeedWithCursor(eq(user), captor.capture());
-    assertThat(captor.getValue().getDirection()).isEqualTo(Direction.NEXT);
-    assertThat(captor.getValue().getLimit()).isEqualTo(10);
-    assertThat(captor.getValue().getCursor().getMillis()).isEqualTo(500L);
+    CursorPageParameter<DateTime> pageParameter = capturedFeedPageParameter(user);
+    assertThat(pageParameter.getDirection()).isEqualTo(Direction.NEXT);
+    assertThat(pageParameter.getLimit()).isEqualTo(10);
+    assertThat(pageParameter.getCursor().getMillis()).isEqualTo(500L);
 
     ArticlesConnection connection = result.getData();
     assertThat(connection.getEdges()).hasSize(1);
@@ -150,12 +163,10 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.getFeed(null, null, 5, "3000", dgsDataFetchingEnvironment);
 
-    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
-        ArgumentCaptor.forClass(CursorPageParameter.class);
-    org.mockito.Mockito.verify(articleQueryService)
-        .findUserFeedWithCursor(isNull(), captor.capture());
-    assertThat(captor.getValue().getDirection()).isEqualTo(Direction.PREV);
-    assertThat(captor.getValue().getCursor().getMillis()).isEqualTo(3000L);
+    CursorPageParameter<DateTime> pageParameter = capturedFeedPageParameter(null);
+    assertThat(pageParameter.getDirection()).isEqualTo(Direction.PREV);
+    assertThat(pageParameter.getLimit()).isEqualTo(5);
+    assertThat(pageParameter.getCursor().getMillis()).isEqualTo(3000L);
 
     assertThat(result.getData().getEdges()).hasSize(1);
     assertThat(result.getData().getPageInfo().isHasNextPage()).isFalse();
@@ -233,6 +244,10 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.userFavorites(3, "100", null, null, dgsDataFetchingEnvironment);
 
+    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    assertThat(pageParameter.getDirection()).isEqualTo(Direction.NEXT);
+    assertThat(pageParameter.getLimit()).isEqualTo(3);
+    assertThat(pageParameter.getCursor().getMillis()).isEqualTo(100L);
     assertThat(result.getData().getEdges()).hasSize(1);
     assertThat(result.getData().getEdges().get(0).getNode().getSlug()).isEqualTo("fav-one");
     assertThat(result.getData().getPageInfo().isHasNextPage()).isTrue();
@@ -250,6 +265,9 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.userFavorites(null, null, 3, "9000", dgsDataFetchingEnvironment);
 
+    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    assertThat(pageParameter.getDirection()).isEqualTo(Direction.PREV);
+    assertThat(pageParameter.getCursor().getMillis()).isEqualTo(9000L);
     assertThat(result.getData().getPageInfo().isHasPreviousPage()).isTrue();
     assertThat((Map<String, ArticleData>) result.getLocalContext()).containsOnlyKeys("fav-two");
   }
@@ -275,6 +293,10 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.userArticles(4, null, null, null, dgsDataFetchingEnvironment);
 
+    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    assertThat(pageParameter.getDirection()).isEqualTo(Direction.NEXT);
+    assertThat(pageParameter.getLimit()).isEqualTo(4);
+    assertThat(pageParameter.getCursor()).isNull();
     assertThat(result.getData().getEdges().get(0).getNode().getSlug()).isEqualTo("own-one");
     assertThat(result.getData().getEdges().get(0).getCursor()).isEqualTo("10000");
   }
@@ -291,6 +313,9 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<ArticlesConnection> result =
         articleDatafetcher.userArticles(null, null, 4, "12000", dgsDataFetchingEnvironment);
 
+    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    assertThat(pageParameter.getDirection()).isEqualTo(Direction.PREV);
+    assertThat(pageParameter.getCursor().getMillis()).isEqualTo(12000L);
     assertThat(result.getData().getPageInfo().isHasPreviousPage()).isTrue();
     assertThat(result.getData().getPageInfo().isHasNextPage()).isFalse();
   }
@@ -317,6 +342,10 @@ public class ArticleDatafetcherTest {
         articleDatafetcher.getArticles(
             2, "12000", null, null, "john", "jane", "java", dgsDataFetchingEnvironment);
 
+    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    assertThat(pageParameter.getDirection()).isEqualTo(Direction.NEXT);
+    assertThat(pageParameter.getLimit()).isEqualTo(2);
+    assertThat(pageParameter.getCursor().getMillis()).isEqualTo(12000L);
     assertThat(result.getData().getEdges()).hasSize(2);
     assertThat(result.getData().getPageInfo().getStartCursor().getValue()).isEqualTo("13000");
     assertThat(result.getData().getPageInfo().getEndCursor().getValue()).isEqualTo("14000");
@@ -335,8 +364,33 @@ public class ArticleDatafetcherTest {
         articleDatafetcher.getArticles(
             null, null, 1, "16000", null, null, null, dgsDataFetchingEnvironment);
 
+    CursorPageParameter<DateTime> pageParameter = capturedRecentPageParameter();
+    assertThat(pageParameter.getDirection()).isEqualTo(Direction.PREV);
+    assertThat(pageParameter.getLimit()).isEqualTo(1);
+    assertThat(pageParameter.getCursor().getMillis()).isEqualTo(16000L);
     assertThat(result.getData().getEdges().get(0).getNode().getSlug()).isEqualTo("back-one");
     assertThat(result.getData().getPageInfo().isHasPreviousPage()).isTrue();
+  }
+
+  @Test
+  public void should_report_no_next_page_when_pager_has_no_extra() {
+    loginAs(user);
+    when(articleQueryService.findRecentArticlesWithCursor(
+            isNull(), isNull(), isNull(), any(), eq(user)))
+        .thenReturn(
+            new CursorPager<>(
+                Collections.singletonList(articleData("last-page", 20000L)),
+                Direction.NEXT,
+                false));
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.getArticles(
+            5, null, null, null, null, null, null, dgsDataFetchingEnvironment);
+
+    assertThat(result.getData().getEdges()).hasSize(1);
+    assertThat(result.getData().getPageInfo().isHasNextPage()).isFalse();
+    assertThat(result.getData().getPageInfo().isHasPreviousPage()).isFalse();
+    assertThat(result.getData().getPageInfo().getStartCursor().getValue()).isEqualTo("20000");
   }
 
   @Test
@@ -369,8 +423,8 @@ public class ArticleDatafetcherTest {
     DataFetcherResult<Article> result = articleDatafetcher.getArticle(dataFetchingEnvironment);
 
     assertThat(result.getData().getSlug()).isEqualTo("payload-slug");
-    assertThat(result.getData().getBody()).isEqualTo("body");
-    assertThat(result.getData().getDescription()).isEqualTo("description");
+    assertThat(result.getData().getBody()).isEqualTo("body of payload-slug");
+    assertThat(result.getData().getDescription()).isEqualTo("description of payload-slug");
     assertThat((Map<String, Object>) result.getLocalContext())
         .containsEntry("payload-slug", articleData);
   }
