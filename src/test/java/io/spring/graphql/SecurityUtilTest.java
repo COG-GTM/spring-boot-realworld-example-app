@@ -1,6 +1,7 @@
 package io.spring.graphql;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.spring.core.user.User;
 import java.util.Collections;
@@ -40,6 +41,13 @@ public class SecurityUtilTest {
                 "key", "anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS")));
 
     assertThat(SecurityUtil.getCurrentUser()).isEmpty();
+  }
+
+  @Test
+  public void should_fail_when_no_authentication_is_present() {
+    SecurityContextHolder.clearContext();
+
+    assertThatThrownBy(SecurityUtil::getCurrentUser).isInstanceOf(NullPointerException.class);
   }
 
   @Test
