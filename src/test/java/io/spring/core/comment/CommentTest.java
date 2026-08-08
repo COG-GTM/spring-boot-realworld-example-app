@@ -22,13 +22,13 @@ public class CommentTest {
   @Test
   public void should_use_id_for_equality() {
     Comment one = new Comment("content", "user-id", "article-id");
-    Comment same = new Comment("other content", "other-user", "other-article");
-    Comment copy = new Comment();
+    Comment other = new Comment("other content", "other-user", "other-article");
+    Comment empty = new Comment();
 
-    assertThat(one).isNotEqualTo(same);
+    assertThat(one).isNotEqualTo(other);
     assertThat(one).isEqualTo(one);
     assertThat(one.hashCode()).isEqualTo(one.hashCode());
-    assertThat(copy.getId()).isNull();
-    assertThat(copy).isNotEqualTo(one);
+    assertThat(empty.getId()).isNull();
+    assertThat(empty).isNotEqualTo(one);
   }
 }

@@ -2,8 +2,11 @@ package io.spring;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.StringWriter;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.Test;
@@ -32,27 +35,18 @@ public class JacksonCustomizationsTest {
 
   @Test
   public void should_serialize_null_date_time_as_json_null() throws Exception {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new JacksonCustomizations.RealWorldModules());
+    StringWriter writer = new StringWriter();
+    JsonGenerator generator = new JsonFactory().createGenerator(writer);
 
-    assertThat(mapper.writeValueAsString(new DateTimeHolder(null))).isEqualTo("{\"time\":null}");
+    new JacksonCustomizations.DateTimeSerializer().serialize(null, generator, null);
+    generator.flush();
+
+    assertThat(writer.toString()).isEqualTo("null");
   }
 
   @Test
   public void should_provide_module_bean() {
     Module module = new JacksonCustomizations().realWorldModules();
     assertThat(module).isInstanceOf(JacksonCustomizations.RealWorldModules.class);
-  }
-
-  public static class DateTimeHolder {
-    private final DateTime time;
-
-    public DateTimeHolder(DateTime time) {
-      this.time = time;
-    }
-
-    public DateTime getTime() {
-      return time;
-    }
   }
 }
