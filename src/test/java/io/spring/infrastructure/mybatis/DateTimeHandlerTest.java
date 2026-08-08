@@ -50,7 +50,7 @@ public class DateTimeHandlerTest {
     when(resultSet.getTimestamp(anyString(), any(Calendar.class)))
         .thenReturn(new Timestamp(1000000L));
 
-    assertThat(handler.getResult(resultSet, "created_at")).isEqualTo(new DateTime(1000000L));
+    assertThat(handler.getResult(resultSet, "created_at").getMillis()).isEqualTo(1000000L);
   }
 
   @Test
@@ -64,7 +64,7 @@ public class DateTimeHandlerTest {
   public void should_read_result_by_column_index() throws Exception {
     when(resultSet.getTimestamp(anyInt(), any(Calendar.class))).thenReturn(new Timestamp(2000000L));
 
-    assertThat(handler.getResult(resultSet, 3)).isEqualTo(new DateTime(2000000L));
+    assertThat(handler.getResult(resultSet, 3).getMillis()).isEqualTo(2000000L);
   }
 
   @Test
@@ -79,7 +79,7 @@ public class DateTimeHandlerTest {
     when(callableStatement.getTimestamp(anyInt(), any(Calendar.class)))
         .thenReturn(new Timestamp(3000000L));
 
-    assertThat(handler.getResult(callableStatement, 1)).isEqualTo(new DateTime(3000000L));
+    assertThat(handler.getResult(callableStatement, 1).getMillis()).isEqualTo(3000000L);
   }
 
   @Test

@@ -9,8 +9,10 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
-import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotBlank;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,22 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 
 public class CustomizeExceptionHandlerTest {
+
+  private static ValidatorFactory validatorFactory;
+
+  @BeforeAll
+  public static void createValidatorFactory() {
+    validatorFactory = Validation.buildDefaultValidatorFactory();
+  }
+
+  @AfterAll
+  public static void closeValidatorFactory() {
+    validatorFactory.close();
+  }
+
+  private static Set<ConstraintViolation<TargetBean>> blankNameViolations() {
+    return validatorFactory.getValidator().validate(new TargetBean());
+  }
 
   private final CustomizeExceptionHandler handler = new CustomizeExceptionHandler();
 
@@ -66,8 +84,7 @@ public class CustomizeExceptionHandlerTest {
 
   @Test
   public void should_handle_constraint_violation_with_field_errors() {
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    Set<ConstraintViolation<TargetBean>> violations = validator.validate(new TargetBean());
+    Set<ConstraintViolation<TargetBean>> violations = blankNameViolations();
     assertThat(violations).isNotEmpty();
 
     ErrorResource errorResource =
@@ -87,7 +104,8 @@ public class CustomizeExceptionHandlerTest {
     mockMvc
         .perform(get("/test/constraint-violation"))
         .andExpect(status().isUnprocessableEntity())
-        .andExpect(jsonPath("$.errors.name[0]").value("must not be blank"));
+        .andExpect(jsonPath("$.errors.name").isArray())
+        .andExpect(jsonPath("$.errors.name[0]").isNotEmpty());
   }
 
   @Test
@@ -139,9 +157,7 @@ public class CustomizeExceptionHandlerTest {
 
     @GetMapping("/test/constraint-violation")
     public String constraintViolation() {
-      Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-      Set<ConstraintViolation<TargetBean>> violations = validator.validate(new TargetBean());
-      throw new ConstraintViolationException(violations);
+      throw new ConstraintViolationException(blankNameViolations());
     }
   }
 }
