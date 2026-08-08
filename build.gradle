@@ -11,6 +11,12 @@ jacoco {
     toolVersion = '0.8.11'
 }
 
+ext.generatedClassExcludes = [
+    'io/spring/graphql/types/**',
+    'io/spring/graphql/DgsConstants*',
+    'io/spring/graphql/client/**',
+]
+
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 targetCompatibility = '11'
@@ -72,24 +78,20 @@ tasks.named('jacocoTestReport') {
         xml.required = true
         html.required = true
     }
-    classDirectories.setFrom(files(sourceSets.main.output.classesDirs.collect {
-        fileTree(dir: it, exclude: [
-            'io/spring/graphql/types/**',
-            'io/spring/graphql/DgsConstants*',
-            'io/spring/graphql/client/**',
-        ])
-    }))
+    classDirectories.setFrom(provider {
+        files(sourceSets.main.output.classesDirs.collect {
+            fileTree(dir: it, exclude: generatedClassExcludes)
+        })
+    })
 }
 
 tasks.named('jacocoTestCoverageVerification') {
     dependsOn tasks.named('test')
-    classDirectories.setFrom(files(sourceSets.main.output.classesDirs.collect {
-        fileTree(dir: it, exclude: [
-            'io/spring/graphql/types/**',
-            'io/spring/graphql/DgsConstants*',
-            'io/spring/graphql/client/**',
-        ])
-    }))
+    classDirectories.setFrom(provider {
+        files(sourceSets.main.output.classesDirs.collect {
+            fileTree(dir: it, exclude: generatedClassExcludes)
+        })
+    })
     violationRules {
         rule {
             limit {
