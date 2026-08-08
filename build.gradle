@@ -83,6 +83,13 @@ tasks.named('jacocoTestReport') {
 
 tasks.named('jacocoTestCoverageVerification') {
     dependsOn tasks.named('test')
+    classDirectories.setFrom(files(sourceSets.main.output.classesDirs.collect {
+        fileTree(dir: it, exclude: [
+            'io/spring/graphql/types/**',
+            'io/spring/graphql/DgsConstants*',
+            'io/spring/graphql/client/**',
+        ])
+    }))
     violationRules {
         rule {
             limit {
@@ -92,6 +99,10 @@ tasks.named('jacocoTestCoverageVerification') {
             }
         }
     }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
 }
 
 tasks.named('clean') {
