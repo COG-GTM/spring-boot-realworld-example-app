@@ -4,7 +4,18 @@ plugins {
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
+    id 'jacoco'
 }
+
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+ext.generatedClassExcludes = [
+    'io/spring/graphql/types/**',
+    'io/spring/graphql/DgsConstants*',
+    'io/spring/graphql/client/**',
+]
 
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
@@ -58,6 +69,42 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    classDirectories.setFrom(provider {
+        files(sourceSets.main.output.classesDirs.collect {
+            fileTree(dir: it, exclude: generatedClassExcludes)
+        })
+    })
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('test')
+    classDirectories.setFrom(provider {
+        files(sourceSets.main.output.classesDirs.collect {
+            fileTree(dir: it, exclude: generatedClassExcludes)
+        })
+    })
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.50
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
 }
 
 tasks.named('clean') {
