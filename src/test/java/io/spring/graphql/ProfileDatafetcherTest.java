@@ -133,7 +133,8 @@ public class ProfileDatafetcherTest {
     when(profileQueryService.findByUsername("alice", null))
         .thenReturn(Optional.of(profileData("alice")));
 
-    ProfilePayload payload = profileDatafetcher.queryProfile("alice", dfe);
+    // the username is read from the environment argument, not from the method parameter
+    ProfilePayload payload = profileDatafetcher.queryProfile("ignored", dfe);
 
     assertThat(payload.getProfile().getUsername()).isEqualTo("alice");
     assertThat(payload.getProfile().getBio()).isEqualTo("bio");

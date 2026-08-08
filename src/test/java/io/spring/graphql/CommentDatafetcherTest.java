@@ -56,18 +56,22 @@ public class CommentDatafetcherTest {
   }
 
   private CommentData commentData(String id, long millis) {
+    return commentData(id, millis, millis);
+  }
+
+  private CommentData commentData(String id, long createdMillis, long updatedMillis) {
     return new CommentData(
         id,
         "body of " + id,
         "article-id",
-        new DateTime(millis),
-        new DateTime(millis),
+        new DateTime(createdMillis),
+        new DateTime(updatedMillis),
         new ProfileData("user-id", "alice", "bio", "image", false));
   }
 
   @Test
   public void should_build_comment_from_local_context() {
-    CommentData data = commentData("comment-1", 1000L);
+    CommentData data = commentData("comment-1", 1000L, 5000L);
     when(delegate.<CommentData>getLocalContext()).thenReturn(data);
 
     DataFetcherResult<Comment> result = new CommentDatafetcher(commentQueryService).getComment(dfe);
@@ -75,6 +79,7 @@ public class CommentDatafetcherTest {
     assertThat(result.getData().getId()).isEqualTo("comment-1");
     assertThat(result.getData().getBody()).isEqualTo("body of comment-1");
     assertThat(result.getData().getCreatedAt()).isEqualTo("1970-01-01T00:00:01.000Z");
+    // both timestamps are built from createdAt, so updatedAt mirrors the creation time
     assertThat(result.getData().getUpdatedAt()).isEqualTo("1970-01-01T00:00:01.000Z");
     assertThat(((Map<?, ?>) result.getLocalContext()).get("comment-1")).isSameAs(data);
   }
