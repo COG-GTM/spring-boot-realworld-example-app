@@ -2,6 +2,8 @@ package io.spring.application.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 public class UserWithTokenTest {
@@ -21,13 +23,9 @@ public class UserWithTokenTest {
 
   @Test
   public void should_not_expose_the_user_id() {
-    UserData userData = new UserData("user-id", "jane@example.com", "jane", "bio", "image");
-
-    UserWithToken userWithToken = new UserWithToken(userData, "token");
-
-    assertThat(userWithToken)
-        .extracting("email", "username", "bio", "image", "token")
-        .doesNotContain("user-id");
+    assertThat(Arrays.stream(UserWithToken.class.getDeclaredFields()).filter(f -> !f.isSynthetic()))
+        .extracting(Field::getName)
+        .containsExactlyInAnyOrder("email", "username", "bio", "image", "token");
   }
 
   @Test
