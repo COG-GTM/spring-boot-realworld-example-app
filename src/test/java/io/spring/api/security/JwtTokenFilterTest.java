@@ -73,6 +73,31 @@ public class JwtTokenFilterTest {
   }
 
   @Test
+  public void should_accept_token_regardless_of_scheme_prefix() throws Exception {
+    User user = new User("john@example.com", "john", "123", "bio", "image");
+    request.addHeader("Authorization", "Bearer valid-token");
+    when(jwtService.getSubFromToken("valid-token")).thenReturn(Optional.of(user.getId()));
+    when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+    filter.doFilter(request, response, filterChain);
+
+    assertThat(SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+        .isSameAs(user);
+  }
+
+  @Test
+  public void should_pass_empty_token_to_jwt_service_for_double_space_header() throws Exception {
+    request.addHeader("Authorization", "Token  valid-token");
+    when(jwtService.getSubFromToken("")).thenReturn(Optional.empty());
+
+    filter.doFilter(request, response, filterChain);
+
+    assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    verify(jwtService).getSubFromToken("");
+    verify(userRepository, never()).findById(anyString());
+  }
+
+  @Test
   public void should_not_authenticate_with_invalid_token() throws Exception {
     request.addHeader("Authorization", "Token invalid-token");
     when(jwtService.getSubFromToken("invalid-token")).thenReturn(Optional.empty());
