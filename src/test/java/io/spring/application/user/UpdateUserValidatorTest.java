@@ -15,14 +15,12 @@ import javax.validation.ConstraintValidatorContext.ConstraintViolationBuilder.No
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 public class UpdateUserValidatorTest {
 
   @Mock private UserRepository userRepository;
@@ -38,10 +36,12 @@ public class UpdateUserValidatorTest {
     validator = new UpdateUserValidator();
     ReflectionTestUtils.setField(validator, "userRepository", userRepository);
     targetUser = new User("target@example.com", "target", "123", "bio", "image");
-    when(context.buildConstraintViolationWithTemplate(org.mockito.ArgumentMatchers.anyString()))
+  }
+
+  private void stubViolationBuilding() {
+    when(context.buildConstraintViolationWithTemplate(ArgumentMatchers.anyString()))
         .thenReturn(violationBuilder);
-    when(violationBuilder.addPropertyNode(org.mockito.ArgumentMatchers.anyString()))
-        .thenReturn(nodeBuilder);
+    when(violationBuilder.addPropertyNode(ArgumentMatchers.anyString())).thenReturn(nodeBuilder);
     when(nodeBuilder.addConstraintViolation()).thenReturn(context);
   }
 
@@ -72,6 +72,7 @@ public class UpdateUserValidatorTest {
   @Test
   public void should_be_invalid_when_email_belongs_to_another_user() {
     User other = new User("other@example.com", "other", "123", "", "");
+    stubViolationBuilding();
     when(userRepository.findByEmail("other@example.com")).thenReturn(Optional.of(other));
     when(userRepository.findByUsername("new")).thenReturn(Optional.empty());
 
@@ -87,6 +88,7 @@ public class UpdateUserValidatorTest {
   @Test
   public void should_be_invalid_when_username_belongs_to_another_user() {
     User other = new User("other@example.com", "other", "123", "", "");
+    stubViolationBuilding();
     when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
     when(userRepository.findByUsername("other")).thenReturn(Optional.of(other));
 
@@ -101,6 +103,7 @@ public class UpdateUserValidatorTest {
   @Test
   public void should_report_both_violations_when_email_and_username_are_taken() {
     User other = new User("other@example.com", "other", "123", "", "");
+    stubViolationBuilding();
     when(userRepository.findByEmail("other@example.com")).thenReturn(Optional.of(other));
     when(userRepository.findByUsername("other")).thenReturn(Optional.of(other));
 
