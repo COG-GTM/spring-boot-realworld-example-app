@@ -62,9 +62,11 @@ class UserMutationTest {
     }
   }
 
+  private static final Validator VALIDATOR =
+      Validation.buildDefaultValidatorFactory().getValidator();
+
   private static ConstraintViolationException violationException() {
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    Set<ConstraintViolation<Payload>> violations = validator.validate(new Payload(""));
+    Set<ConstraintViolation<Payload>> violations = VALIDATOR.validate(new Payload(""));
     return new ConstraintViolationException(violations);
   }
 

@@ -44,9 +44,11 @@ class GraphQLCustomizeExceptionHandlerTest {
     }
   }
 
+  private static final Validator VALIDATOR =
+      Validation.buildDefaultValidatorFactory().getValidator();
+
   private static ConstraintViolationException violationException(String username, String email) {
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    Set<ConstraintViolation<Payload>> violations = validator.validate(new Payload(username, email));
+    Set<ConstraintViolation<Payload>> violations = VALIDATOR.validate(new Payload(username, email));
     return new ConstraintViolationException(violations);
   }
 
@@ -122,10 +124,12 @@ class GraphQLCustomizeExceptionHandlerTest {
 
   @Test
   void should_group_multiple_messages_for_the_same_field() {
-    Error error = GraphQLCustomizeExceptionHandler.getErrorsAsData(violationException("jake", ""));
+    Error error =
+        GraphQLCustomizeExceptionHandler.getErrorsAsData(violationException("jake", "   "));
 
     assertThat(error.getErrors()).hasSize(1);
     assertThat(error.getErrors().get(0).getKey()).isEqualTo("email");
-    assertThat(error.getErrors().get(0).getValue()).containsExactly("can't be empty");
+    assertThat(error.getErrors().get(0).getValue())
+        .containsExactlyInAnyOrder("can't be empty", "should be an email");
   }
 }
