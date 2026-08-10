@@ -16,15 +16,20 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotBlank;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class GraphQLCustomizeExceptionHandlerTest {
 
+  private static ValidatorFactory validatorFactory;
+  private static Validator validator;
+
   private GraphQLCustomizeExceptionHandler handler;
-  private Validator validator;
 
   static class SampleBean {
     @NotBlank(message = "can't be empty")
@@ -35,10 +40,20 @@ public class GraphQLCustomizeExceptionHandlerTest {
     }
   }
 
+  @BeforeAll
+  public static void setUpValidator() {
+    validatorFactory = Validation.buildDefaultValidatorFactory();
+    validator = validatorFactory.getValidator();
+  }
+
+  @AfterAll
+  public static void tearDownValidator() {
+    validatorFactory.close();
+  }
+
   @BeforeEach
   public void setUp() {
     handler = new GraphQLCustomizeExceptionHandler();
-    validator = Validation.buildDefaultValidatorFactory().getValidator();
   }
 
   private ConstraintViolationException violationException() {

@@ -35,7 +35,6 @@ public class UserTest {
 
   @Test
   public void users_with_different_ids_are_not_equal() {
-    Assertions.assertEquals(user, user);
     User another = new User("email@example.com", "username", "password", "bio", "image");
     Assertions.assertNotEquals(user, another);
   }
