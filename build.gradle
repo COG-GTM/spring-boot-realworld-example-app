@@ -93,10 +93,12 @@ tasks.named('jacocoTestCoverageVerification') {
     classDirectories.setFrom(coveredClassDirectories())
     violationRules {
         rule {
+            // Ratchet: set to the coverage measured on master when JaCoCo was
+            // introduced, so coverage can only go up from here.
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
-                minimum = 0.00
+                minimum = 0.53
             }
         }
     }
