@@ -71,7 +71,8 @@ class ProfileDatafetcherTest {
     DataFetchingEnvironment dfe = mock(DataFetchingEnvironment.class);
     when(dfe.getArgument("username")).thenReturn("john");
 
-    ProfilePayload payload = datafetcher.queryProfile("john", dfe);
+    // The username is read from the environment argument, not from the method parameter.
+    ProfilePayload payload = datafetcher.queryProfile("ignored-parameter", dfe);
 
     Profile profile = payload.getProfile();
     assertThat(profile.getUsername()).isEqualTo("john");

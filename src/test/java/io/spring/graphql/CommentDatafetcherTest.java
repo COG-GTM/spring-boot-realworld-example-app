@@ -40,6 +40,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 class CommentDatafetcherTest {
 
   private static final DateTime CREATED_AT = new DateTime(1600000000000L);
+  private static final DateTime UPDATED_AT = new DateTime(1700000000000L);
 
   private final CommentQueryService commentQueryService = mock(CommentQueryService.class);
   private final CommentDatafetcher datafetcher = new CommentDatafetcher(commentQueryService);
@@ -77,7 +78,7 @@ class CommentDatafetcherTest {
         "comment body " + id,
         "article-id",
         CREATED_AT,
-        CREATED_AT,
+        UPDATED_AT,
         new ProfileData("profile-id", "jake", "bio", "image", false));
   }
 
@@ -104,6 +105,8 @@ class CommentDatafetcherTest {
     assertThat(result.getData().getId()).isEqualTo("comment-id");
     assertThat(result.getData().getBody()).isEqualTo("comment body comment-id");
     assertThat(result.getData().getCreatedAt()).isEqualTo("2020-09-13T12:26:40.000Z");
+    // buildCommentResult derives updatedAt from createdAt, not from CommentData.updatedAt.
+    assertThat(result.getData().getUpdatedAt()).isEqualTo(result.getData().getCreatedAt());
     assertThat(localContextOf(result)).containsEntry("comment-id", comment);
   }
 
