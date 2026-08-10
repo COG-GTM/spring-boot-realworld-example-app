@@ -63,7 +63,7 @@ tasks.named('test') {
 }
 
 jacoco {
-    toolVersion = '0.8.7'
+    toolVersion = '0.8.8'
 }
 
 // DGS codegen output is not meaningfully testable; keep it out of both the report
@@ -100,6 +100,10 @@ tasks.named('jacocoTestCoverageVerification') {
             }
         }
     }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
 }
 
 tasks.named('clean') {
