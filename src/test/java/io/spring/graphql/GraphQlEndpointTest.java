@@ -27,4 +27,17 @@ public class GraphQlEndpointTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data.tags").exists());
   }
+
+  @Test
+  public void should_map_authentication_errors_to_unauthenticated() throws Exception {
+    mockMvc
+        .perform(
+            post("/graphql")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"query\": \"mutation { login(email: \\\"nobody@example.com\\\", password:"
+                        + " \\\"wrong\\\") { user { username } } }\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.errors[0].extensions.errorType").value("UNAUTHENTICATED"));
+  }
 }
