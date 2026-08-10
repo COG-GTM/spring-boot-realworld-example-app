@@ -66,6 +66,18 @@ jacoco {
     toolVersion = '0.8.7'
 }
 
+// DGS codegen output is not meaningfully testable; keep it out of both the report
+// and the verification gate so the two always measure the same classes.
+ext.coveredClassDirectories = {
+    files(sourceSets.main.output.classesDirs.collect {
+        fileTree(dir: it, exclude: [
+            'io/spring/graphql/types/**',
+            'io/spring/graphql/DgsConstants*',
+            'io/spring/graphql/client/**',
+        ])
+    })
+}
+
 tasks.named('jacocoTestReport') {
     dependsOn test
     reports {
@@ -73,17 +85,12 @@ tasks.named('jacocoTestReport') {
         html.required = true
         csv.required = true
     }
-    classDirectories.setFrom(files(sourceSets.main.output.classesDirs.collect {
-        fileTree(dir: it, exclude: [
-            'io/spring/graphql/types/**',
-            'io/spring/graphql/DgsConstants*',
-            'io/spring/graphql/client/**',
-        ])
-    }))
+    classDirectories.setFrom(coveredClassDirectories())
 }
 
 tasks.named('jacocoTestCoverageVerification') {
     dependsOn test
+    classDirectories.setFrom(coveredClassDirectories())
     violationRules {
         rule {
             limit {
