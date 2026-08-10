@@ -35,6 +35,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
 
+    // CSRF protection is intentionally disabled: the API is stateless. Authentication is
+    // established solely from a JWT in the Authorization header (see JwtTokenFilter), the session
+    // creation policy is STATELESS so no session cookie is issued, and CORS disallows credentials.
+    // Without any ambient cookie credential there is nothing for a cross-site request to forge.
+    // Re-enable it (e.g. CookieCsrfTokenRepository) if cookie or session based auth is ever added.
     http.csrf()
         .disable()
         .cors()

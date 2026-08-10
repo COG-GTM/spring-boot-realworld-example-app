@@ -1,0 +1,65 @@
+version: v1.25.0
+# Snyk policy file. Ignores below are reviewed decisions, not silenced defects.
+ignore:
+  'java/DisablesCSRFProtection':
+    - 'src/main/java/io/spring/api/security/WebSecurityConfig.java':
+        reason: >-
+          The API is stateless: authentication is only ever established from a
+          JWT in the Authorization request header (JwtTokenFilter), the session
+          creation policy is STATELESS so no session cookie is issued, and CORS
+          is configured with allowCredentials=false. No endpoint authenticates
+          via a cookie or session, so a browser cannot be tricked into
+          attaching ambient credentials and CSRF tokens add no protection.
+        expires: 2027-08-10T00:00:00.000Z
+        created: 2026-08-10T00:00:00.000Z
+  'java/SpringCSRF':
+    - 'src/main/java/io/spring/api/ArticleApi.java':
+        reason: >-
+          Same root cause as java/DisablesCSRFProtection: stateless JWT
+          (Authorization header) authentication with no cookie or session
+          based auth anywhere in the application.
+        expires: 2027-08-10T00:00:00.000Z
+        created: 2026-08-10T00:00:00.000Z
+    - 'src/main/java/io/spring/api/ArticlesApi.java':
+        reason: >-
+          Same root cause as java/DisablesCSRFProtection: stateless JWT
+          (Authorization header) authentication with no cookie or session
+          based auth anywhere in the application.
+        expires: 2027-08-10T00:00:00.000Z
+        created: 2026-08-10T00:00:00.000Z
+    - 'src/main/java/io/spring/api/CommentsApi.java':
+        reason: >-
+          Same root cause as java/DisablesCSRFProtection: stateless JWT
+          (Authorization header) authentication with no cookie or session
+          based auth anywhere in the application.
+        expires: 2027-08-10T00:00:00.000Z
+        created: 2026-08-10T00:00:00.000Z
+    - 'src/main/java/io/spring/api/CurrentUserApi.java':
+        reason: >-
+          Same root cause as java/DisablesCSRFProtection: stateless JWT
+          (Authorization header) authentication with no cookie or session
+          based auth anywhere in the application.
+        expires: 2027-08-10T00:00:00.000Z
+        created: 2026-08-10T00:00:00.000Z
+    - 'src/main/java/io/spring/api/UsersApi.java':
+        reason: >-
+          Same root cause as java/DisablesCSRFProtection: stateless JWT
+          (Authorization header) authentication with no cookie or session
+          based auth anywhere in the application.
+        expires: 2027-08-10T00:00:00.000Z
+        created: 2026-08-10T00:00:00.000Z
+  'java/HardcodedPassword/test':
+    - 'src/test/java/io/spring/api/UsersApiTest.java':
+        reason: Test fixture credentials, never used outside the test suite.
+        expires: 2027-08-10T00:00:00.000Z
+        created: 2026-08-10T00:00:00.000Z
+  'java/NoHardcodedCredentials/test':
+    - 'src/test/java/io/spring/api/UsersApiTest.java':
+        reason: Test fixture credentials, never used outside the test suite.
+        expires: 2027-08-10T00:00:00.000Z
+        created: 2026-08-10T00:00:00.000Z
+    - 'src/test/java/io/spring/api/CurrentUserApiTest.java':
+        reason: Test fixture credentials, never used outside the test suite.
+        expires: 2027-08-10T00:00:00.000Z
+        created: 2026-08-10T00:00:00.000Z
+patch: {}
