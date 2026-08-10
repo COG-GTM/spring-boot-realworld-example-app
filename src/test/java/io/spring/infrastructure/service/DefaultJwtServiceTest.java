@@ -9,11 +9,14 @@ import org.junit.jupiter.api.Test;
 
 public class DefaultJwtServiceTest {
 
+  private static final String SECRET =
+      "123123123123123123123123123123123123123123123123123123123123";
+
   private JwtService jwtService;
 
   @BeforeEach
   public void setUp() {
-    jwtService = new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+    jwtService = new DefaultJwtService(SECRET, 3600);
   }
 
   @Test
@@ -34,8 +37,9 @@ public class DefaultJwtServiceTest {
 
   @Test
   public void should_get_null_with_expired_jwt() {
+    JwtService expiredJwtService = new DefaultJwtService(SECRET, -3600);
     String token =
-        "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhaXNlbnNpeSIsImV4cCI6MTUwMjE2MTIwNH0.SJB-U60WzxLYNomqLo4G3v3LzFxJKuVrIud8D8Lz3-mgpo9pN1i7C8ikU_jQPJGm8HsC1CquGMI-rSuM7j6LDA";
+        expiredJwtService.toToken(new User("email@email.com", "username", "123", "", ""));
     Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
   }
 }
