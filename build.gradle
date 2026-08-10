@@ -4,6 +4,7 @@ plugins {
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
+    id 'jacoco'
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -58,6 +59,53 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = '0.8.8'
+}
+
+// DGS codegen output is not meaningfully testable; keep it out of both the report
+// and the verification gate so the two always measure the same classes.
+ext.coveredClassDirectories = {
+    files(sourceSets.main.output.classesDirs.collect {
+        fileTree(dir: it, exclude: [
+            'io/spring/graphql/types/**',
+            'io/spring/graphql/DgsConstants*',
+            'io/spring/graphql/client/**',
+        ])
+    })
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = true
+    }
+    classDirectories.setFrom(coveredClassDirectories())
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn test
+    classDirectories.setFrom(coveredClassDirectories())
+    violationRules {
+        rule {
+            // Ratchet: set to the coverage measured on master when JaCoCo was
+            // introduced, so coverage can only go up from here.
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.53
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
 }
 
 tasks.named('clean') {
