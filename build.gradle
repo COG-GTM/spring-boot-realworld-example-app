@@ -69,5 +69,7 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
+    // The datafetchers build graphql.relay.DefaultPageInfo, so the schema's PageInfo must keep
+    // mapping onto the relay type instead of a generated io.spring.graphql.types.PageInfo.
     typeMapping = ['PageInfo': 'graphql.relay.PageInfo']
 }
