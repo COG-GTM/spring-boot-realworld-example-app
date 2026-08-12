@@ -63,6 +63,10 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+tasks.named('bootBuildImage') {
+    environment["BP_JVM_VERSION"] = "17"
+}
+
 tasks.named('clean') {
     doFirst {
         delete './dev.db'
