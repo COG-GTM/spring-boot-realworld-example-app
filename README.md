@@ -36,7 +36,30 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The secret key is stored in `application.properties`.
+The JWT signing key is **not** stored in version control. `application.properties` resolves it from the
+`JWT_SECRET` environment variable (`jwt.secret=${JWT_SECRET}`), and the application fails to start when it is
+missing or shorter than 64 bytes (the key size required by HS512).
+
+Generate a key and run the app:
+
+    export JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')"
+    ./gradlew bootRun
+
+Other security-relevant settings:
+
+* `cors.allowed-origins` — comma-separated allow-list of origins allowed to call the API. It defaults to local
+  development frontends; set it explicitly per environment. Wildcard origins are not used.
+* `graphql.graphiql.enabled` — defaults to `false`. The interactive GraphiQL playground is only reachable when it
+  is set to `true`, and `/graphql` itself requires an authenticated request.
+
+# Dependency scanning
+
+The OWASP Dependency-Check Gradle plugin is configured to fail the build on findings with a CVSS score of 7.0 or
+higher:
+
+    ./gradlew dependencyCheckAnalyze
+
+Reports are written to `build/reports/dependency-check-report.{html,json}`.
 
 # Database
 

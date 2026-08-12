@@ -9,11 +9,20 @@ import org.junit.jupiter.api.Test;
 
 public class DefaultJwtServiceTest {
 
+  private static final String SECRET =
+      "1231231231231231231231231231231231231231231231231231231231231231";
+
   private JwtService jwtService;
 
   @BeforeEach
   public void setUp() {
-    jwtService = new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+    jwtService = new DefaultJwtService(SECRET, 3600);
+  }
+
+  @Test
+  public void should_reject_secret_shorter_than_hs512_key_size() {
+    Assertions.assertThrows(
+        IllegalStateException.class, () -> new DefaultJwtService(SECRET.substring(1), 3600));
   }
 
   @Test
