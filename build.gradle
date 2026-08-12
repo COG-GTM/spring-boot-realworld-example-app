@@ -61,8 +61,8 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
-	environment 'JWT_SECRET', System.getenv('JWT_SECRET') ?:
-		'test-only-secret-not-used-outside-of-the-automated-test-suite-0123456789'
+	// Always overrides any ambient JWT_SECRET so the suite does not depend on the developer's shell.
+	environment 'JWT_SECRET', 'test-only-secret-not-used-outside-of-the-automated-test-suite-0123456789'
 }
 
 dependencyCheck {

@@ -3,6 +3,7 @@ package io.spring.api.security;
 import static java.util.Arrays.asList;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,9 +30,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   private final boolean graphiqlEnabled;
 
   public WebSecurityConfig(
-      @Value("${cors.allowed-origins}") List<String> allowedOrigins,
+      @Value("${cors.allowed-origins:}") List<String> allowedOrigins,
       @Value("${graphql.graphiql.enabled:false}") boolean graphiqlEnabled) {
-    this.allowedOrigins = allowedOrigins;
+    this.allowedOrigins =
+        allowedOrigins.stream()
+            .map(String::trim)
+            .filter(origin -> !origin.isEmpty())
+            .collect(Collectors.toList());
     this.graphiqlEnabled = graphiqlEnabled;
   }
 
@@ -63,8 +68,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .permitAll()
         .antMatchers("/graphiql/**")
         .access(graphiqlEnabled ? "permitAll" : "denyAll")
+        // /graphql is a single endpoint that also serves the anonymous login and createUser
+        // mutations and the public article/profile/tag queries; per-operation authorization is
+        // enforced by the datafetchers.
         .antMatchers("/graphql")
-        .authenticated()
+        .permitAll()
         .antMatchers(HttpMethod.GET, "/articles/feed")
         .authenticated()
         .antMatchers(HttpMethod.POST, "/users", "/users/login")

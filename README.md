@@ -49,8 +49,11 @@ Other security-relevant settings:
 
 * `cors.allowed-origins` — comma-separated allow-list of origins allowed to call the API. It defaults to local
   development frontends; set it explicitly per environment. Wildcard origins are not used.
-* `graphql.graphiql.enabled` — defaults to `false`. The interactive GraphiQL playground is only reachable when it
-  is set to `true`, and `/graphql` itself requires an authenticated request.
+* `graphql.graphiql.enabled` — defaults to `false`. It both disables DGS's GraphiQL endpoint
+  (`dgs.graphql.graphiql.enabled`) and makes Spring Security deny `/graphiql/**`, so the interactive playground and
+  the schema it exposes are unreachable unless it is explicitly set to `true`. `/graphql` itself stays public
+  because it also serves the anonymous `login`/`createUser` mutations; authorization is enforced per operation in
+  the datafetchers.
 
 # Dependency scanning
 
