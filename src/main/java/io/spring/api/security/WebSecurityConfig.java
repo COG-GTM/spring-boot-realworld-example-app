@@ -2,6 +2,9 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +24,21 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+  private final List<String> allowedOrigins;
+
+  private final boolean graphiqlEnabled;
+
+  public WebSecurityConfig(
+      @Value("${cors.allowed-origins:}") List<String> allowedOrigins,
+      @Value("${graphql.graphiql.enabled:false}") boolean graphiqlEnabled) {
+    this.allowedOrigins =
+        allowedOrigins.stream()
+            .map(String::trim)
+            .filter(origin -> !origin.isEmpty())
+            .collect(Collectors.toList());
+    this.graphiqlEnabled = graphiqlEnabled;
+  }
 
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
@@ -48,8 +66,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authorizeRequests()
         .antMatchers(HttpMethod.OPTIONS)
         .permitAll()
-        .antMatchers("/graphiql")
-        .permitAll()
+        .antMatchers("/graphiql/**")
+        .access(graphiqlEnabled ? "permitAll" : "denyAll")
+        // /graphql is a single endpoint that also serves the anonymous login and createUser
+        // mutations and the public article/profile/tag queries; per-operation authorization is
+        // enforced by the datafetchers.
         .antMatchers("/graphql")
         .permitAll()
         .antMatchers(HttpMethod.GET, "/articles/feed")
@@ -67,7 +88,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     final CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(asList("*"));
+    configuration.setAllowedOrigins(allowedOrigins);
     configuration.setAllowedMethods(asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
     // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
