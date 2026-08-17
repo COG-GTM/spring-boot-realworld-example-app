@@ -10,6 +10,10 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
+// Keep every artifact of these multi-artifact libraries aligned; the explicit
+// declarations below only move logback-core / tomcat-embed-core.
+ext['logback.version'] = '1.5.38'
+ext['tomcat.version'] = '10.1.57'
 ext['kotlin.version'] = '2.1.0'
 ext['log4j2.version'] = '2.25.5'
 
