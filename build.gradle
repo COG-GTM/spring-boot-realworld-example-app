@@ -10,8 +10,9 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
-// Keep every artifact of these multi-artifact libraries aligned; the explicit
-// declarations below only move logback-core / tomcat-embed-core.
+// logback / tomcat: keeps the sibling artifacts (logback-classic,
+// tomcat-embed-el, tomcat-embed-websocket) aligned with the explicit
+// declarations further down, which only move the -core artifacts.
 ext['logback.version'] = '1.5.38'
 ext['tomcat.version'] = '10.1.57'
 ext['jackson-bom.version'] = '2.21.5'
