@@ -11,8 +11,18 @@ sourceCompatibility = '17'
 targetCompatibility = '17'
 
 ext['tomcat.version'] = '10.1.57'
-ext['jackson-bom.version'] = '2.18.8'
+ext['jackson-bom.version'] = '2.18.9'
 ext['logback.version'] = '1.5.38'
+ext['commons-lang3.version'] = '3.18.0'
+
+configurations.all {
+    resolutionStrategy.force 'com.google.protobuf:protobuf-java:4.28.3'
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'com.netflix.graphql.dgs') {
+            details.useVersion '9.2.2'
+        }
+    }
+}
 
 spotless {
     java {
@@ -40,8 +50,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
-    implementation enforcedPlatform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2')
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:9.2.2'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
@@ -69,6 +78,10 @@ tasks.named('clean') {
     doFirst {
         delete './dev.db'
     }
+}
+
+tasks.matching { it.name.startsWith('spotless') }.configureEach {
+    mustRunAfter 'generateJava'
 }
 
 tasks.named('generateJava') {
