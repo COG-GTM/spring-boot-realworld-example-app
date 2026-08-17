@@ -76,6 +76,10 @@ Use spotless for code format.
 
     ./gradlew spotlessJavaApply
 
+To verify formatting without modifying files:
+
+    ./gradlew spotlessJavaCheck
+
 # Help
 
 Please fork and PR to improve the project.
