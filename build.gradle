@@ -14,6 +14,7 @@ targetCompatibility = '17'
 // declarations below only move logback-core / tomcat-embed-core.
 ext['logback.version'] = '1.5.38'
 ext['tomcat.version'] = '10.1.57'
+ext['jackson-bom.version'] = '2.21.5'
 ext['kotlin.version'] = '2.1.0'
 ext['log4j2.version'] = '2.25.5'
 
