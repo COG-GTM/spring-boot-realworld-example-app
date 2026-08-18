@@ -29,13 +29,14 @@ public class GraphQlHttpSmokeTest {
   public void should_accept_standard_graphql_request_body() {
     ResponseEntity<String> response = postGraphQl("{\"query\":\"{ tags }\"}");
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(response.getBody()).contains("\"tags\"");
+    assertThat(response.getBody()).contains("\"data\"").contains("\"tags\"");
+    assertThat(response.getBody()).doesNotContain("\"errors\"");
   }
 
   @Test
   public void should_return_errors_array_for_invalid_query() {
     ResponseEntity<String> response = postGraphQl("{\"query\":\"{ nonExistentField }\"}");
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(response.getBody()).contains("errors");
+    assertThat(response.getBody()).contains("\"errors\"").contains("nonExistentField");
   }
 }
