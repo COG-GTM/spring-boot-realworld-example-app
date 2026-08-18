@@ -7,8 +7,12 @@ plugins {
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-targetCompatibility = '11'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 spotless {
     java {
@@ -54,6 +58,10 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
+}
+
+tasks.named('bootBuildImage') {
+    environment["BP_JVM_VERSION"] = "17"
 }
 
 tasks.named('test') {
