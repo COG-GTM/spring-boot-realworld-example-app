@@ -2,7 +2,6 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
-import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,9 +23,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-  private final String allowedOrigins;
+  private final List<String> allowedOrigins;
 
-  public WebSecurityConfig(@Value("${cors.allowed-origins}") String allowedOrigins) {
+  public WebSecurityConfig(@Value("${cors.allowed-origins}") List<String> allowedOrigins) {
     this.allowedOrigins = allowedOrigins;
   }
 
@@ -75,12 +74,7 @@ public class WebSecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     final CorsConfiguration configuration = new CorsConfiguration();
-    List<String> origins =
-        Arrays.stream(allowedOrigins.split(","))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .toList();
-    configuration.setAllowedOrigins(origins);
+    configuration.setAllowedOrigins(allowedOrigins);
     configuration.setAllowedMethods(asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
     // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
