@@ -34,6 +34,33 @@ public class GraphQlHttpSmokeTest {
   }
 
   @Test
+  public void should_execute_authenticated_query_with_security_context() {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    ResponseEntity<String> register =
+        restTemplate.postForEntity(
+            "/users",
+            new HttpEntity<>(
+                "{\"user\":{\"username\":\"graphqlsmoke\",\"email\":\"graphqlsmoke@example.com\",\"password\":\"password123\"}}",
+                headers),
+            String.class);
+    assertThat(register.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    String token = register.getBody().replaceAll(".*\"token\":\"([^\"]+)\".*", "$1");
+
+    HttpHeaders authHeaders = new HttpHeaders();
+    authHeaders.setContentType(MediaType.APPLICATION_JSON);
+    authHeaders.set("Authorization", "Token " + token);
+    ResponseEntity<String> response =
+        restTemplate.postForEntity(
+            "/graphql",
+            new HttpEntity<>("{\"query\":\"{ me { username } }\"}", authHeaders),
+            String.class);
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).contains("\"username\":\"graphqlsmoke\"");
+    assertThat(response.getBody()).doesNotContain("\"errors\"");
+  }
+
+  @Test
   public void should_return_errors_array_for_invalid_query() {
     ResponseEntity<String> response = postGraphQl("{\"query\":\"{ nonExistentField }\"}");
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
