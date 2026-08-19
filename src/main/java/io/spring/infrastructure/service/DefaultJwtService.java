@@ -28,8 +28,8 @@ public class DefaultJwtService implements JwtService {
   @Override
   public String toToken(User user) {
     return Jwts.builder()
-        .setSubject(user.getId())
-        .setExpiration(expireTimeFromNow())
+        .subject(user.getId())
+        .expiration(expireTimeFromNow())
         .signWith(signingKey, Jwts.SIG.HS512)
         .compact();
   }

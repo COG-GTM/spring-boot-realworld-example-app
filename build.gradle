@@ -31,12 +31,14 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
-    matching { it.name.endsWith('Classpath') }.configureEach {
-        resolutionStrategy.force(
-            'com.graphql-java:graphql-java:22.1',
-            'com.graphql-java:java-dataloader:3.3.0'
-        )
-    }
+}
+
+configurations.all {
+    // DGS 9.1.3 requires graphql-java 22.x; Boot 3.5 manages 23.x.
+    resolutionStrategy.force(
+        'com.graphql-java:graphql-java:22.1',
+        'com.graphql-java:java-dataloader:3.3.0'
+    )
 }
 
 dependencies {
@@ -45,6 +47,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.1.3')
     implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:9.1.3'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
