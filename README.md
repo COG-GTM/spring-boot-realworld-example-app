@@ -36,7 +36,12 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The secret key is stored in `application.properties`.
+The JWT signing key is read from the `JWT_SECRET` environment variable (bound to `jwt.secret` in
+`application.properties`) and must be at least 64 bytes long. It is never committed to the repository. If
+`JWT_SECRET` is unset, a random key is generated at start up, which means every restart invalidates all
+previously issued tokens and multiple instances cannot share tokens, so always set it outside of local development:
+
+    export JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')"
 
 # Database
 
