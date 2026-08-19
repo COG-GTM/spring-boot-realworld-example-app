@@ -36,7 +36,18 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The secret key is stored in `application.properties`.
+The application requires the `JWT_SECRET` environment variable. It must contain at least
+64 bytes of key material for HS512; generate a suitable value with:
+
+    export JWT_SECRET="$(openssl rand -hex 64)"
+
+There is no default JWT secret. The application fails during startup if `JWT_SECRET` is missing.
+
+The CORS origins are configured by the `cors.allowed-origins` property. The local development
+default is `http://localhost:3000,http://localhost:8080`; override it at deployment time, for
+example:
+
+    ./gradlew bootRun --args='--cors.allowed-origins=https://app.example.com'
 
 # Database
 
