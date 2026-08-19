@@ -57,7 +57,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 You'll need Java 17 installed.
 
-    ./gradlew bootRun
+    JWT_SECRET="$(openssl rand -hex 64)" ./gradlew bootRun
 
 To test that it works, open a browser tab at http://localhost:8080/tags .  
 Alternatively, you can run
@@ -69,7 +69,7 @@ Alternatively, you can run
 You'll need Docker installed.
 	
     ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+    docker run -e JWT_SECRET="$(openssl rand -hex 64)" -p 8081:8080 spring-boot-realworld-example-app
 
 # Try it out with a RealWorld frontend
 
