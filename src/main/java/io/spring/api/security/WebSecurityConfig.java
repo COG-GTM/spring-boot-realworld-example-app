@@ -2,6 +2,7 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +23,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+  private static final int MINIMUM_BCRYPT_STRENGTH = 12;
+
+  @Value("${security.bcrypt.strength:12}")
+  private int bcryptStrength;
+
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
     return new JwtTokenFilter();
@@ -29,7 +35,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    if (bcryptStrength < MINIMUM_BCRYPT_STRENGTH) {
+      throw new IllegalStateException(
+          "security.bcrypt.strength must be at least " + MINIMUM_BCRYPT_STRENGTH);
+    }
+    return new BCryptPasswordEncoder(bcryptStrength);
   }
 
   @Override

@@ -22,7 +22,6 @@ import org.springframework.boot.autoconfigure.validation.ValidationAutoConfigura
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(CurrentUserApi.class)
@@ -30,8 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
   WebSecurityConfig.class,
   JacksonCustomizations.class,
   UserService.class,
-  ValidationAutoConfiguration.class,
-  BCryptPasswordEncoder.class
+  ValidationAutoConfiguration.class
 })
 public class CurrentUserApiTest extends TestWithCurrentUser {
 
