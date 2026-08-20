@@ -70,7 +70,8 @@ public class UserMutation {
   public DataFetcherResult<UserPayload> updateUser(
       @InputArgument("changes") UpdateUserInput updateUserInput) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication instanceof AnonymousAuthenticationToken
+    if (authentication == null
+        || authentication instanceof AnonymousAuthenticationToken
         || authentication.getPrincipal() == null) {
       return null;
     }

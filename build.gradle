@@ -13,8 +13,8 @@ targetCompatibility = '17'
 spotless {
     java {
         target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
+            include 'src/**/*.java'
+            exclude 'build/**'
         }
         googleJavaFormat()
     }
@@ -69,4 +69,5 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
+    typeMapping = ["PageInfo": "graphql.relay.PageInfo"]
 }
