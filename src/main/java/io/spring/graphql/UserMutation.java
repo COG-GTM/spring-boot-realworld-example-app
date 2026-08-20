@@ -17,8 +17,8 @@ import io.spring.graphql.types.CreateUserInput;
 import io.spring.graphql.types.UpdateUserInput;
 import io.spring.graphql.types.UserPayload;
 import io.spring.graphql.types.UserResult;
+import jakarta.validation.ConstraintViolationException;
 import java.util.Optional;
-import javax.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -70,7 +70,8 @@ public class UserMutation {
   public DataFetcherResult<UserPayload> updateUser(
       @InputArgument("changes") UpdateUserInput updateUserInput) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication instanceof AnonymousAuthenticationToken
+    if (authentication == null
+        || authentication instanceof AnonymousAuthenticationToken
         || authentication.getPrincipal() == null) {
       return null;
     }
