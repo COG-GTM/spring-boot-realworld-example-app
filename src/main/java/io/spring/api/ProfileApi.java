@@ -6,7 +6,9 @@ import io.spring.application.data.ProfileData;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import io.spring.infrastructure.service.PendoTrackService;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProfileApi {
   private ProfileQueryService profileQueryService;
   private UserRepository userRepository;
+  private PendoTrackService pendoTrackService;
 
   @GetMapping
   public ResponseEntity getProfile(
@@ -43,6 +46,13 @@ public class ProfileApi {
             target -> {
               FollowRelation followRelation = new FollowRelation(user.getId(), target.getId());
               userRepository.saveRelation(followRelation);
+
+              Map<String, Object> trackProps = new HashMap<>();
+              trackProps.put("followerId", user.getId());
+              trackProps.put("followedUserId", target.getId());
+              trackProps.put("followedUsername", username);
+              pendoTrackService.track("user_followed", user.getId(), trackProps);
+
               return profileResponse(profileQueryService.findByUsername(username, user).get());
             })
         .orElseThrow(ResourceNotFoundException::new);
@@ -59,6 +69,13 @@ public class ProfileApi {
           .map(
               relation -> {
                 userRepository.removeRelation(relation);
+
+                Map<String, Object> trackProps = new HashMap<>();
+                trackProps.put("followerId", user.getId());
+                trackProps.put("unfollowedUserId", target.getId());
+                trackProps.put("unfollowedUsername", username);
+                pendoTrackService.track("user_unfollowed", user.getId(), trackProps);
+
                 return profileResponse(profileQueryService.findByUsername(username, user).get());
               })
           .orElseThrow(ResourceNotFoundException::new);

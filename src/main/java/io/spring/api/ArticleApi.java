@@ -10,6 +10,7 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
+import io.spring.infrastructure.service.PendoTrackService;
 import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Valid;
@@ -31,6 +32,7 @@ public class ArticleApi {
   private ArticleQueryService articleQueryService;
   private ArticleRepository articleRepository;
   private ArticleCommandService articleCommandService;
+  private PendoTrackService pendoTrackService;
 
   @GetMapping
   public ResponseEntity<?> article(
@@ -55,6 +57,24 @@ public class ArticleApi {
               }
               Article updatedArticle =
                   articleCommandService.updateArticle(article, updateArticleParam);
+
+              Map<String, Object> trackProps = new HashMap<>();
+              trackProps.put("articleId", article.getId());
+              trackProps.put("slug", updatedArticle.getSlug());
+              trackProps.put(
+                  "titleChanged",
+                  updateArticleParam.getTitle() != null
+                      && !updateArticleParam.getTitle().isEmpty());
+              trackProps.put(
+                  "descriptionChanged",
+                  updateArticleParam.getDescription() != null
+                      && !updateArticleParam.getDescription().isEmpty());
+              trackProps.put(
+                  "bodyChanged",
+                  updateArticleParam.getBody() != null && !updateArticleParam.getBody().isEmpty());
+              trackProps.put("userId", user.getId());
+              pendoTrackService.track("article_updated", user.getId(), trackProps);
+
               return ResponseEntity.ok(
                   articleResponse(
                       articleQueryService.findBySlug(updatedArticle.getSlug(), user).get()));
@@ -73,6 +93,13 @@ public class ArticleApi {
                 throw new NoAuthorizationException();
               }
               articleRepository.remove(article);
+
+              Map<String, Object> trackProps = new HashMap<>();
+              trackProps.put("articleId", article.getId());
+              trackProps.put("slug", article.getSlug());
+              trackProps.put("userId", user.getId());
+              pendoTrackService.track("article_deleted", user.getId(), trackProps);
+
               return ResponseEntity.noContent().build();
             })
         .orElseThrow(ResourceNotFoundException::new);

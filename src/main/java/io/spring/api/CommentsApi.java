@@ -11,6 +11,7 @@ import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
+import io.spring.infrastructure.service.PendoTrackService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ public class CommentsApi {
   private ArticleRepository articleRepository;
   private CommentRepository commentRepository;
   private CommentQueryService commentQueryService;
+  private PendoTrackService pendoTrackService;
 
   @PostMapping
   public ResponseEntity<?> createComment(
@@ -46,6 +48,16 @@ public class CommentsApi {
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
     Comment comment = new Comment(newCommentParam.getBody(), user.getId(), article.getId());
     commentRepository.save(comment);
+
+    Map<String, Object> trackProps = new HashMap<>();
+    trackProps.put("commentId", comment.getId());
+    trackProps.put("articleId", article.getId());
+    trackProps.put("articleSlug", slug);
+    trackProps.put("userId", user.getId());
+    trackProps.put(
+        "bodyLength", newCommentParam.getBody() != null ? newCommentParam.getBody().length() : 0);
+    pendoTrackService.track("comment_created", user.getId(), trackProps);
+
     return ResponseEntity.status(201)
         .body(commentResponse(commentQueryService.findById(comment.getId(), user).get()));
   }
@@ -79,6 +91,14 @@ public class CommentsApi {
                 throw new NoAuthorizationException();
               }
               commentRepository.remove(comment);
+
+              Map<String, Object> trackProps = new HashMap<>();
+              trackProps.put("commentId", comment.getId());
+              trackProps.put("articleId", article.getId());
+              trackProps.put("articleSlug", slug);
+              trackProps.put("userId", user.getId());
+              pendoTrackService.track("comment_deleted", user.getId(), trackProps);
+
               return ResponseEntity.noContent().build();
             })
         .orElseThrow(ResourceNotFoundException::new);
