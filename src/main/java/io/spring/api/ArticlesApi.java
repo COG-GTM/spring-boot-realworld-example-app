@@ -4,9 +4,15 @@ import io.spring.application.ArticleQueryService;
 import io.spring.application.Page;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.NewArticleParam;
+import io.spring.application.data.ArticleDataList;
 import io.spring.core.article.Article;
+import io.spring.core.article.Tag;
 import io.spring.core.user.User;
+import io.spring.infrastructure.service.PendoTrackService;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +30,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class ArticlesApi {
   private ArticleCommandService articleCommandService;
   private ArticleQueryService articleQueryService;
+  private PendoTrackService pendoTrackService;
 
   @PostMapping
   public ResponseEntity createArticle(
       @Valid @RequestBody NewArticleParam newArticleParam, @AuthenticationPrincipal User user) {
     Article article = articleCommandService.createArticle(newArticleParam, user);
+
+    List<String> tagNames =
+        article.getTags().stream().map(Tag::getName).collect(Collectors.toList());
+    Map<String, Object> trackProps = new HashMap<>();
+    trackProps.put("articleId", article.getId());
+    trackProps.put("slug", article.getSlug());
+    trackProps.put("title", article.getTitle());
+    trackProps.put("tagList", String.join(",", tagNames));
+    trackProps.put("tagCount", tagNames.size());
+    trackProps.put("bodyLength", article.getBody() != null ? article.getBody().length() : 0);
+    trackProps.put("userId", user.getId());
+    pendoTrackService.track("article_created", user.getId(), trackProps);
+
     return ResponseEntity.ok(
         new HashMap<String, Object>() {
           {
@@ -53,8 +73,26 @@ public class ArticlesApi {
       @RequestParam(value = "favorited", required = false) String favoritedBy,
       @RequestParam(value = "author", required = false) String author,
       @AuthenticationPrincipal User user) {
-    return ResponseEntity.ok(
+    ArticleDataList result =
         articleQueryService.findRecentArticles(
-            tag, author, favoritedBy, new Page(offset, limit), user));
+            tag, author, favoritedBy, new Page(offset, limit), user);
+
+    boolean hasFilters =
+        (tag != null && !tag.isEmpty())
+            || (author != null && !author.isEmpty())
+            || (favoritedBy != null && !favoritedBy.isEmpty());
+    if (hasFilters) {
+      Map<String, Object> trackProps = new HashMap<>();
+      trackProps.put("tag", tag != null ? tag : "");
+      trackProps.put("author", author != null ? author : "");
+      trackProps.put("favoritedBy", favoritedBy != null ? favoritedBy : "");
+      trackProps.put("offset", offset);
+      trackProps.put("limit", limit);
+      trackProps.put("resultsCount", result.getCount());
+      String visitorId = user != null ? user.getId() : "anonymous";
+      pendoTrackService.track("articles_filtered", visitorId, trackProps);
+    }
+
+    return ResponseEntity.ok(result);
   }
 }

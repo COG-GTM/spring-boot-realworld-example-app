@@ -8,7 +8,9 @@ import io.spring.core.article.ArticleRepository;
 import io.spring.core.favorite.ArticleFavorite;
 import io.spring.core.favorite.ArticleFavoriteRepository;
 import io.spring.core.user.User;
+import io.spring.infrastructure.service.PendoTrackService;
 import java.util.HashMap;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +27,7 @@ public class ArticleFavoriteApi {
   private ArticleFavoriteRepository articleFavoriteRepository;
   private ArticleRepository articleRepository;
   private ArticleQueryService articleQueryService;
+  private PendoTrackService pendoTrackService;
 
   @PostMapping
   public ResponseEntity favoriteArticle(
@@ -33,6 +36,13 @@ public class ArticleFavoriteApi {
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
     ArticleFavorite articleFavorite = new ArticleFavorite(article.getId(), user.getId());
     articleFavoriteRepository.save(articleFavorite);
+
+    Map<String, Object> trackProps = new HashMap<>();
+    trackProps.put("articleId", article.getId());
+    trackProps.put("articleSlug", slug);
+    trackProps.put("userId", user.getId());
+    pendoTrackService.track("article_favorited", user.getId(), trackProps);
+
     return responseArticleData(articleQueryService.findBySlug(slug, user).get());
   }
 
@@ -46,6 +56,12 @@ public class ArticleFavoriteApi {
         .ifPresent(
             favorite -> {
               articleFavoriteRepository.remove(favorite);
+
+              Map<String, Object> trackProps = new HashMap<>();
+              trackProps.put("articleId", article.getId());
+              trackProps.put("articleSlug", slug);
+              trackProps.put("userId", user.getId());
+              pendoTrackService.track("article_unfavorited", user.getId(), trackProps);
             });
     return responseArticleData(articleQueryService.findBySlug(slug, user).get());
   }

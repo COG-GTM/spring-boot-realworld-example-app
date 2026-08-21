@@ -7,6 +7,7 @@ import io.spring.application.user.UpdateUserCommand;
 import io.spring.application.user.UpdateUserParam;
 import io.spring.application.user.UserService;
 import io.spring.core.user.User;
+import io.spring.infrastructure.service.PendoTrackService;
 import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Valid;
@@ -27,6 +28,7 @@ public class CurrentUserApi {
 
   private UserQueryService userQueryService;
   private UserService userService;
+  private PendoTrackService pendoTrackService;
 
   @GetMapping
   public ResponseEntity currentUser(
@@ -45,6 +47,25 @@ public class CurrentUserApi {
 
     userService.updateUser(new UpdateUserCommand(currentUser, updateUserParam));
     UserData userData = userQueryService.findById(currentUser.getId()).get();
+
+    Map<String, Object> trackProps = new HashMap<>();
+    trackProps.put("userId", currentUser.getId());
+    trackProps.put(
+        "emailChanged",
+        updateUserParam.getEmail() != null && !updateUserParam.getEmail().isEmpty());
+    trackProps.put(
+        "usernameChanged",
+        updateUserParam.getUsername() != null && !updateUserParam.getUsername().isEmpty());
+    trackProps.put(
+        "bioChanged", updateUserParam.getBio() != null && !updateUserParam.getBio().isEmpty());
+    trackProps.put(
+        "imageChanged",
+        updateUserParam.getImage() != null && !updateUserParam.getImage().isEmpty());
+    trackProps.put(
+        "passwordChanged",
+        updateUserParam.getPassword() != null && !updateUserParam.getPassword().isEmpty());
+    pendoTrackService.track("user_profile_updated", currentUser.getId(), trackProps);
+
     return ResponseEntity.ok(userResponse(new UserWithToken(userData, token.split(" ")[1])));
   }
 
