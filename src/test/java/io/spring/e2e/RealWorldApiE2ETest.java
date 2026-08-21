@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,13 @@ import org.springframework.boot.web.server.LocalServerPort;
 @TestInstance(Lifecycle.PER_CLASS)
 @TestMethodOrder(OrderAnnotation.class)
 public class RealWorldApiE2ETest {
+
+  private static final File DATABASE = new File("build/e2e-test.db");
+
+  static {
+    DATABASE.delete();
+    DATABASE.deleteOnExit();
+  }
 
   private static final String SUFFIX = UUID.randomUUID().toString().substring(0, 8);
   private static final String AUTHOR_USERNAME = "author-" + SUFFIX;
