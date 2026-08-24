@@ -1,0 +1,11 @@
+# Snyk policy file
+version: v1.25.0
+ignore:
+  'java/DisablesCSRFProtection':
+    - 'src/main/java/io/spring/api/security/WebSecurityConfig.java':
+        reason: >-
+          Stateless JWT API: no session or auth cookie is issued
+          (SessionCreationPolicy.STATELESS) and credentials are only read from the
+          Authorization header, so there is no ambient credential for a cross-site
+          request to abuse. See the justification comment in WebSecurityConfig.
+        expires: 2027-08-24T00:00:00.000Z

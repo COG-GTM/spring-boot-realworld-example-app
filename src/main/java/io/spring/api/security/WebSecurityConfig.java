@@ -35,6 +35,9 @@ public class WebSecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    // CSRF is disabled because this is a stateless API: sessions are never created and
+    // credentials are read only from the Authorization header, so there is no ambient
+    // credential a cross-site request could abuse.
     http.csrf(csrf -> csrf.disable())
         .cors(Customizer.withDefaults())
         .exceptionHandling(
