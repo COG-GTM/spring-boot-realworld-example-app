@@ -29,7 +29,15 @@ configurations {
     }
 }
 
+ext['commons-lang3.version'] = '3.18.0'
+ext['log4j2.version'] = '2.25.5'
+ext['jackson-bom.version'] = '2.21.6'
+
 dependencies {
+    constraints {
+        implementation 'com.google.protobuf:protobuf-java:4.27.5'
+    }
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
