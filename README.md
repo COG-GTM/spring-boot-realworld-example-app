@@ -1,85 +1,183 @@
-# ![RealWorld Example App using Kotlin and Spring](example-logo.png)
+# RealWorld example app with Java and Spring Boot
 
-[![Actions](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
+![RealWorld example app](example-logo.png)
 
-> ### Spring boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
+[![Java CI](https://github.com/ankehao-demo/spring-boot-realworld-example-app/actions/workflows/gradle.yml/badge.svg)](https://github.com/ankehao-demo/spring-boot-realworld-example-app/actions/workflows/gradle.yml)
 
-This codebase was created to demonstrate a fully fledged full-stack application built with Spring boot + Mybatis including CRUD operations, authentication, routing, pagination, and more.
+This repository implements the [RealWorld](https://github.com/gothinkster/realworld) social blogging API with a Java backend and an optional React frontend. The backend exposes the same domain through REST and GraphQL adapters.
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
+## Technology stack
 
-# *NEW* GraphQL Support  
+The versions below come from the checked-in build files.
 
-Following some DDD principles. REST or GraphQL is just a kind of adapter. And the domain layer will be consistent all the time. So this repository implement GraphQL and REST at the same time.
+| Area | Technology |
+| --- | --- |
+| Runtime | Java 11 source/target compatibility; JDK 11 for the full build |
+| Application | Spring Boot 2.6.3 |
+| REST and security | Spring MVC, Spring Security, JWT |
+| GraphQL | Netflix DGS 4.9.21, DGS code generation plugin 5.0.6 |
+| Persistence | MyBatis 2.2.2, SQLite JDBC 3.36.0.3, Flyway |
+| Build and formatting | Gradle wrapper 7.4, Spotless 6.2.1 |
+| Optional frontend | React 18.2, TypeScript 5.2, Vite 5.2, Tailwind CSS 3.4 |
 
-The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-example-app/blob/master/src/main/resources/schema/schema.graphqls and the visualization looks like below.
+CI builds the backend with JDK 11. Use JDK 11 for the full Gradle workflow: the pinned Google Java Format version used by Spotless is not compatible with JDK 17's module access rules.
 
-![](graphql-schema.png)
+## Prerequisites
 
-And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
-# How it works
+- JDK 11
+- Docker, only for the container workflow
+- Node.js 18+ and npm, only for the optional frontend
 
-The application uses Spring Boot (Web, Mybatis).
+No external database is required.
 
-* Use the idea of Domain Driven Design to separate the business term and infrastructure term.
-* Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
-* Use [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern to separate the read model and write model.
+## Build and run the backend
 
-And the code is organized as this:
+```bash
+./gradlew compileJava compileTestJava
+./gradlew bootRun
+```
 
-1. `api` is the web layer implemented by Spring MVC
-2. `core` is the business model including entities and services
-3. `application` is the high-level services for querying the data transfer objects
-4. `infrastructure`  contains all the implementation classes as the technique details
+The backend listens on `http://localhost:8080`. REST routes are served from the root (for example, `/tags`), not from an `/api` prefix.
 
-# Security
+Verify the REST API:
 
-Integration with Spring Security and add other filter for jwt token process.
+```bash
+curl http://localhost:8080/tags
+```
 
-The secret key is stored in `application.properties`.
+Verify GraphQL:
 
-# Database
+```bash
+curl http://localhost:8080/graphql \
+  -H 'Content-Type: application/json' \
+  --data '{"query":"{ tags }"}'
+```
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
+The GraphiQL interface is available at `http://localhost:8080/graphiql`.
 
-# Getting started
+### Local database
 
-You'll need Java 11 installed.
+The application stores local data in `dev.db` at the repository root. Flyway creates the schema from `src/main/resources/db/migration/` when the application starts.
 
-    ./gradlew bootRun
+`./gradlew clean` deletes `dev.db`. Do not use `clean` when you need to preserve local data.
 
-To test that it works, open a browser tab at http://localhost:8080/tags .  
-Alternatively, you can run
+Tests use an in-memory SQLite database through the `test` Spring profile.
 
-    curl http://localhost:8080/tags
+## Run the optional frontend
 
-# Try it out with [Docker](https://www.docker.com/)
+Start the backend first, then open another terminal:
 
-You'll need Docker installed.
-	
-    ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+```bash
+cd frontend
+cp .env.example .env
+npm ci
+npm run dev
+```
 
-# Try it out with a RealWorld frontend
+The frontend listens on `http://localhost:3000` and sends API requests to the URL configured by `VITE_API_BASE_URL` (default: `http://localhost:8080`).
 
-The entry point address of the backend API is at http://localhost:8080, **not** http://localhost:8080/api as some of the frontend documentation suggests.
+See [frontend/README.md](frontend/README.md) for frontend-specific commands and structure.
 
-# Run test
+## API overview
 
-The repository contains a lot of test cases to cover both api test and repository test.
+### REST
 
-    ./gradlew test
+The REST adapter implements registration and login, current-user management, profiles and follows, article CRUD and feeds, favorites, comments, and tags.
 
-# Code format
+Authenticated requests use the RealWorld authorization format:
 
-Use spotless for code format.
+```text
+Authorization: Token <jwt>
+```
 
-    ./gradlew spotlessJavaApply
+See [docs/API.md](docs/API.md) for the endpoint table, query parameters, response conventions, and examples.
 
-# Help
+### GraphQL
 
-Please fork and PR to improve the project.
+GraphQL is served at `/graphql`, with the schema in [`src/main/resources/schema/schema.graphqls`](src/main/resources/schema/schema.graphqls). It covers:
 
-## Testing Note
+- user registration, login, current-user queries, and profile updates
+- profile lookup, following, and unfollowing
+- article lookup, filtered connections, personalized feeds, and article mutations
+- favorites, comments, and tags
 
-This implementation has been verified to work with the standard RealWorld API specification.
+List fields use cursor connections. Supply either `first` with an optional `after` cursor or `last` with an optional `before` cursor.
+
+The DGS plugin generates Java types and `DgsConstants` in `build/generated` during `generateJava`/compilation. Generated sources are not committed and must not be edited manually.
+
+## Architecture
+
+The backend uses domain-oriented layers and a CQRS-style split:
+
+- REST controllers and GraphQL data fetchers are delivery adapters.
+- Write operations use application command services, domain entities, repository interfaces, and MyBatis repository implementations.
+- Read operations use application query services and MyBatis read mappers that project directly into response DTOs.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for request flows, package responsibilities, persistence details, and GraphQL code generation.
+
+## Project structure
+
+```text
+.
+├── build.gradle
+├── frontend/                              # Optional React/Vite client
+├── src/main/java/io/spring/
+│   ├── api/                               # REST controllers, security, REST errors
+│   ├── graphql/                           # DGS queries, mutations, field resolvers
+│   ├── core/                              # Domain entities and repository contracts
+│   ├── application/                       # Commands, queries, validation, read DTOs
+│   └── infrastructure/                    # MyBatis and JWT implementations
+├── src/main/resources/
+│   ├── db/migration/                      # Flyway schema migrations
+│   ├── mapper/                            # MyBatis XML mappings
+│   ├── schema/                            # GraphQL schema
+│   └── application.properties             # Local runtime configuration
+└── src/test/java/io/spring/               # REST, application, repository, and JWT tests
+```
+
+## Quality checks
+
+Format Java sources before committing:
+
+```bash
+./gradlew spotlessJavaApply
+```
+
+Run the same compile and test checks used during development:
+
+```bash
+./gradlew spotlessJavaCheck
+./gradlew compileJava compileTestJava
+./gradlew test
+```
+
+CI runs `./gradlew clean test` on JDK 11.
+
+The frontend defines separate checks:
+
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+These frontend checks are not green in the current codebase: linting has no project ESLint configuration, and the TypeScript build reports unused React imports.
+
+## Container image
+
+```bash
+./gradlew bootBuildImage --imageName=spring-boot-realworld-example-app
+docker run --rm -p 8081:8080 spring-boot-realworld-example-app
+```
+
+The API is then available at `http://localhost:8081`.
+
+## Configuration and security
+
+Local defaults are in `src/main/resources/application.properties`, including the SQLite location, JWT lifetime, and a development signing key. Override the JWT signing key outside local development; do not reuse the checked-in development value in a deployed environment.
+
+The security filter accepts JWTs from the `Authorization` header. Public REST reads do not require a token, while feed and write routes do. The GraphQL HTTP endpoint is public so the data fetchers can apply authentication at field and mutation level.
+
+## License
+
+See [LICENSE](LICENSE).

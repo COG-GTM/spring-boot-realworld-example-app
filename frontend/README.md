@@ -1,79 +1,79 @@
-# RealWorld Frontend
+# RealWorld React frontend
 
-A modern React frontend application that consumes the Spring Boot RealWorld API.
+This optional React client consumes the repository's Spring Boot REST API.
 
-## Features
+## Implemented flows
 
-- **User Authentication** - Registration, login, JWT token management
-- **Article Management** - Create, view, edit, delete articles with markdown support
-- **Article Feed** - Global feed displaying all articles with pagination
-- **User Profiles** - User information and article listings
-- **Comments System** - Add and view comments on articles
-- **Social Features** - Following users, favoriting articles
-- **Tag System** - Article categorization and filtering
-- **Responsive Design** - Modern UI built with Tailwind CSS
+- registration, login, logout, token persistence, and current-user loading
+- global and personalized article feeds
+- tag filtering
+- article creation, editing, deletion, favoriting, and unfavoriting
+- profiles, following, and favorited-article lists
+- comment listing, creation, and deletion
+- user settings
 
-## Technology Stack
+## Stack
 
-- **React 18** with TypeScript for type safety
-- **Vite** for fast development and building
-- **Tailwind CSS** for modern, responsive styling
-- **React Router** for navigation
-- **Axios** for API communication with JWT authentication
+- React 18.2 and React Router 6.26
+- TypeScript 5.2
+- Vite 5.2
+- Tailwind CSS 3.4
+- Axios 1.7
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+- Node.js 18+ and npm
+- The Spring Boot backend running at `http://localhost:8080`
 
-- Node.js 16+ and npm
-- Spring Boot backend running on http://localhost:8080
-
-### Installation
+## Install and run
 
 ```bash
-cd frontend
-npm install
-```
-
-### Development
-
-```bash
+cp .env.example .env
+npm ci
 npm run dev
 ```
 
-The application will be available at http://localhost:3000
+The Vite development server listens on `http://localhost:3000`.
 
-### Build for Production
+`VITE_API_BASE_URL` controls the backend URL:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+The Axios request interceptor reads the JWT from local storage and sends:
+
+```text
+Authorization: Token <jwt>
+```
+
+## Commands
 
 ```bash
-npm run build
+npm run dev      # development server on port 3000
+npm run lint     # ESLint
+npm run build    # TypeScript check and production bundle
+npm run preview  # preview the production bundle
 ```
 
-## API Integration
+`npm run lint` currently stops because the project has no ESLint configuration. `npm run build` currently stops on unused React imports reported by the TypeScript compiler.
 
-The frontend integrates with the Spring Boot RealWorld API running on localhost:8080:
+## Structure
 
-- **Authentication**: POST /users/login, POST /users
-- **Articles**: GET/POST/PUT/DELETE /articles
-- **Profiles**: GET /profiles/{username}
-- **Comments**: GET/POST/DELETE /articles/{slug}/comments
-- **Tags**: GET /tags
-
-All API calls include proper JWT authentication headers in the format: `Authorization: Token {jwt}`
-
-## Project Structure
-
-```
+```text
 frontend/
 ├── src/
-│   ├── components/     # Reusable UI components
-│   ├── pages/         # Page components (Home, Login, Register, etc.)
-│   ├── services/      # API integration layer
-│   ├── hooks/         # Authentication context and hooks
-│   ├── types/         # TypeScript interfaces
-│   └── App.tsx        # Main application component
-├── package.json       # Dependencies and scripts
-├── vite.config.ts     # Vite configuration
-├── tailwind.config.js # Tailwind CSS configuration
-└── tsconfig.json      # TypeScript configuration
+│   ├── components/     # Header, article, comment, and tag UI
+│   ├── hooks/          # Authentication context and local token state
+│   ├── pages/          # Route-level screens
+│   ├── services/       # REST client functions
+│   ├── types/          # Shared API types
+│   ├── App.tsx         # Routes and protected-route wrapper
+│   └── main.tsx        # React entry point
+├── .env.example
+├── package.json
+├── tailwind.config.js
+└── vite.config.ts
 ```
+
+The backend uses root-level REST paths such as `/articles` and `/users`; there is no `/api` prefix.
