@@ -7,14 +7,13 @@ plugins {
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
-targetCompatibility = '17'
+sourceCompatibility = '21'
+targetCompatibility = '21'
 
 spotless {
     java {
         target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
+            include 'src/**/*.java'
         }
         googleJavaFormat('1.22.0')
     }
@@ -36,9 +35,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:9.2.2'
+    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2')
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter'
     implementation 'org.flywaydb:flyway-core'
-    runtimeOnly 'org.flywaydb:flyway-database-sqlite'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.7'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.7',
                 'io.jsonwebtoken:jjwt-jackson:0.12.7'
@@ -70,4 +69,5 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
+    typeMapping = ['PageInfo': 'graphql.relay.PageInfo']
 }
