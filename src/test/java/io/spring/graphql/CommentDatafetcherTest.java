@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,8 +56,8 @@ public class CommentDatafetcherTest {
             "comment-id",
             "comment body",
             "article-id",
-            new DateTime(2020, 1, 1, 0, 0),
-            new DateTime(2020, 1, 2, 0, 0),
+            new DateTime(2020, 1, 1, 0, 0, DateTimeZone.UTC),
+            new DateTime(2020, 1, 2, 0, 0, DateTimeZone.UTC),
             new ProfileData("user-id", "aisensiy", "bio", "image", false));
     SecurityContextHolder.getContext()
         .setAuthentication(
