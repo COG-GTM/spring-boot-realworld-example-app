@@ -2,6 +2,7 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -51,6 +52,11 @@ public class WebSecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
+                    // Spring Security 6 authorizes every dispatcher type, so the container's
+                    // ERROR dispatch and GraphiQL's internal FORWARD must be permitted or they
+                    // are rejected with 401 instead of rendering the real status.
+                    .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD)
+                    .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()
                     .requestMatchers("/graphiql")
