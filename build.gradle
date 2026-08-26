@@ -27,6 +27,12 @@ repositories {
     mavenCentral()
 }
 
+ext['commons-lang3.version'] = '3.18.0'
+ext['tomcat.version'] = '10.1.56'
+ext['logback.version'] = '1.5.36'
+ext['jackson-bom.version'] = '2.21.5'
+ext['reactor-bom.version'] = '2025.0.7'
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -46,7 +52,11 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
                 'io.jsonwebtoken:jjwt-jackson:0.11.2'
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.xerial:sqlite-jdbc:3.41.2.2'
+
+    constraints {
+        implementation('com.google.protobuf:protobuf-java:4.27.5')
+    }
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
