@@ -24,7 +24,6 @@ spotless {
 }
 
 repositories {
-    maven { url = uri('https://maven-central.storage-download.googleapis.com/maven2') }
     mavenCentral()
 }
 
@@ -46,7 +45,7 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6',
                 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-    runtimeOnly 'org.xerial:sqlite-jdbc:3.45.3.0'
+    implementation 'org.xerial:sqlite-jdbc:3.45.3.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

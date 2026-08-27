@@ -36,7 +36,7 @@ public class JacksonCustomizations {
       if (value == null) {
         gen.writeNull();
       } else {
-        gen.writeString(DateTimeFormatterConfig.UTC_MILLIS_FORMATTER.format(value));
+        gen.writeString(DateTimes.ISO_UTC_MILLIS.format(value));
       }
     }
   }
