@@ -1,22 +1,12 @@
 import org.gradle.api.attributes.java.TargetJvmVersion
 
-buildscript {
-    dependencies {
-        classpath 'org.springframework.boot:spring-boot-gradle-plugin:3.5.3'
-        classpath 'io.spring.gradle:dependency-management-plugin:1.1.7'
-        classpath 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:8.1.0'
-        classpath 'com.diffplug.spotless:spotless-plugin-gradle:7.0.4'
-    }
-}
-
 plugins {
+    id 'org.springframework.boot' version '3.5.3'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
+    id "com.netflix.dgs.codegen" version "8.1.0"
+    id "com.diffplug.spotless" version "7.0.4"
 }
-
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'com.netflix.dgs.codegen'
-apply plugin: 'com.diffplug.spotless'
 
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
@@ -33,7 +23,6 @@ spotless {
 }
 
 repositories {
-    maven { url = 'https://maven-central.storage-download.googleapis.com/maven2' }
     mavenCentral()
 }
 
@@ -43,6 +32,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    // Spring Boot 3 and DGS 9 publish Java 17 variants while source/target stay 11; remove this in Stage 4 with the Java 21 toolchain.
     matching { it.canBeResolved }.configureEach {
         attributes {
             attribute(targetJvmVersionAttribute, 17)
