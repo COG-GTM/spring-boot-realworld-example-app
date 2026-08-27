@@ -16,15 +16,22 @@ java {
 
 spotless {
     java {
-        target 'src/**/*.java'
+        target project.fileTree(project.rootDir) {
+            include '**/*.java'
+            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
+        }
         googleJavaFormat('1.22.0')
     }
 }
 
+tasks.named('spotlessJava') {
+    dependsOn tasks.named('generateJava')
+    dependsOn tasks.named('compileJava')
+    dependsOn tasks.named('processResources')
+}
+
 repositories {
-    maven {
-        url = uri('https://maven-central.storage-download.googleapis.com/maven2')
-    }
+    mavenCentral()
 }
 
 configurations {
