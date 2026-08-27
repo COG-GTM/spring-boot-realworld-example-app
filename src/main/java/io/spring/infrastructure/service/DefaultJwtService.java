@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DefaultJwtService implements JwtService {
+  private static final String JCA_NAME = "HmacSHA512";
   private final SecretKey signingKey;
   private final MacAlgorithm signatureAlgorithm;
   private int sessionTime;
@@ -23,7 +24,7 @@ public class DefaultJwtService implements JwtService {
       @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
     this.sessionTime = sessionTime;
     signatureAlgorithm = Jwts.SIG.HS512;
-    this.signingKey = new SecretKeySpec(secret.getBytes(), signatureAlgorithm.getJcaName());
+    this.signingKey = new SecretKeySpec(secret.getBytes(), JCA_NAME);
   }
 
   @Override
