@@ -1,6 +1,7 @@
 package io.spring.application;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -70,7 +72,8 @@ public class ArticleQueryService {
         Collections.reverse(articleIds);
       }
 
-      List<ArticleData> articles = articleReadService.findArticles(articleIds);
+      List<ArticleData> articles =
+          orderByIds(articleIds, articleReadService.findArticles(articleIds));
       fillExtraInfo(articles, currentUser);
 
       return new CursorPager<>(articles, page.getDirection(), hasExtra);
@@ -104,7 +107,8 @@ public class ArticleQueryService {
     if (articleIds.size() == 0) {
       return new ArticleDataList(new ArrayList<>(), articleCount);
     } else {
-      List<ArticleData> articles = articleReadService.findArticles(articleIds);
+      List<ArticleData> articles =
+          orderByIds(articleIds, articleReadService.findArticles(articleIds));
       fillExtraInfo(articles, currentUser);
       return new ArticleDataList(articles, articleCount);
     }
@@ -172,6 +176,8 @@ public class ArticleQueryService {
         });
   }
 
+  // These reads target separate tables, so keeping them explicit avoids a less clear correlated
+  // query.
   private void fillExtraInfo(String id, User user, ArticleData articleData) {
     articleData.setFavorited(articleFavoritesReadService.isUserFavorite(user.getId(), id));
     articleData.setFavoritesCount(articleFavoritesReadService.articleFavoriteCount(id));
@@ -180,5 +186,11 @@ public class ArticleQueryService {
         .setFollowing(
             userRelationshipQueryService.isUserFollowing(
                 user.getId(), articleData.getProfileData().getId()));
+  }
+
+  private List<ArticleData> orderByIds(List<String> articleIds, List<ArticleData> articles) {
+    Map<String, ArticleData> byId =
+        articles.stream().collect(toMap(ArticleData::getId, articleData -> articleData));
+    return articleIds.stream().map(byId::get).filter(Objects::nonNull).collect(toList());
   }
 }

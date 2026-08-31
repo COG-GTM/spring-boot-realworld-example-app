@@ -30,6 +30,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         .ifPresent(
             id -> {
               if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Per-request lookup is deliberate: cached User instances would be mutable shared
+                // state without eviction guarantees.
                 userRepository
                     .findById(id)
                     .ifPresent(

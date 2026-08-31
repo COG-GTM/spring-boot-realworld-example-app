@@ -1,5 +1,7 @@
 package io.spring.application.article;
 
+import static java.util.stream.Collectors.toList;
+
 import io.spring.application.ArticleQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
@@ -20,6 +22,7 @@ import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Assertions;
@@ -143,6 +146,63 @@ public class ArticleQueryServiceTest extends DbTestBase {
   }
 
   @Test
+  public void should_order_recent_articles_with_cursor_and_track_boundaries() {
+    User author = new User("cursor-author@test.com", "cursor-author", "123", "", "");
+    userRepository.save(author);
+    List<Article> articles = saveCursorArticles(author);
+    Article oldest = articles.get(0);
+    Article middle = articles.get(1);
+    Article newest = articles.get(2);
+
+    CursorPager<ArticleData> nextTwo =
+        queryService.findRecentArticlesWithCursor(
+            null,
+            author.getUsername(),
+            null,
+            new CursorPageParameter<>(null, 2, Direction.NEXT),
+            user);
+    Assertions.assertEquals(Arrays.asList(newest.getId(), middle.getId()), ids(nextTwo.getData()));
+    Assertions.assertTrue(nextTwo.hasNext());
+    Assertions.assertFalse(nextTwo.hasPrevious());
+
+    CursorPager<ArticleData> nextAll =
+        queryService.findRecentArticlesWithCursor(
+            null,
+            author.getUsername(),
+            null,
+            new CursorPageParameter<>(null, 5, Direction.NEXT),
+            user);
+    Assertions.assertEquals(
+        Arrays.asList(newest.getId(), middle.getId(), oldest.getId()), ids(nextAll.getData()));
+    Assertions.assertFalse(nextAll.hasNext());
+    Assertions.assertFalse(nextAll.hasPrevious());
+
+    DateTime oldestCursor = DateTimeCursor.parse(nextAll.getData().get(2).getCursor().toString());
+    CursorPager<ArticleData> previousOne =
+        queryService.findRecentArticlesWithCursor(
+            null,
+            author.getUsername(),
+            null,
+            new CursorPageParameter<>(oldestCursor, 1, Direction.PREV),
+            user);
+    Assertions.assertEquals(Arrays.asList(middle.getId()), ids(previousOne.getData()));
+    Assertions.assertTrue(previousOne.hasPrevious());
+    Assertions.assertFalse(previousOne.hasNext());
+
+    CursorPager<ArticleData> previousAll =
+        queryService.findRecentArticlesWithCursor(
+            null,
+            author.getUsername(),
+            null,
+            new CursorPageParameter<>(oldestCursor, 5, Direction.PREV),
+            user);
+    Assertions.assertEquals(
+        Arrays.asList(newest.getId(), middle.getId()), ids(previousAll.getData()));
+    Assertions.assertFalse(previousAll.hasPrevious());
+    Assertions.assertFalse(previousAll.hasNext());
+  }
+
+  @Test
   public void should_query_article_by_author() {
     User anotherUser = new User("other@email.com", "other", "123", "", "");
     userRepository.save(anotherUser);
@@ -226,5 +286,85 @@ public class ArticleQueryServiceTest extends DbTestBase {
     Assertions.assertEquals(anotherUserFeed.getCount(), 1);
     ArticleData articleData = anotherUserFeed.getArticleDatas().get(0);
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
+  }
+
+  @Test
+  public void should_order_user_feed_with_cursor_and_track_boundaries() {
+    User author = new User("feed-author@test.com", "feed-author", "123", "", "");
+    userRepository.save(author);
+    User follower = new User("feed-follower@test.com", "feed-follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), author.getId()));
+    List<Article> articles = saveCursorArticles(author);
+    Article oldest = articles.get(0);
+    Article middle = articles.get(1);
+    Article newest = articles.get(2);
+
+    CursorPager<ArticleData> nextTwo =
+        queryService.findUserFeedWithCursor(
+            follower, new CursorPageParameter<>(null, 2, Direction.NEXT));
+    Assertions.assertEquals(Arrays.asList(newest.getId(), middle.getId()), ids(nextTwo.getData()));
+    Assertions.assertTrue(nextTwo.hasNext());
+    Assertions.assertFalse(nextTwo.hasPrevious());
+
+    CursorPager<ArticleData> nextAll =
+        queryService.findUserFeedWithCursor(
+            follower, new CursorPageParameter<>(null, 5, Direction.NEXT));
+    Assertions.assertEquals(
+        Arrays.asList(newest.getId(), middle.getId(), oldest.getId()), ids(nextAll.getData()));
+    Assertions.assertFalse(nextAll.hasNext());
+    Assertions.assertFalse(nextAll.hasPrevious());
+
+    DateTime oldestCursor = DateTimeCursor.parse(nextAll.getData().get(2).getCursor().toString());
+    CursorPager<ArticleData> previousOne =
+        queryService.findUserFeedWithCursor(
+            follower, new CursorPageParameter<>(oldestCursor, 1, Direction.PREV));
+    Assertions.assertEquals(Arrays.asList(middle.getId()), ids(previousOne.getData()));
+    Assertions.assertTrue(previousOne.hasPrevious());
+    Assertions.assertFalse(previousOne.hasNext());
+
+    CursorPager<ArticleData> previousAll =
+        queryService.findUserFeedWithCursor(
+            follower, new CursorPageParameter<>(oldestCursor, 5, Direction.PREV));
+    Assertions.assertEquals(
+        Arrays.asList(newest.getId(), middle.getId()), ids(previousAll.getData()));
+    Assertions.assertFalse(previousAll.hasPrevious());
+    Assertions.assertFalse(previousAll.hasNext());
+  }
+
+  private List<Article> saveCursorArticles(User author) {
+    DateTime now = new DateTime();
+    Article oldest =
+        new Article(
+            "oldest cursor article",
+            "desc",
+            "body",
+            Arrays.asList("cursor-oldest"),
+            author.getId(),
+            now.minusHours(3));
+    Article middle =
+        new Article(
+            "middle cursor article",
+            "desc",
+            "body",
+            Arrays.asList("cursor-middle"),
+            author.getId(),
+            now.minusHours(2));
+    Article newest =
+        new Article(
+            "newest cursor article",
+            "desc",
+            "body",
+            Arrays.asList("cursor-newest"),
+            author.getId(),
+            now.minusHours(1));
+    articleRepository.save(oldest);
+    articleRepository.save(middle);
+    articleRepository.save(newest);
+    return Arrays.asList(oldest, middle, newest);
+  }
+
+  private List<String> ids(List<ArticleData> articles) {
+    return articles.stream().map(ArticleData::getId).collect(toList());
   }
 }
