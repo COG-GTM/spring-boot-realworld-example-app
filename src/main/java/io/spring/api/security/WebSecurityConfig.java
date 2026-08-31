@@ -35,6 +35,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
 
+    // CSRF protection is not applicable: the API is stateless (no sessions, no auth cookies) and
+    // authenticates every request from the Authorization header, which browsers do not attach
+    // automatically on cross-site requests.
     http.csrf()
         .disable()
         .cors()
