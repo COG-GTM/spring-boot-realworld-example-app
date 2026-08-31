@@ -1,8 +1,8 @@
 plugins {
-    id 'org.springframework.boot' version '2.6.3'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '2.7.18'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
     id 'java'
-    id "com.netflix.dgs.codegen" version "5.0.6"
+    id "com.netflix.dgs.codegen" version "5.1.17"
     id "com.diffplug.spotless" version "6.2.1"
 }
 
@@ -24,6 +24,22 @@ repositories {
     mavenCentral()
 }
 
+// The Spring Boot BOM manages graphql-java for spring-graphql; DGS needs a newer version.
+ext['graphql-java.version'] = '19.11'
+
+// Patch releases of BOM-managed libraries that carry security fixes not yet
+// picked up by the Spring Boot 2.7.x line.
+ext['tomcat.version'] = '9.0.121'
+ext['spring-framework.version'] = '5.3.39'
+ext['spring-security.version'] = '5.8.16'
+ext['jackson-bom.version'] = '2.18.10'
+ext['kotlin.version'] = '1.9.25'
+ext['logback.version'] = '1.2.13'
+ext['snakeyaml.version'] = '2.4'
+ext['reactor-bom.version'] = '2020.0.47'
+ext['commons-lang3.version'] = '3.18.0'
+ext['assertj.version'] = '3.27.7'
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -31,18 +47,21 @@ configurations {
 }
 
 dependencies {
+    // Transitive of the DGS starter (via Apollo federation support), vulnerable below 3.25.5.
+    implementation 'com.google.protobuf:protobuf-java:3.25.8'
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:5.6.2'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
                 'io.jsonwebtoken:jjwt-jackson:0.11.2'
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.xerial:sqlite-jdbc:3.41.2.2'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -53,7 +72,7 @@ dependencies {
     testImplementation 'io.rest-assured:spring-mock-mvc:4.5.1'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.3.2'
 }
 
 tasks.named('test') {
