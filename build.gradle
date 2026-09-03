@@ -9,6 +9,9 @@ plugins {
 version = '0.0.1-SNAPSHOT'
 // DGS 12 requires json-path 3.x (Jackson 3 provider); Spring Boot still manages 2.x
 ext['json-path.version'] = '3.0.0'
+// CVE-2026-19032 / CVE-2026-83557 patch releases (Boot 4.1.1 manages 3.1.5 / 2.21.5)
+ext['jackson-bom.version'] = '3.1.6'
+ext['jackson-2-bom.version'] = '2.21.6'
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
@@ -45,7 +48,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5',
                 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.xerial:sqlite-jdbc:3.53.2.1'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
