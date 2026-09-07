@@ -2,6 +2,8 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -36,7 +40,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
 
     http.csrf()
-        .disable()
+        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+        .requireCsrfProtectionMatcher(csrfProtectionMatcher())
+        .ignoringAntMatchers("/users", "/users/login", "/graphql")
+        .and()
         .cors()
         .and()
         .exceptionHandling()
@@ -62,6 +69,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authenticated();
 
     http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+  }
+
+  /**
+   * Authentication is stateless and carried exclusively in the {@code Authorization} header,
+   * which a browser never attaches ambiently, so such requests cannot be forged cross-site. CSRF
+   * tokens are therefore only required for state-changing requests that do not carry that header.
+   */
+  private RequestMatcher csrfProtectionMatcher() {
+    return request -> {
+      String method = request.getMethod();
+      boolean safeMethod =
+          "GET".equals(method)
+              || "HEAD".equals(method)
+              || "OPTIONS".equals(method)
+              || "TRACE".equals(method);
+      return !safeMethod && !hasAuthorizationHeader(request);
+    };
+  }
+
+  private static boolean hasAuthorizationHeader(HttpServletRequest request) {
+    String authorization = request.getHeader("Authorization");
+    return authorization != null && !authorization.isEmpty();
   }
 
   @Bean
