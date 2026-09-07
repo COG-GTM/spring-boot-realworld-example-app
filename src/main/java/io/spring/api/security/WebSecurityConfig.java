@@ -81,7 +81,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
    * Authentication is stateless and carried exclusively as a JWT in the {@code Authorization}
    * header, which a browser never attaches ambiently, so requests bearing a valid token cannot be
    * forged cross-site. CSRF tokens are therefore only required for state-changing requests that
-   * {@link JwtTokenFilter} has not already authenticated.
+   * were not authenticated from that header by {@link JwtTokenFilter}; any other authentication
+   * mechanism introduced later stays CSRF-protected.
    */
   private RequestMatcher csrfProtectionMatcher() {
     return request -> {
@@ -91,8 +92,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
               || "HEAD".equals(method)
               || "OPTIONS".equals(method)
               || "TRACE".equals(method);
-      return !safeMethod && !isAuthenticated();
+      return !safeMethod && !(hasAuthorizationHeader(request) && isAuthenticated());
     };
+  }
+
+  private static boolean hasAuthorizationHeader(HttpServletRequest request) {
+    String authorization = request.getHeader("Authorization");
+    return authorization != null && !authorization.isEmpty();
   }
 
   private static boolean isAuthenticated() {
