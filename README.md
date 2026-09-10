@@ -86,7 +86,7 @@ The project was migrated from Java 11 / Spring Boot 2.6 to Java 21 / Spring Boot
 |---|---|---|
 | Java | 11 | 21 (Gradle toolchain) |
 | Gradle wrapper | 7.4 | 8.14.3 |
-| Spring Boot | 2.6.3 | 3.5.9 (Spring Framework 6.2, Spring Security 6.5) |
+| Spring Boot | 2.6.3 | 3.5.16 (Spring Framework 6.2, Spring Security 6.5) |
 | Spring Dependency Management plugin | 1.0.11 | 1.1.7 |
 | Netflix DGS | 4.9.21 (`graphql-dgs-spring-boot-starter`) | 10.2.1 (`graphql-dgs-spring-graphql-starter`, on top of Spring for GraphQL) |
 | DGS codegen plugin | 5.0.6 | 8.6.0 |
