@@ -1,6 +1,6 @@
 # ![RealWorld Example App using Kotlin and Spring](example-logo.png)
 
-[![Actions](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
+[![Actions](https://github.com/COG-GTM/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/COG-GTM/spring-boot-realworld-example-app/actions)
 
 > ### Spring boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
 
@@ -19,7 +19,7 @@ The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-examp
 And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
 # How it works
 
-The application uses Spring Boot (Web, Mybatis).
+The application uses Java 21 and Spring Boot 3.5 (Web, Security, MyBatis, Netflix DGS for GraphQL).
 
 * Use the idea of Domain Driven Design to separate the business term and infrastructure term.
 * Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
@@ -44,9 +44,11 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 21 installed (the Gradle toolchain is pinned to 21).
 
     ./gradlew bootRun
+
+GraphiQL is available at http://localhost:8080/graphiql and the GraphQL endpoint at http://localhost:8080/graphql .
 
 To test that it works, open a browser tab at http://localhost:8080/tags .  
 Alternatively, you can run
@@ -75,6 +77,37 @@ The repository contains a lot of test cases to cover both api test and repositor
 Use spotless for code format.
 
     ./gradlew spotlessJavaApply
+
+# Java 11 → 21 migration
+
+The project was migrated from Java 11 / Spring Boot 2.6 to Java 21 / Spring Boot 3.5. Summary of what changed:
+
+| Component | Before | After |
+|---|---|---|
+| Java | 11 | 21 (Gradle toolchain) |
+| Gradle wrapper | 7.4 | 8.14.3 |
+| Spring Boot | 2.6.3 | 3.5.16 (Spring Framework 6.2, Spring Security 6.5) |
+| Spring Dependency Management plugin | 1.0.11 | 1.1.7 |
+| Netflix DGS | 4.9.21 (`graphql-dgs-spring-boot-starter`) | 10.2.1 (`graphql-dgs-spring-graphql-starter`, on top of Spring for GraphQL) |
+| DGS codegen plugin | 5.0.6 | 8.6.0 |
+| MyBatis Spring Boot starter | 2.2.2 | 3.0.4 |
+| JJWT | 0.11.2 | 0.12.6 |
+| sqlite-jdbc | 3.36.0.3 | 3.49.1.0 |
+| joda-time | 2.10.13 | 2.13.1 |
+| REST Assured | 4.5.1 | managed by Spring Boot BOM (5.5.x) |
+| Spotless plugin | 6.2.1 | 8.10.2 |
+
+Breaking changes handled:
+
+* `javax.servlet.*` / `javax.validation.*` → `jakarta.*` (Jakarta EE 10).
+* Spring Security 6: `WebSecurityConfigurerAdapter` replaced by a `SecurityFilterChain` bean using the lambda DSL and `authorizeHttpRequests`/`requestMatchers`; permitted paths are unchanged.
+* `ResponseEntityExceptionHandler#handleMethodArgumentNotValid` now takes `HttpStatusCode`.
+* JJWT 0.12 builder/parser API (`subject`, `expiration`, `parser().verifyWith(...)`, `parseSignedClaims`).
+* graphql-java 22+: `DataFetcherExceptionHandler#onException` → asynchronous `handleException`.
+* DGS codegen no longer maps `PageInfo` to `graphql.relay.PageInfo` automatically; an explicit `typeMapping` keeps the previous behaviour.
+* The GraphQL HTTP endpoint is now served by Spring for GraphQL, which decodes requests with the application's Jackson `ObjectMapper`. Because the REST API enables `UNWRAP_ROOT_VALUE`, `GraphQLHttpConfig` registers a dedicated converter for `/graphql` with unwrapping disabled.
+* `@MockBean` (deprecated for removal) → `@MockitoBean` in tests.
+* Spotless now targets `src/**/*.java` only (Gradle 8 rejects the previous implicit dependency on compiler outputs).
 
 # Help
 
