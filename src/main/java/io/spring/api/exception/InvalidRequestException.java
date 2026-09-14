@@ -4,7 +4,7 @@ import org.springframework.validation.Errors;
 
 @SuppressWarnings("serial")
 public class InvalidRequestException extends RuntimeException {
-  private final Errors errors;
+  private final transient Errors errors;
 
   public InvalidRequestException(Errors errors) {
     super("");
