@@ -117,7 +117,7 @@ Validation errors and failed login return `422`:
 
 ### Pagination
 
-All connections are Relay-style: `edges { cursor node { ... } } pageInfo { hasNextPage hasPreviousPage startCursor endCursor }`. Pass `first`/`after` to page forward or `last`/`before` to page backward; at least one of `first`/`last` is required (an `IllegalArgumentException` is raised otherwise); if both are supplied `first` takes precedence. Cursors are the item's `createdAt` in epoch milliseconds. Note that the `Article.comments` connection ignores the page size: `CommentReadService.findByArticleIdWithCursor` applies the cursor but no `LIMIT`, so all matching comments are returned.
+All connections are Relay-style: `edges { cursor node { ... } } pageInfo { hasNextPage hasPreviousPage startCursor endCursor }`. Pass `first`/`after` to page forward or `last`/`before` to page backward; at least one of `first`/`last` is required (an `IllegalArgumentException` is raised otherwise); if both are supplied `first` takes precedence. Cursors are the item's `createdAt` in epoch milliseconds. Note that the `Article.comments` connection does not honour the page size: `CommentReadService.findByArticleIdWithCursor` applies the cursor but no `LIMIT`, and `CommentQueryService` only drops the single row at index `limit`, so a page can contain every matching comment except one.
 
 ### Example
 

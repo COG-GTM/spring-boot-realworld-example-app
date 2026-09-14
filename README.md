@@ -122,7 +122,7 @@ The signing secret and session time are read from `application.properties` (`jwt
 
 ## Database
 
-Runtime uses a file-based SQLite database (`dev.db`) so data survives restarts; API and MyBatis tests activate the `test` profile and use in-memory SQLite (`application-test.properties`); `RealworldApplicationTests` (`@SpringBootTest` without a profile) boots against the default `dev.db` datasource. The datasource can be switched to any other JDBC database in `application.properties`, but note the Flyway migration and some MyBatis SQL are written against SQLite.
+Runtime uses a file-based SQLite database (`dev.db`) so data survives restarts; REST API tests are `@WebMvcTest` slices with mocked services (no database); repository/query-service tests (`DbTestBase`, `ArticleRepositoryTransactionTest`) activate the `test` profile and use in-memory SQLite (`application-test.properties`); `RealworldApplicationTests` (`@SpringBootTest` without a profile) boots against the default `dev.db` datasource. The datasource can be switched to any other JDBC database in `application.properties`, but note the Flyway migration and some MyBatis SQL are written against SQLite.
 
 ## Help
 
