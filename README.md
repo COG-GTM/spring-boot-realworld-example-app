@@ -37,7 +37,7 @@ On first start Flyway creates the schema (`src/main/resources/db/migration/V1__c
 ### Build, test and format
 
     ./gradlew compileJava compileTestJava   # compile (also generates GraphQL types)
-    ./gradlew test                          # run the test suite (in-memory SQLite, profile `test`)
+    ./gradlew test                          # run the test suite (see Database below)
     ./gradlew spotlessJavaApply             # format code (run before committing)
     ./gradlew spotlessJavaCheck             # verify formatting
     ./gradlew clean build                   # full build
@@ -69,7 +69,7 @@ The code under `src/main/java/io/spring` is organized as:
 | `application` | Read-side query services, DTOs (`application/data`), command/param objects, custom validators, pagination helpers |
 | `infrastructure` | MyBatis repository implementations and read services, `DefaultJwtService` |
 
-Dependency direction: `api` / `graphql` → `application` → `core` ← `infrastructure`.
+Intended dependency direction: `api` / `graphql` → `application` → `core` ← `infrastructure`. In practice the read side leaks: `application` query services import `infrastructure.mybatis.readservice.*` interfaces directly.
 
 Other resources:
 
@@ -112,7 +112,7 @@ The schema lives in [`src/main/resources/schema/schema.graphqls`](src/main/resou
 Queries: `article`, `articles`, `feed`, `me`, `profile`, `tags`.
 Mutations: `createUser`, `login`, `updateUser`, `followUser`, `unfollowUser`, `createArticle`, `updateArticle`, `deleteArticle`, `favoriteArticle`, `unfavoriteArticle`, `addComment`, `deleteComment`.
 
-Article and comment lists use Relay-style cursor pagination (`first`/`after` or `last`/`before`; exactly one of `first`/`last` is required). Requests to `/graphql` accept the same `Authorization: Token <jwt>` header as REST.
+Article and comment lists use Relay-style cursor pagination (`first`/`after` or `last`/`before`; at least one of `first`/`last` is required; if both are given `first` wins). Requests to `/graphql` accept the same `Authorization: Token <jwt>` header as REST.
 
 ## Security
 
@@ -122,7 +122,7 @@ The signing secret and session time are read from `application.properties` (`jwt
 
 ## Database
 
-Runtime uses a file-based SQLite database (`dev.db`) so data survives restarts; tests use in-memory SQLite (`application-test.properties`). The datasource can be switched to any other JDBC database in `application.properties`, but note the Flyway migration and some MyBatis SQL are written against SQLite.
+Runtime uses a file-based SQLite database (`dev.db`) so data survives restarts; API and MyBatis tests activate the `test` profile and use in-memory SQLite (`application-test.properties`); `RealworldApplicationTests` (`@SpringBootTest` without a profile) boots against the default `dev.db` datasource. The datasource can be switched to any other JDBC database in `application.properties`, but note the Flyway migration and some MyBatis SQL are written against SQLite.
 
 ## Help
 

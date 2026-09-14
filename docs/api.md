@@ -10,7 +10,7 @@ Register or login to obtain a JWT, then send it on subsequent requests:
 Authorization: Token <jwt>
 ```
 
-Tokens expire after `jwt.sessionTime` seconds (default 86400). Protected REST endpoints return `401` without a valid token; GraphQL requests are always accepted at the HTTP level and individual resolvers raise errors when authentication is required.
+Tokens expire after `jwt.sessionTime` seconds (default 86400). Protected REST endpoints return `401` without a valid token; GraphQL requests are always accepted at the HTTP level; authentication is checked per resolver and the behaviour for anonymous callers is inconsistent (e.g. `me` and `updateUser` return `null`, `feed` fails with an internal error, `login` raises a typed `UNAUTHENTICATED` error).
 
 ## REST
 
@@ -117,7 +117,7 @@ Validation errors and failed login return `422`:
 
 ### Pagination
 
-All connections are Relay-style: `edges { cursor node { ... } } pageInfo { hasNextPage hasPreviousPage startCursor endCursor }`. Pass `first`/`after` to page forward or `last`/`before` to page backward; exactly one of `first`/`last` is required. Cursors are the item's `createdAt` in epoch milliseconds.
+All connections are Relay-style: `edges { cursor node { ... } } pageInfo { hasNextPage hasPreviousPage startCursor endCursor }`. Pass `first`/`after` to page forward or `last`/`before` to page backward; at least one of `first`/`last` is required (an `IllegalArgumentException` is raised otherwise); if both are supplied `first` takes precedence. Cursors are the item's `createdAt` in epoch milliseconds. Note that the `Article.comments` connection ignores the page size: `CommentReadService.findByArticleIdWithCursor` applies the cursor but no `LIMIT`, so all matching comments are returned.
 
 ### Example
 

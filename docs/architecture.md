@@ -51,7 +51,7 @@ Shared MyBatis result maps for the DTOs live in `src/main/resources/mapper/Trans
 ## Pagination
 
 * REST uses offset pagination: `Page(offset, limit)` with query parameters `offset` (default 0) and `limit` (default 20). List responses are `{ "articles": [...], "articlesCount": n }`.
-* GraphQL uses Relay-style cursor pagination. `CursorPager` / `CursorPageParameter` implement keyset paging over `createdAt`; `DateTimeCursor` serializes the cursor as epoch milliseconds. Each connection field accepts `first`/`after` (forward) or `last`/`before` (backward); exactly one of `first` or `last` must be supplied. The query services fetch `limit + 1` rows to compute `hasNextPage` / `hasPreviousPage`.
+* GraphQL uses Relay-style cursor pagination. `CursorPager` / `CursorPageParameter` implement keyset paging over `createdAt`; `DateTimeCursor` serializes the cursor as epoch milliseconds. Each connection field accepts `first`/`after` (forward) or `last`/`before` (backward); at least one of `first` or `last` must be supplied (`first` wins if both are given). The article query services fetch `limit + 1` rows to compute `hasNextPage` / `hasPreviousPage`; the comment read service applies the cursor but no `LIMIT`.
 
 ## Security
 
