@@ -36,7 +36,11 @@ configurations {
 ext {
     dgsVersion = '10.2.1'
     jjwtVersion = '0.12.6'
-    restAssuredVersion = '5.5.2'
+    restAssuredVersion = '5.5.7'
+    // Override Spring Boot's managed versions with patch releases that carry security fixes.
+    set('logback.version', '1.5.36')
+    set('jackson-bom.version', '2.21.6')
+    set('tomcat.version', '10.1.56')
 }
 
 dependencies {
