@@ -37,4 +37,12 @@ public class ArticleTest {
     Article article = new Article("what?the.hell,w", "desc", "body", Arrays.asList("java"), "123");
     assertThat(article.getSlug(), is("what-the-hell-w"));
   }
+
+  @Test
+  public void should_update_slug_when_title_changes() {
+    Article article = new Article("old title", "desc", "body", Arrays.asList("java"), "123");
+    article.update("New Title", null, null);
+    assertThat(article.getSlug(), is("new-title"));
+    assertThat(article.getTitle(), is("New Title"));
+  }
 }
