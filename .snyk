@@ -1,0 +1,15 @@
+# Snyk (https://snyk.io) policy file
+version: v1.0.0
+ignore:
+  'java/DisablesCSRFProtection':
+    - 'src/main/java/io/spring/api/security/WebSecurityConfig.java':
+        reason: >-
+          The application is a stateless REST/GraphQL API authenticated solely via a JWT
+          bearer token in the Authorization header (SessionCreationPolicy.STATELESS, no
+          cookie- or session-based authentication). Browsers never attach the credential
+          automatically, so CSRF is not exploitable against these endpoints. CSRF protection
+          is now only bypassed for the explicit stateless API paths listed in
+          WebSecurityConfig and remains enabled for any other request.
+        expires: 2027-09-21T00:00:00.000Z
+        created: 2026-09-21T00:00:00.000Z
+patch: {}

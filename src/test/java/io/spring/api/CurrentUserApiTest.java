@@ -15,6 +15,7 @@ import io.spring.core.user.User;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,8 @@ import org.springframework.test.web.servlet.MockMvc;
   BCryptPasswordEncoder.class
 })
 public class CurrentUserApiTest extends TestWithCurrentUser {
+
+  private static final String TEST_PASSWORD = UUID.randomUUID().toString();
 
   @Autowired private MockMvc mvc;
 
@@ -127,7 +130,7 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
     Map<String, Object> param = prepareUpdateParam(newEmail, newBio, newUsername);
 
     when(userRepository.findByEmail(eq(newEmail)))
-        .thenReturn(Optional.of(new User(newEmail, "username", "123", "", "")));
+        .thenReturn(Optional.of(new User(newEmail, "username", TEST_PASSWORD, "", "")));
     when(userRepository.findByUsername(eq(newUsername))).thenReturn(Optional.empty());
 
     when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(userData));
