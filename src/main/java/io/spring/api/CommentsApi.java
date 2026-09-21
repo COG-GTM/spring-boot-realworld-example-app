@@ -38,7 +38,7 @@ public class CommentsApi {
   private CommentQueryService commentQueryService;
 
   @PostMapping
-  public ResponseEntity<?> createComment(
+  public ResponseEntity<Map<String, Object>> createComment(
       @PathVariable("slug") String slug,
       @AuthenticationPrincipal User user,
       @Valid @RequestBody NewCommentParam newCommentParam) {
