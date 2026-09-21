@@ -20,6 +20,7 @@ import io.spring.infrastructure.mybatis.readservice.UserReadService;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ import org.springframework.test.web.servlet.MockMvc;
   JacksonCustomizations.class
 })
 public class UsersApiTest {
+  private static final String TEST_PASSWORD = UUID.randomUUID().toString();
+
   @Autowired private MockMvc mvc;
 
   @MockBean private UserRepository userRepository;
@@ -64,7 +67,7 @@ public class UsersApiTest {
     String username = "johnjacob";
 
     when(jwtService.toToken(any())).thenReturn("123");
-    User user = new User(email, username, "123", "", defaultAvatar);
+    User user = new User(email, username, TEST_PASSWORD, "", defaultAvatar);
     UserData userData = new UserData(user.getId(), email, username, "", defaultAvatar);
     when(userReadService.findById(any())).thenReturn(userData);
 
@@ -134,7 +137,7 @@ public class UsersApiTest {
     String username = "johnjacob";
 
     when(userRepository.findByUsername(eq(username)))
-        .thenReturn(Optional.of(new User(email, username, "123", "bio", "")));
+        .thenReturn(Optional.of(new User(email, username, TEST_PASSWORD, "bio", "")));
     when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
 
     Map<String, Object> param = prepareRegisterParameter(email, username);
@@ -156,7 +159,7 @@ public class UsersApiTest {
     String username = "johnjacob2";
 
     when(userRepository.findByEmail(eq(email)))
-        .thenReturn(Optional.of(new User(email, username, "123", "bio", "")));
+        .thenReturn(Optional.of(new User(email, username, TEST_PASSWORD, "bio", "")));
 
     when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
 
@@ -181,7 +184,7 @@ public class UsersApiTest {
             new HashMap<String, Object>() {
               {
                 put("email", email);
-                put("password", "johnnyjacob");
+                put("password", TEST_PASSWORD);
                 put("username", username);
               }
             });
@@ -193,7 +196,7 @@ public class UsersApiTest {
   public void should_login_success() throws Exception {
     String email = "john@jacob.com";
     String username = "johnjacob2";
-    String password = "123";
+    String password = TEST_PASSWORD;
 
     User user = new User(email, username, passwordEncoder.encode(password), "", defaultAvatar);
     UserData userData = new UserData("123", email, username, "", defaultAvatar);
@@ -236,7 +239,7 @@ public class UsersApiTest {
   public void should_fail_login_with_wrong_password() throws Exception {
     String email = "john@jacob.com";
     String username = "johnjacob2";
-    String password = "123";
+    String password = TEST_PASSWORD;
 
     User user = new User(email, username, password, "", defaultAvatar);
     UserData userData = new UserData(user.getId(), email, username, "", defaultAvatar);
@@ -252,7 +255,7 @@ public class UsersApiTest {
                 new HashMap<String, Object>() {
                   {
                     put("email", email);
-                    put("password", "123123");
+                    put("password", TEST_PASSWORD + "-wrong");
                   }
                 });
           }
