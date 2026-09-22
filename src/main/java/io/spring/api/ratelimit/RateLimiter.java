@@ -39,7 +39,7 @@ public class RateLimiter {
     if (count <= limit) {
       return Decision.allowed();
     }
-    long retryAfterMillis = window.start + WINDOW.toMillis() - now;
+    long retryAfterMillis = Math.min(WINDOW.toMillis(), window.start + WINDOW.toMillis() - now);
     return Decision.rejected(Math.max(1, (int) Math.ceil(retryAfterMillis / 1000.0)));
   }
 

@@ -84,6 +84,7 @@ public class RateLimiterTest {
     assertTrue(limiter.tryAcquire("ip:a", 1).isAllowed());
     RateLimiter.Decision lateFromPreviousMinute = limiter.tryAcquireAt("ip:a", 1, previousMinute);
     assertFalse(lateFromPreviousMinute.isAllowed());
+    assertEquals(60, lateFromPreviousMinute.getRetryAfterSeconds());
     assertFalse(limiter.tryAcquire("ip:a", 1).isAllowed());
   }
 
