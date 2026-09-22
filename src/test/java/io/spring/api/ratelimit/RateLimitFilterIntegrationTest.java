@@ -31,7 +31,8 @@ import org.springframework.test.web.servlet.MockMvc;
     properties = {
       "ratelimit.anonymous-per-minute=2",
       "ratelimit.authenticated-per-minute=3",
-      "ratelimit.health-path=/actuator/health"
+      "ratelimit.health-path=/actuator/health",
+      "ratelimit.trust-forwarded-headers=true"
     })
 public class RateLimitFilterIntegrationTest {
   @Autowired private MockMvc mvc;

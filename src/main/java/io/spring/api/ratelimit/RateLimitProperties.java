@@ -12,4 +12,5 @@ public class RateLimitProperties {
   private int anonymousPerMinute = 60;
   private int authenticatedPerMinute = 600;
   private String healthPath = "/actuator/health";
+  private boolean trustForwardedHeaders = false;
 }

@@ -41,7 +41,8 @@ The secret key is stored in `application.properties`.
 # Rate limiting
 
 Every route is rate limited by a servlet filter (fixed one-minute window, in-memory). Unauthenticated
-requests are limited per client IP (first `X-Forwarded-For` entry, else the remote address);
+requests are limited per client IP (the remote address, or the first `X-Forwarded-For` entry when
+`ratelimit.trust-forwarded-headers=true` because the app sits behind a trusted proxy);
 authenticated requests are limited per API token. When a limit is hit the API responds with
 `429 Too Many Requests`, a `Retry-After` header (seconds) and the body
 `{"error": "rate_limited", "retry_after_seconds": N}`. The health check endpoint is never limited.
@@ -53,7 +54,8 @@ The limits are configured in `application.properties` (or the equivalent environ
 | `ratelimit.enabled`                 | `RATELIMIT_ENABLED`                | `true`             | Turn the limiter on/off                       |
 | `ratelimit.anonymous-per-minute`    | `RATELIMIT_ANONYMOUS_PER_MINUTE`   | `60`               | Requests per minute per client IP             |
 | `ratelimit.authenticated-per-minute`| `RATELIMIT_AUTHENTICATED_PER_MINUTE` | `600`            | Requests per minute per API token             |
-| `ratelimit.health-path`             | `RATELIMIT_HEALTH_PATH`            | `/actuator/health` | Path excluded from rate limiting              |
+| `ratelimit.health-path`             | `RATELIMIT_HEALTH_PATH`            | `/actuator/health` | Public health check path, excluded from rate limiting |
+| `ratelimit.trust-forwarded-headers` | `RATELIMIT_TRUST_FORWARDED_HEADERS`| `false`            | Use `X-Forwarded-For` for the client IP (only behind a trusted proxy) |
 
 # Database
 

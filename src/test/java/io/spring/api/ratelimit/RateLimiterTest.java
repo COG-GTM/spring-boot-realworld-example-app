@@ -66,6 +66,28 @@ public class RateLimiterTest {
   }
 
   @Test
+  public void should_evict_expired_windows_when_window_rolls_over() {
+    limiter.tryAcquire("ip:a", 1);
+    limiter.tryAcquire("ip:b", 1);
+    assertEquals(2, limiter.size());
+    now.addAndGet(60_000);
+    limiter.tryAcquire("ip:c", 1);
+    assertEquals(1, limiter.size());
+  }
+
+  @Test
+  public void should_not_replace_newer_window_with_older_one() throws Exception {
+    // request B observes the new minute and is admitted before a delayed request A (which read
+    // the clock in the previous minute) reaches the map; A must not reset B's count.
+    long previousMinute = now.get();
+    now.addAndGet(60_000);
+    assertTrue(limiter.tryAcquire("ip:a", 1).isAllowed());
+    RateLimiter.Decision lateFromPreviousMinute = limiter.tryAcquireAt("ip:a", 1, previousMinute);
+    assertFalse(lateFromPreviousMinute.isAllowed());
+    assertFalse(limiter.tryAcquire("ip:a", 1).isAllowed());
+  }
+
+  @Test
   public void should_clear_state_on_reset() {
     limiter.tryAcquire("ip:a", 1);
     limiter.reset();
