@@ -54,6 +54,12 @@ public class ArticleTest {
   }
 
   @Test
+  public void should_keep_combining_marks() {
+    assertThat(Article.toSlug("हिन्दी"), is("हिन्दी"));
+    assertThat(Article.toSlug("cafe\u0301"), is("cafe\u0301"));
+  }
+
+  @Test
   public void should_keep_plain_title_behavior() {
     assertThat(Article.toSlug("a new title 2"), is("a-new-title-2"));
   }

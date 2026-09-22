@@ -67,7 +67,7 @@ public class Article {
   public static String toSlug(String title) {
     return title
         .toLowerCase()
-        .replaceAll("[^\\p{L}\\p{N}]+", "-")
+        .replaceAll("[^\\p{L}\\p{M}\\p{N}]+", "-")
         .replaceAll("^-+|-+$", "");
   }
 }
