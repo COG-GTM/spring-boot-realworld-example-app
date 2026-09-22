@@ -37,4 +37,36 @@ public class ArticleTest {
     Article article = new Article("what?the.hell,w", "desc", "body", Arrays.asList("java"), "123");
     assertThat(article.getSlug(), is("what-the-hell-w"));
   }
+
+  @Test
+  public void should_not_have_trailing_hyphen() {
+    assertThat(Article.toSlug("How to train your dragon?"), is("how-to-train-your-dragon"));
+  }
+
+  @Test
+  public void should_strip_punctuation() {
+    assertThat(Article.toSlug("Hello, World!"), is("hello-world"));
+  }
+
+  @Test
+  public void should_collapse_symbols_and_trim_whitespace() {
+    assertThat(Article.toSlug("  C++  &  Java: 101  "), is("c-java-101"));
+  }
+
+  @Test
+  public void should_keep_combining_marks() {
+    assertThat(Article.toSlug("हिन्दी"), is("हिन्दी"));
+    assertThat(Article.toSlug("cafe\u0301"), is("cafe\u0301"));
+  }
+
+  @Test
+  public void should_drop_marks_whose_base_was_removed() {
+    assertThat(Article.toSlug("\u2764\uFE0F"), is(""));
+    assertThat(Article.toSlug("a \u2764\uFE0F b"), is("a-b"));
+  }
+
+  @Test
+  public void should_keep_plain_title_behavior() {
+    assertThat(Article.toSlug("a new title 2"), is("a-new-title-2"));
+  }
 }
