@@ -38,6 +38,23 @@ Integration with Spring Security and add other filter for jwt token process.
 
 The secret key is stored in `application.properties`.
 
+# Rate limiting
+
+The API applies fixed-window (1 minute) rate limiting to every request. Unauthenticated clients are limited per client IP; requests carrying a valid `Authorization: Token <jwt>` are limited per user instead.
+
+Two properties control the limits in `application.properties`:
+
+- `ratelimit.unauthenticated-per-minute` (default `60`, env var `RATELIMIT_UNAUTHENTICATED_PER_MINUTE`)
+- `ratelimit.authenticated-per-minute` (default `600`, env var `RATELIMIT_AUTHENTICATED_PER_MINUTE`)
+
+When the limit is exceeded the API responds with `429 Too Many Requests`, a `Retry-After` header, and a JSON body:
+
+```json
+{"error":"rate_limited","retry_after_seconds":42}
+```
+
+`GET /health` is excluded from rate limiting so uptime checks keep working.
+
 # Database
 
 It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
