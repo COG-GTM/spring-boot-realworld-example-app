@@ -60,6 +60,12 @@ public class ArticleTest {
   }
 
   @Test
+  public void should_drop_marks_whose_base_was_removed() {
+    assertThat(Article.toSlug("\u2764\uFE0F"), is(""));
+    assertThat(Article.toSlug("a \u2764\uFE0F b"), is("a-b"));
+  }
+
+  @Test
   public void should_keep_plain_title_behavior() {
     assertThat(Article.toSlug("a new title 2"), is("a-new-title-2"));
   }

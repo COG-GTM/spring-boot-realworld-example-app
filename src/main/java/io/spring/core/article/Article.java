@@ -68,6 +68,8 @@ public class Article {
     return title
         .toLowerCase()
         .replaceAll("[^\\p{L}\\p{M}\\p{N}]+", "-")
+        .replaceAll("(^|-)\\p{M}+", "$1")
+        .replaceAll("-{2,}", "-")
         .replaceAll("^-+|-+$", "");
   }
 }
