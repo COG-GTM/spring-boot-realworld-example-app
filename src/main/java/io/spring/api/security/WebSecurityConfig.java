@@ -2,6 +2,11 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import io.spring.api.ratelimit.RateLimitFilter;
+import io.spring.api.ratelimit.RateLimitProperties;
+import io.spring.api.ratelimit.RateLimiter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,7 +25,19 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties(RateLimitProperties.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+  @Autowired private RateLimitProperties rateLimitProperties;
+
+  @Bean
+  public RateLimiter rateLimiter() {
+    return new RateLimiter();
+  }
+
+  @Bean
+  public RateLimitFilter rateLimitFilter() {
+    return new RateLimitFilter(rateLimiter(), rateLimitProperties);
+  }
 
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
@@ -52,6 +69,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .permitAll()
         .antMatchers("/graphql")
         .permitAll()
+        .antMatchers(HttpMethod.GET, rateLimitProperties.getHealthPath())
+        .permitAll()
         .antMatchers(HttpMethod.GET, "/articles/feed")
         .authenticated()
         .antMatchers(HttpMethod.POST, "/users", "/users/login")
@@ -62,6 +81,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authenticated();
 
     http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterAfter(rateLimitFilter(), JwtTokenFilter.class);
   }
 
   @Bean
