@@ -37,4 +37,30 @@ public class ArticleTest {
     Article article = new Article("what?the.hell,w", "desc", "body", Arrays.asList("java"), "123");
     assertThat(article.getSlug(), is("what-the-hell-w"));
   }
+
+  @Test
+  public void should_deduplicate_tags() {
+    Article article =
+        new Article("title", "desc", "body", Arrays.asList("java", "java", "spring"), "123");
+    assertThat(article.getTags().size(), is(2));
+  }
+
+  @Test
+  public void should_update_slug_when_title_is_updated() {
+    Article article = new Article("old title", "desc", "body", Arrays.asList("java"), "123");
+    article.update("new title", "", "");
+
+    assertThat(article.getTitle(), is("new title"));
+    assertThat(article.getSlug(), is("new-title"));
+  }
+
+  @Test
+  public void should_keep_original_values_when_updating_with_empty_values() {
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), "123");
+    article.update("", null, "");
+
+    assertThat(article.getTitle(), is("title"));
+    assertThat(article.getDescription(), is("desc"));
+    assertThat(article.getBody(), is("body"));
+  }
 }
