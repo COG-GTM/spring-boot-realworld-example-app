@@ -7,6 +7,12 @@ plugins {
 }
 
 version = '0.0.1-SNAPSHOT'
+
+ext['tomcat.version'] = '10.1.59'
+ext['jackson-bom.version'] = '2.21.6'
+ext['log4j2.version'] = '2.25.5'
+ext['commons-lang3.version'] = '3.18.0'
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -43,6 +49,10 @@ dependencies {
                 'io.jsonwebtoken:jjwt-jackson:0.12.7'
     implementation 'joda-time:joda-time:2.14.4'
     implementation 'org.xerial:sqlite-jdbc:3.53.2.1'
+
+    constraints {
+        implementation 'com.google.protobuf:protobuf-java:4.35.1'
+    }
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
