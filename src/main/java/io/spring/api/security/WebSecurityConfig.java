@@ -35,6 +35,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
 
+    // CSRF protection is intentionally disabled: this is a stateless REST/GraphQL API that
+    // authenticates solely via a JWT in the Authorization header (no cookies or HTTP sessions),
+    // so browsers never attach credentials automatically to cross-site requests.
     http.csrf()
         .disable()
         .cors()
