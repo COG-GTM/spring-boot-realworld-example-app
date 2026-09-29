@@ -26,13 +26,12 @@ public interface ArticleReadService {
 
   List<ArticleData> findArticles(@Param("articleIds") List<String> articleIds);
 
-  List<ArticleData> findArticlesOfAuthors(
-      @Param("authors") List<String> authors, @Param("page") Page page);
+  List<String> findFeedArticleIds(@Param("userId") String userId, @Param("page") Page page);
 
-  List<ArticleData> findArticlesOfAuthorsWithCursor(
-      @Param("authors") List<String> authors, @Param("page") CursorPageParameter page);
+  List<String> findFeedArticleIdsWithCursor(
+      @Param("userId") String userId, @Param("page") CursorPageParameter page);
 
-  int countFeedSize(@Param("authors") List<String> authors);
+  int countFeedSize(@Param("userId") String userId);
 
   List<String> findArticlesWithCursor(
       @Param("tag") String tag,

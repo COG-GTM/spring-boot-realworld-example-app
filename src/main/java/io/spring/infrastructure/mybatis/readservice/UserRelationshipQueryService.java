@@ -11,6 +11,4 @@ public interface UserRelationshipQueryService {
       @Param("userId") String userId, @Param("anotherUserId") String anotherUserId);
 
   Set<String> followingAuthors(@Param("userId") String userId, @Param("ids") List<String> ids);
-
-  List<String> followedUsers(@Param("userId") String userId);
 }

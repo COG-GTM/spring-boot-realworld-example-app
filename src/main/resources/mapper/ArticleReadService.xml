@@ -24,16 +24,44 @@
         left join tags T on T.id = AT.tag_id
         left join users U on U.id = A.user_id
     </sql>
-    <sql id="selectArticleIds">
-        select
-        DISTINCT(A.id) articleId, A.created_at
-        from
-        articles A
-        left join article_tags AT on A.id = AT.article_id
-        left join tags T on T.id = AT.tag_id
-        left join article_favorites AF on AF.article_id = A.id
-        left join users AU on AU.id = A.user_id
-        left join users AFU on AFU.id = AF.user_id
+    <sql id="articleFilters">
+        <if test="tag != null">
+            AND A.id in (
+              select AT.article_id from article_tags AT
+              join tags T on T.id = AT.tag_id
+              where T.name = #{tag}
+            )
+        </if>
+        <if test="author != null">
+            AND A.user_id in (select AU.id from users AU where AU.username = #{author})
+        </if>
+        <if test="favoritedBy != null">
+            AND A.id in (
+              select AF.article_id from article_favorites AF
+              join users AFU on AFU.id = AF.user_id
+              where AFU.username = #{favoritedBy}
+            )
+        </if>
+    </sql>
+    <sql id="feedFilter">
+        A.user_id in (select F.follow_id from follows F where F.user_id = #{userId})
+    </sql>
+    <sql id="cursorFilter">
+        <if test='page.cursor != null and page.direction.name() == "NEXT"'>
+            AND A.created_at &lt; #{page.cursor}
+        </if>
+        <if test='page.cursor != null and page.direction.name() == "PREV"'>
+            AND A.created_at > #{page.cursor}
+        </if>
+    </sql>
+    <sql id="cursorOrderAndLimit">
+        <if test='page.direction.name() == "NEXT"'>
+            order by A.created_at desc
+        </if>
+        <if test='page.direction.name() == "PREV"'>
+            order by A.created_at asc
+        </if>
+        limit #{page.queryLimit}
     </sql>
 
     <select id="findById" resultMap="transfer.data.articleData">
@@ -45,41 +73,17 @@
         where A.slug = #{slug}
     </select>
     <select id="queryArticles" resultMap="articleId">
-        <include refid="selectArticleIds" />
+        select A.id articleId from articles A
         <where>
-            <if test="tag != null">
-                T.name = #{tag}
-            </if>
-            <if test="author != null">
-                AND AU.username = #{author}
-            </if>
-            <if test="favoritedBy != null">
-                AND AFU.username = #{favoritedBy}
-            </if>
+            <include refid="articleFilters"/>
         </where>
         order by A.created_at desc
         limit #{page.offset}, #{page.limit}
     </select>
     <select id="countArticle" resultType="java.lang.Integer">
-        select
-        count(DISTINCT A.id)
-        from
-        articles A
-        left join article_tags AT on A.id = AT.article_id
-        left join tags T on T.id = AT.tag_id
-        left join article_favorites AF on AF.article_id = A.id
-        left join users AU on AU.id = A.user_id
-        left join users AFU on AFU.id = AF.user_id
+        select count(1) from articles A
         <where>
-            <if test="tag != null">
-                T.name = #{tag}
-            </if>
-            <if test="author != null">
-                AND AU.username = #{author}
-            </if>
-            <if test="favoritedBy != null">
-                AND AFU.username = #{favoritedBy}
-            </if>
+            <include refid="articleFilters"/>
         </where>
     </select>
     <select id="findArticles" resultMap="transfer.data.articleData">
@@ -90,68 +94,28 @@
         </foreach>
         order by A.created_at desc
     </select>
-    <select id="findArticlesOfAuthors" resultMap="transfer.data.articleData">
-        <include refid="selectArticleData"/>
-        where A.user_id in
-        <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
+    <select id="findFeedArticleIds" resultMap="articleId">
+        select A.id articleId from articles A
+        where <include refid="feedFilter"/>
+        order by A.created_at desc
         limit #{page.offset}, #{page.limit}
     </select>
     <select id="countFeedSize" resultType="java.lang.Integer">
-        select count(1) from articles A where A.user_id in
-        <foreach collection="authors" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        select count(1) from articles A where <include refid="feedFilter"/>
     </select>
-    <select id="findArticlesWithCursor" resultType="java.lang.String">
-        <include refid="selectArticleIds" />
+    <select id="findArticlesWithCursor" resultMap="articleId">
+        select A.id articleId from articles A
         <where>
-            <if test="tag != null">
-                T.name = #{tag}
-            </if>
-            <if test="author != null">
-                AND AU.username = #{author}
-            </if>
-            <if test="favoritedBy != null">
-                AND AFU.username = #{favoritedBy}
-            </if>
-            <if test='page.cursor != null and page.direction.name() == "NEXT"'>
-                AND A.created_at &lt; #{page.cursor}
-            </if>
-            <if test='page.cursor != null and page.direction.name() == "PREV"'>
-                AND A.created_at > #{page.cursor}
-            </if>
+            <include refid="articleFilters"/>
+            <include refid="cursorFilter"/>
         </where>
-        <if test='page.direction.name() == "NEXT"'>
-            order by A.created_at desc
-        </if>
-        <if test='page.direction.name() == "PREV"'>
-            order by A.created_at asc
-        </if>
-        limit #{page.queryLimit}
+        <include refid="cursorOrderAndLimit"/>
     </select>
-    <select id="findArticlesOfAuthorsWithCursor" resultMap="transfer.data.articleData">
-        <include refid="selectArticleData"/>
-        <where>
-        A.user_id in
-        <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-        <if test='page.cursor != null and page.direction.name() == "NEXT"'>
-            AND A.created_at &lt; #{page.cursor}
-        </if>
-        <if test='page.cursor != null and page.direction.name() == "PREV"'>
-            AND A.created_at > #{page.cursor}
-        </if>
-        <if test='page.direction.name() == "NEXT"'>
-            order by A.created_at desc
-        </if>
-        <if test='page.direction.name() == "PREV"'>
-            order by A.created_at asc
-        </if>
-        </where>
-        limit #{page.queryLimit}
+    <select id="findFeedArticleIdsWithCursor" resultMap="articleId">
+        select A.id articleId from articles A
+        where <include refid="feedFilter"/>
+        <include refid="cursorFilter"/>
+        <include refid="cursorOrderAndLimit"/>
     </select>
 
     <resultMap id="articleId" type="string">

@@ -79,22 +79,20 @@ public class ArticleQueryService {
 
   public CursorPager<ArticleData> findUserFeedWithCursor(
       User user, CursorPageParameter<DateTime> page) {
-    List<String> followdUsers = userRelationshipQueryService.followedUsers(user.getId());
-    if (followdUsers.size() == 0) {
+    List<String> articleIds = articleReadService.findFeedArticleIdsWithCursor(user.getId(), page);
+    if (articleIds.isEmpty()) {
       return new CursorPager<>(new ArrayList<>(), page.getDirection(), false);
-    } else {
-      List<ArticleData> articles =
-          articleReadService.findArticlesOfAuthorsWithCursor(followdUsers, page);
-      boolean hasExtra = articles.size() > page.getLimit();
-      if (hasExtra) {
-        articles.remove(page.getLimit());
-      }
-      if (!page.isNext()) {
-        Collections.reverse(articles);
-      }
-      fillExtraInfo(articles, user);
-      return new CursorPager<>(articles, page.getDirection(), hasExtra);
     }
+    boolean hasExtra = articleIds.size() > page.getLimit();
+    if (hasExtra) {
+      articleIds.remove(page.getLimit());
+    }
+    if (!page.isNext()) {
+      Collections.reverse(articleIds);
+    }
+    List<ArticleData> articles = articleReadService.findArticles(articleIds);
+    fillExtraInfo(articles, user);
+    return new CursorPager<>(articles, page.getDirection(), hasExtra);
   }
 
   public ArticleDataList findRecentArticles(
@@ -111,15 +109,14 @@ public class ArticleQueryService {
   }
 
   public ArticleDataList findUserFeed(User user, Page page) {
-    List<String> followdUsers = userRelationshipQueryService.followedUsers(user.getId());
-    if (followdUsers.size() == 0) {
-      return new ArticleDataList(new ArrayList<>(), 0);
-    } else {
-      List<ArticleData> articles = articleReadService.findArticlesOfAuthors(followdUsers, page);
-      fillExtraInfo(articles, user);
-      int count = articleReadService.countFeedSize(followdUsers);
-      return new ArticleDataList(articles, count);
+    List<String> articleIds = articleReadService.findFeedArticleIds(user.getId(), page);
+    int count = articleReadService.countFeedSize(user.getId());
+    if (articleIds.isEmpty()) {
+      return new ArticleDataList(new ArrayList<>(), count);
     }
+    List<ArticleData> articles = articleReadService.findArticles(articleIds);
+    fillExtraInfo(articles, user);
+    return new ArticleDataList(articles, count);
   }
 
   private void fillExtraInfo(List<ArticleData> articles, User currentUser) {

@@ -1,6 +1,9 @@
 package io.spring.application.comment;
 
 import io.spring.application.CommentQueryService;
+import io.spring.application.CursorPageParameter;
+import io.spring.application.CursorPager;
+import io.spring.application.CursorPager.Direction;
 import io.spring.application.data.CommentData;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
@@ -16,6 +19,7 @@ import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,5 +76,20 @@ public class CommentQueryServiceTest extends DbTestBase {
 
     List<CommentData> comments = commentQueryService.findByArticleId(article.getId(), user);
     Assertions.assertEquals(comments.size(), 2);
+  }
+
+  @Test
+  public void should_limit_comments_of_article_with_cursor() {
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), user.getId());
+    articleRepository.save(article);
+    for (int i = 0; i < 5; i++) {
+      commentRepository.save(new Comment("content" + i, user.getId(), article.getId()));
+    }
+
+    CursorPager<CommentData> page =
+        commentQueryService.findByArticleIdWithCursor(
+            article.getId(), user, new CursorPageParameter<DateTime>(null, 2, Direction.NEXT));
+    Assertions.assertEquals(2, page.getData().size());
+    Assertions.assertTrue(page.hasNext());
   }
 }
