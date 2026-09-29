@@ -97,6 +97,15 @@ public class ArticleQueryService {
     }
   }
 
+  public int countRecentArticles(String tag, String author, String favoritedBy) {
+    return articleReadService.countArticle(tag, author, favoritedBy);
+  }
+
+  public int countUserFeed(User user) {
+    List<String> followdUsers = userRelationshipQueryService.followedUsers(user.getId());
+    return followdUsers.isEmpty() ? 0 : articleReadService.countFeedSize(followdUsers);
+  }
+
   public ArticleDataList findRecentArticles(
       String tag, String author, String favoritedBy, Page page, User currentUser) {
     List<String> articleIds = articleReadService.queryArticles(tag, author, favoritedBy, page);

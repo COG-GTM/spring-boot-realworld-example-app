@@ -66,6 +66,7 @@ type ArticleEdge {
 type ArticlesConnection {
     edges: [ArticleEdge]
     pageInfo: PageInfo!
+    totalCount: Int
 }
 
 ### Comments

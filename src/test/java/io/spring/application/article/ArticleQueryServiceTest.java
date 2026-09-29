@@ -227,4 +227,30 @@ public class ArticleQueryServiceTest extends DbTestBase {
     ArticleData articleData = anotherUserFeed.getArticleDatas().get(0);
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
   }
+
+  @Test
+  public void should_count_recent_articles_with_filters() {
+    User anotherUser = new User("other@email.com", "other", "123", "", "");
+    userRepository.save(anotherUser);
+    articleRepository.save(
+        new Article("new article", "desc", "body", Arrays.asList("test"), anotherUser.getId()));
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), anotherUser.getId()));
+
+    Assertions.assertEquals(2, queryService.countRecentArticles(null, null, null));
+    Assertions.assertEquals(1, queryService.countRecentArticles("spring", null, null));
+    Assertions.assertEquals(1, queryService.countRecentArticles(null, user.getUsername(), null));
+    Assertions.assertEquals(
+        1, queryService.countRecentArticles(null, null, anotherUser.getUsername()));
+    Assertions.assertEquals(0, queryService.countRecentArticles("notag", null, null));
+  }
+
+  @Test
+  public void should_count_user_feed() {
+    User anotherUser = new User("other@email.com", "other", "123", "", "");
+    userRepository.save(anotherUser);
+    userRepository.saveRelation(new FollowRelation(anotherUser.getId(), user.getId()));
+
+    Assertions.assertEquals(0, queryService.countUserFeed(user));
+    Assertions.assertEquals(1, queryService.countUserFeed(anotherUser));
+  }
 }

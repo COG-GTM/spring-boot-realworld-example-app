@@ -20,6 +20,7 @@ import io.spring.application.data.CommentData;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.graphql.DgsConstants.ARTICLEPAYLOAD;
+import io.spring.graphql.DgsConstants.ARTICLESCONNECTION;
 import io.spring.graphql.DgsConstants.COMMENT;
 import io.spring.graphql.DgsConstants.PROFILE;
 import io.spring.graphql.DgsConstants.QUERY;
@@ -28,6 +29,7 @@ import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
 import io.spring.graphql.types.Profile;
 import java.util.HashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.joda.time.format.ISODateTimeFormat;
@@ -68,6 +70,7 @@ public class ArticleDatafetcher {
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
+            .totalCount(totalCount(dfe, () -> articleQueryService.countUserFeed(current)))
             .edges(
                 articles.getData().stream()
                     .map(
@@ -118,6 +121,7 @@ public class ArticleDatafetcher {
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
+            .totalCount(totalCount(dfe, () -> articleQueryService.countUserFeed(target)))
             .edges(
                 articles.getData().stream()
                     .map(
@@ -172,6 +176,11 @@ public class ArticleDatafetcher {
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
+            .totalCount(
+                totalCount(
+                    dfe,
+                    () ->
+                        articleQueryService.countRecentArticles(null, null, profile.getUsername())))
             .edges(
                 articles.getData().stream()
                     .map(
@@ -225,6 +234,11 @@ public class ArticleDatafetcher {
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
+            .totalCount(
+                totalCount(
+                    dfe,
+                    () ->
+                        articleQueryService.countRecentArticles(null, profile.getUsername(), null)))
             .edges(
                 articles.getData().stream()
                     .map(
@@ -280,6 +294,11 @@ public class ArticleDatafetcher {
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()
             .pageInfo(pageInfo)
+            .totalCount(
+                totalCount(
+                    dfe,
+                    () ->
+                        articleQueryService.countRecentArticles(withTag, authoredBy, favoritedBy)))
             .edges(
                 articles.getData().stream()
                     .map(
@@ -354,6 +373,10 @@ public class ArticleDatafetcher {
             })
         .data(articleResult)
         .build();
+  }
+
+  private Integer totalCount(DataFetchingEnvironment dfe, Supplier<Integer> counter) {
+    return dfe.getSelectionSet().contains(ARTICLESCONNECTION.TotalCount) ? counter.get() : null;
   }
 
   private DefaultPageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
