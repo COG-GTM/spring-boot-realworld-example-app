@@ -53,6 +53,12 @@ Alternatively, you can run
 
     curl http://localhost:8080/tags
 
+# Observability
+
+* Health endpoints (unauthenticated): `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness` (readiness also checks the database).
+* Logs are written to the console as JSON (one object per line). Run with `--spring.profiles.active=plain-logs` for human-readable output.
+* Every request gets a correlation ID: an incoming `X-Request-Id` header is reused (if it is at most 128 chars of `[A-Za-z0-9._:-]`), otherwise a UUID is generated. It is returned in the `X-Request-Id` response header and included as `requestId` on every log line written while handling the request.
+
 # Try it out with [Docker](https://www.docker.com/)
 
 You'll need Docker installed.
