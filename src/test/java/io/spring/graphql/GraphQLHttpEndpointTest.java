@@ -57,7 +57,7 @@ public class GraphQLHttpEndpointTest {
       result = mockMvc.perform(get(location)).andExpect(status().isOk()).andReturn();
     }
     String body = result.getResponse().getContentAsString();
-    org.assertj.core.api.Assertions.assertThat(body).contains("https://esm.sh/graphiql@5.0.0");
+    org.assertj.core.api.Assertions.assertThat(body).contains("https://esm.sh/graphiql@5.4.0");
     org.assertj.core.api.Assertions.assertThat(body)
         .doesNotContain("unpkg.com/graphiql/graphiql.min.js");
   }
