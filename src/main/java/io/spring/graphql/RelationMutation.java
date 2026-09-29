@@ -6,6 +6,9 @@ import com.netflix.graphql.dgs.InputArgument;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
+import io.spring.core.ratelimit.RateLimitAction;
+import io.spring.core.ratelimit.RateLimitSubject;
+import io.spring.core.ratelimit.RateLimiter;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
@@ -21,10 +24,12 @@ public class RelationMutation {
 
   private UserRepository userRepository;
   private ProfileQueryService profileQueryService;
+  private RateLimiter rateLimiter;
 
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.FollowUser)
   public ProfilePayload follow(@InputArgument("username") String username) {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+    rateLimiter.acquireOrThrow(RateLimitAction.FOLLOW, RateLimitSubject.of(user));
     return userRepository
         .findByUsername(username)
         .map(

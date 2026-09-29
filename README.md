@@ -38,6 +38,22 @@ Integration with Spring Security and add other filter for jwt token process.
 
 The secret key is stored in `application.properties`.
 
+# Rate limiting
+
+Write endpoints are rate limited per authenticated user: `POST /articles`, `POST /articles/{slug}/comments`, `POST /profiles/{username}/follow`, and the matching GraphQL mutations (`createArticle`, `addComment`, `followUser`), which share the same quota as their REST counterparts.
+
+Limits are configured in `application.properties` (any action without an entry is unlimited):
+
+    rate-limit.enabled=true
+    rate-limit.limits.article-create.requests=10
+    rate-limit.limits.article-create.window=1m
+    rate-limit.limits.comment-create.requests=30
+    rate-limit.limits.comment-create.window=1m
+    rate-limit.limits.follow.requests=30
+    rate-limit.limits.follow.window=1m
+
+Rate-limited REST responses carry `X-RateLimit-Limit` / `X-RateLimit-Remaining`. Once a limit is exceeded the API returns `429 Too Many Requests` with a `Retry-After` header and `{"errors":{"rate_limit":["too many requests, retry after N seconds"]}}`; GraphQL returns an `ENHANCE_YOUR_CALM` error with `retryAfterSeconds` in its extensions. Counters are kept in memory per instance (fixed window).
+
 # Database
 
 It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.

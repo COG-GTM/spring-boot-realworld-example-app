@@ -13,6 +13,9 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.favorite.ArticleFavorite;
 import io.spring.core.favorite.ArticleFavoriteRepository;
+import io.spring.core.ratelimit.RateLimitAction;
+import io.spring.core.ratelimit.RateLimitSubject;
+import io.spring.core.ratelimit.RateLimiter;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
 import io.spring.graphql.DgsConstants.MUTATION;
@@ -31,11 +34,13 @@ public class ArticleMutation {
   private ArticleCommandService articleCommandService;
   private ArticleFavoriteRepository articleFavoriteRepository;
   private ArticleRepository articleRepository;
+  private RateLimiter rateLimiter;
 
   @DgsMutation(field = MUTATION.CreateArticle)
   public DataFetcherResult<ArticlePayload> createArticle(
       @InputArgument("input") CreateArticleInput input) {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+    rateLimiter.acquireOrThrow(RateLimitAction.ARTICLE_CREATE, RateLimitSubject.of(user));
     NewArticleParam newArticleParam =
         NewArticleParam.builder()
             .title(input.getTitle())

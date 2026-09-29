@@ -1,10 +1,12 @@
 package io.spring.api;
 
+import io.spring.api.ratelimit.RateLimited;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.Page;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.NewArticleParam;
 import io.spring.core.article.Article;
+import io.spring.core.ratelimit.RateLimitAction;
 import io.spring.core.user.User;
 import java.util.HashMap;
 import javax.validation.Valid;
@@ -26,6 +28,7 @@ public class ArticlesApi {
   private ArticleQueryService articleQueryService;
 
   @PostMapping
+  @RateLimited(RateLimitAction.ARTICLE_CREATE)
   public ResponseEntity createArticle(
       @Valid @RequestBody NewArticleParam newArticleParam, @AuthenticationPrincipal User user) {
     Article article = articleCommandService.createArticle(newArticleParam, user);

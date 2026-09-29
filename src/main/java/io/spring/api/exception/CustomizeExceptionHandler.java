@@ -2,8 +2,11 @@ package io.spring.api.exception;
 
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
+import io.spring.api.ratelimit.RateLimitHeaders;
+import io.spring.core.ratelimit.RateLimitExceededException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,6 +60,18 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
                 put("message", e.getMessage());
               }
             });
+  }
+
+  @ExceptionHandler(RateLimitExceededException.class)
+  public ResponseEntity<ErrorResource> handleRateLimitExceeded(RateLimitExceededException e) {
+    ErrorResource error =
+        new ErrorResource(
+            Collections.singletonList(
+                new FieldErrorResource(
+                    e.getAction().name(), "rate_limit", "TooManyRequests", e.getMessage())));
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+        .headers(RateLimitHeaders.from(e.getDecision()))
+        .body(error);
   }
 
   @Override

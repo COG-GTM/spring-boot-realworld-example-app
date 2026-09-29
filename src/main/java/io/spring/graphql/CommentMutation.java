@@ -12,6 +12,9 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
+import io.spring.core.ratelimit.RateLimitAction;
+import io.spring.core.ratelimit.RateLimitSubject;
+import io.spring.core.ratelimit.RateLimiter;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
 import io.spring.graphql.DgsConstants.MUTATION;
@@ -27,11 +30,13 @@ public class CommentMutation {
   private ArticleRepository articleRepository;
   private CommentRepository commentRepository;
   private CommentQueryService commentQueryService;
+  private RateLimiter rateLimiter;
 
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.AddComment)
   public DataFetcherResult<CommentPayload> createComment(
       @InputArgument("slug") String slug, @InputArgument("body") String body) {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+    rateLimiter.acquireOrThrow(RateLimitAction.COMMENT_CREATE, RateLimitSubject.of(user));
     Article article =
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
     Comment comment = new Comment(body, user.getId(), article.getId());

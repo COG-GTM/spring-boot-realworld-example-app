@@ -1,8 +1,10 @@
 package io.spring.api;
 
 import io.spring.api.exception.ResourceNotFoundException;
+import io.spring.api.ratelimit.RateLimited;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
+import io.spring.core.ratelimit.RateLimitAction;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
@@ -35,6 +37,7 @@ public class ProfileApi {
   }
 
   @PostMapping(path = "follow")
+  @RateLimited(RateLimitAction.FOLLOW)
   public ResponseEntity follow(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
     return userRepository

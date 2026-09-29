@@ -3,12 +3,14 @@ package io.spring.api;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
+import io.spring.api.ratelimit.RateLimited;
 import io.spring.application.CommentQueryService;
 import io.spring.application.data.CommentData;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
+import io.spring.core.ratelimit.RateLimitAction;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ public class CommentsApi {
   private CommentQueryService commentQueryService;
 
   @PostMapping
+  @RateLimited(RateLimitAction.COMMENT_CREATE)
   public ResponseEntity<?> createComment(
       @PathVariable("slug") String slug,
       @AuthenticationPrincipal User user,
