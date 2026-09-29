@@ -3,6 +3,8 @@ package io.spring.api;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.spring.TestHelper.articleDataFixture;
 import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -53,7 +55,14 @@ public class ListArticleApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_get_feeds_401_without_login() throws Exception {
-    RestAssuredMockMvc.when().get("/articles/feed").prettyPeek().then().statusCode(401);
+    RestAssuredMockMvc.when()
+        .get("/articles/feed")
+        .prettyPeek()
+        .then()
+        .statusCode(401)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:authentication-required"))
+        .body("status", equalTo(401));
   }
 
   @Test

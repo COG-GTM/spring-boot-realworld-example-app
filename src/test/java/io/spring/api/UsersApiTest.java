@@ -1,6 +1,7 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -107,6 +108,11 @@ public class UsersApiTest {
         .prettyPeek()
         .then()
         .statusCode(422)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:validation-failed"))
+        .body("status", equalTo(422))
+        .body("title", equalTo("Validation Failed"))
+        .body("instance", equalTo("/users"))
         .body("errors.username[0]", equalTo("can't be empty"));
   }
 
@@ -125,6 +131,9 @@ public class UsersApiTest {
         .prettyPeek()
         .then()
         .statusCode(422)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:validation-failed"))
+        .body("status", equalTo(422))
         .body("errors.email[0]", equalTo("should be an email"));
   }
 
@@ -147,6 +156,9 @@ public class UsersApiTest {
         .prettyPeek()
         .then()
         .statusCode(422)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:validation-failed"))
+        .body("status", equalTo(422))
         .body("errors.username[0]", equalTo("duplicated username"));
   }
 
@@ -169,6 +181,9 @@ public class UsersApiTest {
         .post("/users")
         .then()
         .statusCode(422)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:validation-failed"))
+        .body("status", equalTo(422))
         .body("errors.email[0]", equalTo("duplicated email"));
   }
 
@@ -265,7 +280,30 @@ public class UsersApiTest {
         .post("/users/login")
         .prettyPeek()
         .then()
-        .statusCode(422)
-        .body("message", equalTo("invalid email or password"));
+        .statusCode(401)
+        .header("WWW-Authenticate", equalTo("Token"))
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:invalid-credentials"))
+        .body("status", equalTo(401))
+        .body("title", equalTo("Invalid Credentials"))
+        .body("detail", equalTo("invalid email or password"))
+        .body("instance", equalTo("/users/login"));
+  }
+
+  @Test
+  public void should_get_400_problem_for_malformed_json() throws Exception {
+    given()
+        .contentType("application/json")
+        .body("{\"user\": ")
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(400)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("about:blank"))
+        .body("title", equalTo("Bad Request"))
+        .body("status", equalTo(400))
+        .body("detail", equalTo("Request body is missing or malformed"))
+        .body("instance", equalTo("/users"));
   }
 }

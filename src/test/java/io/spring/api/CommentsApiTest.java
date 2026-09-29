@@ -1,6 +1,7 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -113,7 +114,28 @@ public class CommentsApiTest extends TestWithCurrentUser {
         .post("/articles/{slug}/comments", article.getSlug())
         .then()
         .statusCode(422)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:validation-failed"))
+        .body("status", equalTo(422))
+        .body("title", equalTo("Validation Failed"))
+        .body("instance", equalTo("/articles/" + article.getSlug() + "/comments"))
         .body("errors.body[0]", equalTo("can't be empty"));
+  }
+
+  @Test
+  public void should_get_500_problem_without_leaking_exception_details() throws Exception {
+    when(commentQueryService.findByArticleId(anyString(), eq(null)))
+        .thenThrow(new IllegalStateException("database password is hunter2"));
+    RestAssuredMockMvc.when()
+        .get("/articles/{slug}/comments", article.getSlug())
+        .then()
+        .statusCode(500)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("about:blank"))
+        .body("title", equalTo("Internal Server Error"))
+        .body("status", equalTo(500))
+        .body("detail", equalTo("An unexpected error occurred"))
+        .body("instance", equalTo("/articles/" + article.getSlug() + "/comments"));
   }
 
   @Test
@@ -160,6 +182,9 @@ public class CommentsApiTest extends TestWithCurrentUser {
         .when()
         .delete("/articles/{slug}/comments/{id}", article.getSlug(), comment.getId())
         .then()
-        .statusCode(403);
+        .statusCode(403)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:forbidden"))
+        .body("status", equalTo(403));
   }
 }
