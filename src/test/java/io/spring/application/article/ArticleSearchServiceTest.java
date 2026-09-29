@@ -103,6 +103,25 @@ public class ArticleSearchServiceTest extends DbTestBase {
   }
 
   @Test
+  public void should_match_regardless_of_case_and_accents() {
+    Article resume = save("Résumé writing", "d", "b", new DateTime());
+    Article istanbul = save("İstanbul travel", "d", "b", new DateTime());
+
+    for (String query : Arrays.asList("résumé", "re\u0301sume\u0301", "RESUME", "resume")) {
+      Assertions.assertEquals(
+          Collections.singletonList(resume.getId()),
+          ids(queryService.searchArticles(query, new Page(), null)),
+          query);
+    }
+    for (String query : Arrays.asList("İstanbul", "istanbul", "ISTANBUL")) {
+      Assertions.assertEquals(
+          Collections.singletonList(istanbul.getId()),
+          ids(queryService.searchArticles(query, new Page(), null)),
+          query);
+    }
+  }
+
+  @Test
   public void should_paginate_with_total_count() {
     DateTime now = new DateTime();
     for (int i = 0; i < 5; i++) {

@@ -55,10 +55,11 @@ How it works:
 
 * **Index**: an SQLite [FTS5](https://www.sqlite.org/fts5.html) virtual table `articles_fts`
   (migration `V2__create_article_search_index.sql`), kept in sync with `articles` by
-  insert/update/delete triggers. It uses the `porter unicode61 remove_diacritics 2` tokenizer, so
+  insert/update/delete triggers. `article_search_ids` maps each article id to a stable FTS rowid so
+  the triggers update the index by rowid rather than scanning it. It uses the `porter unicode61 remove_diacritics 2` tokenizer, so
   matching is case-insensitive, accent-insensitive and stemmed (`mocks` matches `mock`).
-* **Query parsing**: the input is split into letter/digit terms (at most 10); FTS5 syntax
-  characters are discarded so user input can never change the query structure. Each term becomes a
+* **Query parsing**: the first 256 characters of the input are split into letter/mark/digit terms
+  (at most 10); FTS5 syntax characters are discarded so user input can never change the query structure. Each term becomes a
   prefix match (`"term"*`) and all terms must match (AND).
 * **Ranking**: [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) via FTS5's `bm25()` with column
   weights **title = 10, description = 5, body = 1**, so a hit in the title outranks one in the
