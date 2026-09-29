@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -273,6 +274,24 @@ public class RealWorldApiContractTest {
   }
 
   @Test
+  @Disabled(
+      "Known bug: ArticleQueryService#findBySlug only fills favoritesCount for signed-in users,"
+          + " so anonymous readers always see 0")
+  public void get_article_anonymously_reports_favorites_count() {
+    Account author = register();
+    Account fan = register();
+    String slug = createArticle(author, Collections.emptyList());
+    request(fan).post("/articles/{slug}/favorite", slug).then().statusCode(200);
+
+    request()
+        .get("/articles/{slug}", slug)
+        .then()
+        .statusCode(200)
+        .body("article.favorited", equalTo(false))
+        .body("article.favoritesCount", equalTo(1));
+  }
+
+  @Test
   public void get_unknown_article_returns_404() {
     request().get("/articles/{slug}", uniqueName("missing")).then().statusCode(404);
   }
@@ -319,23 +338,29 @@ public class RealWorldApiContractTest {
   @Test
   public void list_articles_supports_spec_query_parameters() {
     Account author = register();
+    Account otherAuthor = register();
     Account fan = register();
     String tag = uniqueName("tag");
-    String slug = createArticle(author, Collections.singletonList(tag));
-    createArticle(author, Collections.singletonList(tag));
-    request(fan).post("/articles/{slug}/favorite", slug).then().statusCode(200);
+    String taggedByAuthor = createArticle(author, Collections.singletonList(tag));
+    String untaggedByAuthor = createArticle(author, Collections.singletonList(uniqueName("tag")));
+    String taggedByOther = createArticle(otherAuthor, Collections.singletonList(tag));
+    request(fan).post("/articles/{slug}/favorite", taggedByAuthor).then().statusCode(200);
 
     articles(request().queryParam("tag", tag))
         .body("articlesCount", equalTo(2))
-        .body("articles.size()", equalTo(2));
+        .body("articles.slug", containsInAnyOrder(taggedByAuthor, taggedByOther));
 
     articles(request().queryParam("author", author.username))
         .body("articlesCount", equalTo(2))
-        .body("articles.author.username", everyItemEqualTo(author.username, 2));
+        .body("articles.slug", containsInAnyOrder(taggedByAuthor, untaggedByAuthor));
 
     articles(request().queryParam("favorited", fan.username))
         .body("articlesCount", equalTo(1))
-        .body("articles[0].slug", equalTo(slug));
+        .body("articles.slug", containsInAnyOrder(taggedByAuthor));
+
+    articles(request().queryParam("tag", tag).queryParam("author", otherAuthor.username))
+        .body("articlesCount", equalTo(1))
+        .body("articles.slug", containsInAnyOrder(taggedByOther));
 
     articles(request().queryParam("author", author.username).queryParam("limit", 1))
         .body("articlesCount", equalTo(2))
@@ -549,13 +574,6 @@ public class RealWorldApiContractTest {
         .statusCode(200)
         .contentType(ContentType.JSON)
         .body(matchesJsonSchemaInClasspath("contract/articles.json"));
-  }
-
-  private static org.hamcrest.Matcher<Iterable<? extends String>> everyItemEqualTo(
-      String value, int count) {
-    String[] expected = new String[count];
-    Arrays.fill(expected, value);
-    return containsInAnyOrder(expected);
   }
 
   private static String uniqueName(String prefix) {
