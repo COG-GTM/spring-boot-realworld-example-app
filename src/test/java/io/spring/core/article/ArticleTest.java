@@ -37,4 +37,27 @@ public class ArticleTest {
     Article article = new Article("what?the.hell,w", "desc", "body", Arrays.asList("java"), "123");
     assertThat(article.getSlug(), is("what-the-hell-w"));
   }
+
+  @Test
+  public void should_update_only_non_empty_fields() {
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), "123");
+
+    article.update("new title", "", null);
+    assertThat(article.getTitle(), is("new title"));
+    assertThat(article.getSlug(), is("new-title"));
+    assertThat(article.getDescription(), is("desc"));
+    assertThat(article.getBody(), is("body"));
+
+    article.update(null, "new desc", "new body");
+    assertThat(article.getTitle(), is("new title"));
+    assertThat(article.getDescription(), is("new desc"));
+    assertThat(article.getBody(), is("new body"));
+  }
+
+  @Test
+  public void should_deduplicate_tags() {
+    Article article =
+        new Article("title", "desc", "body", Arrays.asList("java", "java", "spring"), "123");
+    assertThat(article.getTags().size(), is(2));
+  }
 }

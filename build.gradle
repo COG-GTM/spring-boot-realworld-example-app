@@ -79,6 +79,31 @@ jacocoTestReport {
     }))
 }
 
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    classDirectories.setFrom(jacocoTestReport.classDirectories)
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                minimum = 0.95
+            }
+            limit {
+                counter = 'BRANCH'
+                minimum = 0.85
+            }
+            limit {
+                counter = 'INSTRUCTION'
+                minimum = 0.95
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn jacocoTestCoverageVerification
+}
+
 tasks.named('clean') {
     doFirst {
         delete './dev.db'
