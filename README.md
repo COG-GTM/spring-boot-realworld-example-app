@@ -42,6 +42,30 @@ The secret key is stored in `application.properties`.
 
 It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
 
+# Article search
+
+`GET /articles/search?q=<text>&offset=0&limit=20` performs full-text search over article
+title, description and body. It is public (a token is optional; when present, `favorited` and
+`following` are filled in for the current user) and returns the same shape as `GET /articles`:
+`{"articles": [...], "articlesCount": <total matches>}`. `offset`/`limit` behave like the other
+list endpoints (`limit` is capped at 100). A missing `q` returns `400`; a `q` with no searchable
+terms returns an empty list.
+
+How it works:
+
+* **Index**: an SQLite [FTS5](https://www.sqlite.org/fts5.html) virtual table `articles_fts`
+  (migration `V2__create_article_search_index.sql`), kept in sync with `articles` by
+  insert/update/delete triggers. It uses the `porter unicode61 remove_diacritics 2` tokenizer, so
+  matching is case-insensitive, accent-insensitive and stemmed (`mocks` matches `mock`).
+* **Query parsing**: the input is split into letter/digit terms (at most 10); FTS5 syntax
+  characters are discarded so user input can never change the query structure. Each term becomes a
+  prefix match (`"term"*`) and all terms must match (AND).
+* **Ranking**: [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) via FTS5's `bm25()` with column
+  weights **title = 10, description = 5, body = 1**, so a hit in the title outranks one in the
+  description, which outranks one in the body; within a column, rarer terms and shorter fields
+  score higher. Equal scores are ordered by `created_at` (newest first) and then by id, which
+  keeps offset pagination stable.
+
 # Getting started
 
 You'll need Java 11 installed.

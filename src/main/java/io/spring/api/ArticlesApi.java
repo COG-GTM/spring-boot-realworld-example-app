@@ -45,6 +45,16 @@ public class ArticlesApi {
     return ResponseEntity.ok(articleQueryService.findUserFeed(user, new Page(offset, limit)));
   }
 
+  @GetMapping(path = "search")
+  public ResponseEntity searchArticles(
+      @RequestParam(value = "q") String query,
+      @RequestParam(value = "offset", defaultValue = "0") int offset,
+      @RequestParam(value = "limit", defaultValue = "20") int limit,
+      @AuthenticationPrincipal User user) {
+    return ResponseEntity.ok(
+        articleQueryService.searchArticles(query, new Page(offset, limit), user));
+  }
+
   @GetMapping
   public ResponseEntity getArticles(
       @RequestParam(value = "offset", defaultValue = "0") int offset,

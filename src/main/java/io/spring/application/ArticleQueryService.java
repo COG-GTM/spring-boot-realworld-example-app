@@ -11,6 +11,7 @@ import io.spring.infrastructure.mybatis.readservice.ArticleReadService;
 import io.spring.infrastructure.mybatis.readservice.UserRelationshipQueryService;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +109,27 @@ public class ArticleQueryService {
       fillExtraInfo(articles, currentUser);
       return new ArticleDataList(articles, articleCount);
     }
+  }
+
+  public ArticleDataList searchArticles(String query, Page page, User currentUser) {
+    Optional<String> matchExpression = ArticleSearchQuery.toMatchExpression(query);
+    if (!matchExpression.isPresent()) {
+      return new ArticleDataList(new ArrayList<>(), 0);
+    }
+    String expression = matchExpression.get();
+    int count = articleReadService.countSearchResults(expression);
+    List<String> articleIds = articleReadService.searchArticleIds(expression, page);
+    if (articleIds.isEmpty()) {
+      return new ArticleDataList(new ArrayList<>(), count);
+    }
+    Map<String, Integer> rankById = new HashMap<>();
+    for (int i = 0; i < articleIds.size(); i++) {
+      rankById.put(articleIds.get(i), i);
+    }
+    List<ArticleData> articles = articleReadService.findArticles(articleIds);
+    articles.sort(Comparator.comparing(articleData -> rankById.get(articleData.getId())));
+    fillExtraInfo(articles, currentUser);
+    return new ArticleDataList(articles, count);
   }
 
   public ArticleDataList findUserFeed(User user, Page page) {
