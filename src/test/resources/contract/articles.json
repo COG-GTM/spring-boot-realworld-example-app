@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["articles", "articlesCount"],
+  "properties": {
+    "articles": { "type": "array", "items": { "$ref": "definitions.json#/definitions/article" } },
+    "articlesCount": { "type": "integer", "minimum": 0 }
+  }
+}
