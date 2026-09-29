@@ -19,7 +19,7 @@ spotless {
             include '**/*.java'
             exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
         }
-        googleJavaFormat()
+        googleJavaFormat('1.28.0')
     }
 }
 
