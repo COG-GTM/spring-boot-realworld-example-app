@@ -2,21 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.spring.infrastructure.mybatis.readservice.ArticleReadService">
     <sql id="profileColumns">
-        U.id userId,
-        U.username userUsername,
-        U.bio userBio,
-        U.image userImage
+        U.id user_id,
+        U.username user_username,
+        U.bio user_bio,
+        U.image user_image
     </sql>
     <sql id="selectArticleData">
         select
-        A.id articleId,
-        A.slug articleSlug,
-        A.title articleTitle,
-        A.description articleDescription,
-        A.body articleBody,
-        A.created_at articleCreatedAt,
-        A.updated_at articleUpdatedAt,
-        T.name tagName,
+        A.id,
+        A.slug,
+        A.title,
+        A.description,
+        A.body,
+        A.created_at,
+        A.updated_at,
+        T.name tag_name,
         <include refid="profileColumns"/>
         from
         articles A
@@ -44,7 +44,7 @@
         <include refid="selectArticleData"/>
         where A.slug = #{slug}
     </select>
-    <select id="queryArticles" resultMap="articleId">
+    <select id="queryArticles" resultType="java.lang.String">
         <include refid="selectArticleIds" />
         <where>
             <if test="tag != null">
@@ -153,8 +153,4 @@
         </where>
         limit #{page.queryLimit}
     </select>
-
-    <resultMap id="articleId" type="string">
-        <id javaType="string" column="articleId"/>
-    </resultMap>
 </mapper>

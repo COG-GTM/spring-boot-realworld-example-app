@@ -3,10 +3,11 @@
 <mapper namespace="io.spring.infrastructure.mybatis.readservice.CommentReadService">
     <sql id="selectCommentData">
         SELECT
-        C.id commentId,
-        C.body commentBody,
-        C.created_at commentCreatedAt,
-        C.article_id commentArticleId,
+        C.id,
+        C.body,
+        C.created_at,
+        C.created_at updated_at,
+        C.article_id,
         <include refid="io.spring.infrastructure.mybatis.readservice.ArticleReadService.profileColumns"/>
         from comments C
         left join users U
