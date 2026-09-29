@@ -47,16 +47,18 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
-  private Optional<String> getTokenString(String header) {
+  static Optional<String> getTokenString(String header) {
     if (header == null) {
       return Optional.empty();
-    } else {
-      String[] split = header.split(" ");
-      if (split.length < 2) {
-        return Optional.empty();
-      } else {
-        return Optional.ofNullable(split[1]);
-      }
     }
+    String[] parts = header.trim().split("\\s+");
+    if (parts.length != 2) {
+      return Optional.empty();
+    }
+    String scheme = parts[0];
+    if (!scheme.equalsIgnoreCase("Token") && !scheme.equalsIgnoreCase("Bearer")) {
+      return Optional.empty();
+    }
+    return Optional.of(parts[1]);
   }
 }

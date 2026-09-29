@@ -9,8 +9,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class SecurityUtil {
   public static Optional<User> getCurrentUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication instanceof AnonymousAuthenticationToken
-        || authentication.getPrincipal() == null) {
+    if (authentication == null
+        || authentication instanceof AnonymousAuthenticationToken
+        || !(authentication.getPrincipal() instanceof io.spring.core.user.User)) {
       return Optional.empty();
     }
     io.spring.core.user.User currentUser = (io.spring.core.user.User) authentication.getPrincipal();
