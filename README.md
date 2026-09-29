@@ -17,6 +17,40 @@ The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-examp
 ![](graphql-schema.png)
 
 And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
+## REST / GraphQL parity
+
+Both adapters sit on the same application/domain layer. The table below lists every operation and where it is available (GraphQL at `POST /graphql`, schema in `src/main/resources/schema/schema.graphqls`).
+
+| Area | Operation | REST | GraphQL | Parity |
+|---|---|---|---|---|
+| User | Register | `POST /users` | `createUser` mutation | Both (GraphQL returns validation errors as the `Error` member of `UserResult`) |
+| User | Login | `POST /users/login` | `login` mutation | Both |
+| User | Get current user | `GET /user` | `me` query | Both |
+| User | Update current user | `PUT /user` | `updateUser` mutation | Both |
+| Profile | Get profile | `GET /profiles/{username}` | `profile` query | Both |
+| Profile | Follow user | `POST /profiles/{username}/follow` | `followUser` mutation | Both |
+| Profile | Unfollow user | `DELETE /profiles/{username}/follow` | `unfollowUser` mutation | Both |
+| Article | List articles (filter by tag / author / favorited) | `GET /articles?tag=&author=&favorited=` | `articles(withTag, authoredBy, favoritedBy)` query | Both |
+| Article | List a profile's articles / favorites | `GET /articles?author=` / `?favorited=` | `Profile.articles` / `Profile.favorites` | Both (different shape) |
+| Article | Feed of followed authors | `GET /articles/feed` | `feed` query | Both |
+| Article | Total count of matching articles | `articlesCount` in list responses | `ArticlesConnection.totalCount` | Both (GraphQL added on this branch) |
+| Article | Get article | `GET /articles/{slug}` | `article(slug)` query | Both |
+| Article | Create article | `POST /articles` | `createArticle` mutation | Both |
+| Article | Update article | `PUT /articles/{slug}` | `updateArticle` mutation | Both (neither can change `tagList`) |
+| Article | Delete article | `DELETE /articles/{slug}` | `deleteArticle` mutation | Both |
+| Favorite | Favorite article | `POST /articles/{slug}/favorite` | `favoriteArticle` mutation | Both |
+| Favorite | Unfavorite article | `DELETE /articles/{slug}/favorite` | `unfavoriteArticle` mutation | Both |
+| Comment | Add comment | `POST /articles/{slug}/comments` | `addComment` mutation | Both |
+| Comment | List comments | `GET /articles/{slug}/comments` | `Article.comments` | Both (only GraphQL is paginated; REST returns all) |
+| Comment | Delete comment | `DELETE /articles/{slug}/comments/{id}` | `deleteComment` mutation | Both |
+| Tag | List tags | `GET /tags` | `tags` query | Both |
+| Article | Another user's feed | – | `Profile.feed` | GraphQL only |
+| Comment | Navigate from comment to its article | – | `Comment.article` | GraphQL only (graph traversal) |
+| Pagination | Offset / limit | `offset`, `limit` params | – | REST only |
+| Pagination | Cursor (`first`/`after`/`last`/`before`, `pageInfo`) | – | All `*Connection` fields | GraphQL only |
+
+`totalCount` is only computed when it is selected, so existing GraphQL queries do not pay for the extra `COUNT` query.
+
 # How it works
 
 The application uses Spring Boot (Web, Mybatis).
