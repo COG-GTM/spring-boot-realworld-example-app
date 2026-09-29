@@ -1,11 +1,15 @@
 package io.spring.api.exception;
 
+import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
+import io.spring.api.ratelimit.RateLimitInterceptor;
+import io.spring.api.ratelimit.RateLimitResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -57,6 +61,22 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
                 put("message", e.getMessage());
               }
             });
+  }
+
+  @ExceptionHandler(RateLimitExceededException.class)
+  public ResponseEntity<Object> handleRateLimitExceeded(RateLimitExceededException e) {
+    RateLimitResult result = e.getResult();
+    String retryAfter = String.valueOf(result.getResetAfterSeconds());
+    Map<String, Object> body = new HashMap<>();
+    body.put("message", e.getMessage());
+    body.put("retryAfter", result.getResetAfterSeconds());
+    return ResponseEntity.status(TOO_MANY_REQUESTS)
+        .contentType(MediaType.APPLICATION_JSON)
+        .header(HttpHeaders.RETRY_AFTER, retryAfter)
+        .header(RateLimitInterceptor.LIMIT_HEADER, String.valueOf(result.getLimit()))
+        .header(RateLimitInterceptor.REMAINING_HEADER, String.valueOf(result.getRemaining()))
+        .header(RateLimitInterceptor.RESET_HEADER, retryAfter)
+        .body(body);
   }
 
   @Override

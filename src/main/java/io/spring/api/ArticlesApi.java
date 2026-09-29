@@ -1,5 +1,7 @@
 package io.spring.api;
 
+import io.spring.api.ratelimit.RateLimitPolicy;
+import io.spring.api.ratelimit.RateLimited;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.Page;
 import io.spring.application.article.ArticleCommandService;
@@ -25,6 +27,7 @@ public class ArticlesApi {
   private ArticleCommandService articleCommandService;
   private ArticleQueryService articleQueryService;
 
+  @RateLimited(RateLimitPolicy.ARTICLE_CREATION)
   @PostMapping
   public ResponseEntity createArticle(
       @Valid @RequestBody NewArticleParam newArticleParam, @AuthenticationPrincipal User user) {

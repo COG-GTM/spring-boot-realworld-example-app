@@ -4,8 +4,10 @@ import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsMutation;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
+import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
+import io.spring.api.ratelimit.RateLimitPolicy;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.NewArticleParam;
 import io.spring.application.article.UpdateArticleParam;
@@ -31,11 +33,13 @@ public class ArticleMutation {
   private ArticleCommandService articleCommandService;
   private ArticleFavoriteRepository articleFavoriteRepository;
   private ArticleRepository articleRepository;
+  private GraphQLRateLimiter rateLimiter;
 
   @DgsMutation(field = MUTATION.CreateArticle)
   public DataFetcherResult<ArticlePayload> createArticle(
-      @InputArgument("input") CreateArticleInput input) {
+      @InputArgument("input") CreateArticleInput input, DataFetchingEnvironment env) {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+    rateLimiter.acquire(RateLimitPolicy.ARTICLE_CREATION, env);
     NewArticleParam newArticleParam =
         NewArticleParam.builder()
             .title(input.getTitle())
