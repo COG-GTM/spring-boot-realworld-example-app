@@ -42,6 +42,10 @@ The secret key is stored in `application.properties`.
 
 It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
 
+The schema is managed by [Flyway](https://flywaydb.org/) migrations in `src/main/resources/db/migration`, which are applied automatically on startup. `V1__create_tables.sql` is the baseline. See [docs/database-migrations.md](docs/database-migrations.md) for configuration, how to upgrade an existing database (including one created without Flyway), and how to add a new migration.
+
+    ./gradlew flywayInfo   # show the migration state of dev.db
+
 # Getting started
 
 You'll need Java 11 installed.
