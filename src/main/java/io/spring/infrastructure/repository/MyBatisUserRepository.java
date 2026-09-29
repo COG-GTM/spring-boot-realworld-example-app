@@ -2,19 +2,23 @@ package io.spring.infrastructure.repository;
 
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
+import io.spring.core.user.UserChangedEvent;
 import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.mybatis.mapper.UserMapper;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class MyBatisUserRepository implements UserRepository {
   private final UserMapper userMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Autowired
-  public MyBatisUserRepository(UserMapper userMapper) {
+  public MyBatisUserRepository(UserMapper userMapper, ApplicationEventPublisher eventPublisher) {
     this.userMapper = userMapper;
+    this.eventPublisher = eventPublisher;
   }
 
   @Override
@@ -23,6 +27,7 @@ public class MyBatisUserRepository implements UserRepository {
       userMapper.insert(user);
     } else {
       userMapper.update(user);
+      eventPublisher.publishEvent(new UserChangedEvent(user.getId()));
     }
   }
 

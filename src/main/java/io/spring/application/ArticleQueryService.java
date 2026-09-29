@@ -2,6 +2,8 @@ package io.spring.application;
 
 import static java.util.stream.Collectors.toList;
 
+import io.spring.application.cache.ArticleDataCache;
+import io.spring.application.cache.ArticleListCache;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
 import io.spring.application.data.ArticleFavoriteCount;
@@ -26,29 +28,23 @@ public class ArticleQueryService {
   private ArticleReadService articleReadService;
   private UserRelationshipQueryService userRelationshipQueryService;
   private ArticleFavoritesReadService articleFavoritesReadService;
+  private ArticleDataCache articleDataCache;
+  private ArticleListCache articleListCache;
 
   public Optional<ArticleData> findById(String id, User user) {
-    ArticleData articleData = articleReadService.findById(id);
-    if (articleData == null) {
-      return Optional.empty();
-    } else {
-      if (user != null) {
-        fillExtraInfo(id, user, articleData);
-      }
-      return Optional.of(articleData);
+    Optional<ArticleData> articleData = articleDataCache.findById(id);
+    if (user != null) {
+      articleData.ifPresent(data -> fillExtraInfo(id, user, data));
     }
+    return articleData;
   }
 
   public Optional<ArticleData> findBySlug(String slug, User user) {
-    ArticleData articleData = articleReadService.findBySlug(slug);
-    if (articleData == null) {
-      return Optional.empty();
-    } else {
-      if (user != null) {
-        fillExtraInfo(articleData.getId(), user, articleData);
-      }
-      return Optional.of(articleData);
+    Optional<ArticleData> articleData = articleDataCache.findBySlug(slug);
+    if (user != null) {
+      articleData.ifPresent(data -> fillExtraInfo(data.getId(), user, data));
     }
+    return articleData;
   }
 
   public CursorPager<ArticleData> findRecentArticlesWithCursor(
@@ -58,7 +54,7 @@ public class ArticleQueryService {
       CursorPageParameter<DateTime> page,
       User currentUser) {
     List<String> articleIds =
-        articleReadService.findArticlesWithCursor(tag, author, favoritedBy, page);
+        articleListCache.findArticlesWithCursor(tag, author, favoritedBy, page);
     if (articleIds.size() == 0) {
       return new CursorPager<>(new ArrayList<>(), page.getDirection(), false);
     } else {
@@ -70,7 +66,7 @@ public class ArticleQueryService {
         Collections.reverse(articleIds);
       }
 
-      List<ArticleData> articles = articleReadService.findArticles(articleIds);
+      List<ArticleData> articles = articleDataCache.findArticles(articleIds);
       fillExtraInfo(articles, currentUser);
 
       return new CursorPager<>(articles, page.getDirection(), hasExtra);
@@ -99,12 +95,12 @@ public class ArticleQueryService {
 
   public ArticleDataList findRecentArticles(
       String tag, String author, String favoritedBy, Page page, User currentUser) {
-    List<String> articleIds = articleReadService.queryArticles(tag, author, favoritedBy, page);
-    int articleCount = articleReadService.countArticle(tag, author, favoritedBy);
+    List<String> articleIds = articleListCache.queryArticles(tag, author, favoritedBy, page);
+    int articleCount = articleListCache.countArticle(tag, author, favoritedBy);
     if (articleIds.size() == 0) {
       return new ArticleDataList(new ArrayList<>(), articleCount);
     } else {
-      List<ArticleData> articles = articleReadService.findArticles(articleIds);
+      List<ArticleData> articles = articleDataCache.findArticles(articleIds);
       fillExtraInfo(articles, currentUser);
       return new ArticleDataList(articles, articleCount);
     }

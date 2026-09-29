@@ -6,6 +6,8 @@ import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.DateTimeCursor;
 import io.spring.application.Page;
+import io.spring.application.cache.ArticleDataCache;
+import io.spring.application.cache.ArticleListCache;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
 import io.spring.core.article.Article;
@@ -30,6 +32,8 @@ import org.springframework.context.annotation.Import;
 
 @Import({
   ArticleQueryService.class,
+  ArticleDataCache.class,
+  ArticleListCache.class,
   MyBatisUserRepository.class,
   MyBatisArticleRepository.class,
   MyBatisArticleFavoriteRepository.class
