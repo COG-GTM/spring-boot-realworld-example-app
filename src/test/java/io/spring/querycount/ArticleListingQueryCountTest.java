@@ -264,4 +264,32 @@ public class ArticleListingQueryCountTest {
     int favoritesCount = JsonPath.parse(json).read("$.article.favoritesCount");
     assertEquals(favoritedArticleFavorites, favoritesCount);
   }
+
+  @Test
+  public void graphql_author_and_counts_match_rest_listing() throws Exception {
+    String rest =
+        mvc.perform(get("/articles?limit=" + LARGE_PAGE).header("Authorization", token))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String gql =
+        mvc.perform(
+                graphql(
+                    "{ articles(first: " + LARGE_PAGE + ") { " + ARTICLE_FIELDS + " } }", token))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    for (String field : Arrays.asList("slug", "favorited", "favoritesCount")) {
+      List<Object> restValues = JsonPath.parse(rest).read("$.articles[*]." + field);
+      List<Object> gqlValues = JsonPath.parse(gql).read("$.data.articles.edges[*].node." + field);
+      assertEquals(restValues, gqlValues, field);
+    }
+    List<Object> restAuthors = JsonPath.parse(rest).read("$.articles[*].author.username");
+    List<Object> gqlAuthors =
+        JsonPath.parse(gql).read("$.data.articles.edges[*].node.author.username");
+    assertEquals(restAuthors, gqlAuthors);
+    List<Boolean> following =
+        JsonPath.parse(gql).read("$.data.articles.edges[*].node.author.following");
+    assertTrue(following.stream().allMatch(Boolean::booleanValue));
+  }
 }

@@ -38,7 +38,7 @@ public class ProfileDatafetcher {
   public Profile getAuthor(DataFetchingEnvironment dataFetchingEnvironment) {
     Map<String, ArticleData> map = dataFetchingEnvironment.getLocalContext();
     Article article = dataFetchingEnvironment.getSource();
-    return queryProfile(map.get(article.getSlug()).getProfileData().getUsername());
+    return buildProfile(map.get(article.getSlug()).getProfileData());
   }
 
   @DgsData(parentType = COMMENT.TYPE_NAME, field = COMMENT.Author)
@@ -61,6 +61,10 @@ public class ProfileDatafetcher {
         profileQueryService
             .findByUsername(username, current)
             .orElseThrow(ResourceNotFoundException::new);
+    return buildProfile(profileData);
+  }
+
+  private Profile buildProfile(ProfileData profileData) {
     return Profile.newBuilder()
         .username(profileData.getUsername())
         .bio(profileData.getBio())

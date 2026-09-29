@@ -4,16 +4,13 @@ import static java.util.stream.Collectors.toList;
 
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
-import io.spring.application.data.ArticleFavoriteCount;
 import io.spring.core.user.User;
 import io.spring.infrastructure.mybatis.readservice.ArticleFavoritesReadService;
 import io.spring.infrastructure.mybatis.readservice.ArticleReadService;
 import io.spring.infrastructure.mybatis.readservice.UserRelationshipQueryService;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -123,7 +120,6 @@ public class ArticleQueryService {
   }
 
   private void fillExtraInfo(List<ArticleData> articles, User currentUser) {
-    setFavoriteCount(articles);
     if (currentUser != null) {
       setIsFavorite(articles, currentUser);
       setIsFollowingAuthor(articles, currentUser);
@@ -145,19 +141,6 @@ public class ArticleQueryService {
         });
   }
 
-  private void setFavoriteCount(List<ArticleData> articles) {
-    List<ArticleFavoriteCount> favoritesCounts =
-        articleFavoritesReadService.articlesFavoriteCount(
-            articles.stream().map(ArticleData::getId).collect(toList()));
-    Map<String, Integer> countMap = new HashMap<>();
-    favoritesCounts.forEach(
-        item -> {
-          countMap.put(item.getId(), item.getCount());
-        });
-    articles.forEach(
-        articleData -> articleData.setFavoritesCount(countMap.get(articleData.getId())));
-  }
-
   private void setIsFavorite(List<ArticleData> articles, User currentUser) {
     Set<String> favoritedArticles =
         articleFavoritesReadService.userFavorites(
@@ -174,7 +157,6 @@ public class ArticleQueryService {
 
   private void fillExtraInfo(String id, User user, ArticleData articleData) {
     articleData.setFavorited(articleFavoritesReadService.isUserFavorite(user.getId(), id));
-    articleData.setFavoritesCount(articleFavoritesReadService.articleFavoriteCount(id));
     articleData
         .getProfileData()
         .setFollowing(

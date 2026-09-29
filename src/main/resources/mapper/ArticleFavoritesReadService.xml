@@ -4,18 +4,6 @@
     <select id="isUserFavorite" resultType="java.lang.Boolean">
         select count(1) from article_favorites where user_id = #{userId} and article_id = #{articleId}
     </select>
-    <select id="articleFavoriteCount" resultType="java.lang.Integer">
-        select count(1) from article_favorites where article_id = #{articleId}
-    </select>
-    <select id="articlesFavoriteCount" resultMap="transfer.data.favoriteCount">
-        select A.id, count(AF.user_id) as favoriteCount from articles A
-        left join article_favorites AF on A.id = AF.article_id
-        where id in
-        <foreach collection="ids" item="item" separator="," open="(" close=")">
-            #{item}
-        </foreach>
-        group by A.id
-    </select>
     <select id="userFavorites" resultType="java.lang.String">
         select
           A.id
