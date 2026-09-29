@@ -1,0 +1,853 @@
+openapi: 3.1.0
+info:
+  title: spring-boot-realworld-example-app REST API (as implemented)
+  description: |
+    Hand-written description of the REST surface that this application actually
+    exposes, derived from the Spring MVC controllers in `io.spring.api`, the
+    security configuration, the exception handlers and the Jackson DTOs, and
+    cross-checked against the running application.
+
+    This document describes what the code does today, including behaviour that
+    diverges from the official RealWorld contract
+    (https://github.com/realworld-apps/realworld/blob/main/specs/api/openapi.yml).
+    Divergences are catalogued in `docs/realworld-api-divergences.md`; the
+    `x-realworld-divergences` extension on each operation references the IDs
+    used there.
+
+    Notes that apply to every operation:
+    * Request bodies must be wrapped in a root object (`user`, `article`,
+      `comment`) because `spring.jackson.deserialization.UNWRAP_ROOT_VALUE=true`.
+      Unwrapped or malformed bodies yield an empty `400` response.
+    * Unparseable query/path parameters (e.g. `limit=abc`) yield an empty `400`.
+    * Unhandled exceptions yield a `500` with Spring Boot's default error body
+      (`SpringError`).
+    * The GraphQL endpoints (`/graphql`, `/graphiql`) are out of scope for this
+      document.
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: http://localhost:8080
+    description: Default configuration (no servlet context path)
+  - url: http://localhost:8080/api
+    description: When started with `--server.servlet.context-path=/api`
+tags:
+  - name: Articles
+  - name: Comments
+  - name: Favorites
+  - name: Profile
+  - name: Tags
+  - name: User and Authentication
+paths:
+  /users/login:
+    post:
+      tags: [User and Authentication]
+      summary: Existing user login
+      operationId: Login
+      requestBody:
+        $ref: '#/components/requestBodies/LoginUserRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          description: >-
+            Field validation failure (`FieldErrors`, message `can't be empty` /
+            `should be an email`) or wrong email/password (`MessageError` with
+            message `invalid email or password`).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/FieldErrors'
+                  - $ref: '#/components/schemas/MessageError'
+      x-realworld-divergences: [D01, D03, D07, D13]
+  /users:
+    post:
+      tags: [User and Authentication]
+      summary: Register a new user
+      operationId: CreateUser
+      requestBody:
+        $ref: '#/components/requestBodies/NewUserRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          description: >-
+            Validation failure, including duplicate email (`duplicated email`)
+            and duplicate username (`duplicated username`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldErrors'
+      x-realworld-divergences: [D01, D03, D09, D13, D20]
+  /user:
+    get:
+      tags: [User and Authentication]
+      summary: Get current user
+      operationId: GetCurrentUser
+      security:
+        - Token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      x-realworld-divergences: [D01, D04, D05, D20]
+    put:
+      tags: [User and Authentication]
+      summary: Update current user
+      description: >-
+        Missing, `null` and empty-string fields are all treated as "leave
+        unchanged"; there is therefore no way to clear `bio`/`image`, and
+        empty/null `email`, `username` or `password` are accepted with `200`.
+        No minimum password length is enforced.
+      operationId: UpdateCurrentUser
+      security:
+        - Token: []
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateUserRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Invalid email format, or email/username taken by another user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldErrors'
+      x-realworld-divergences: [D01, D03, D04, D05, D13, D14, D20]
+  /profiles/{username}:
+    get:
+      tags: [Profile]
+      summary: Get a profile
+      description: Auth is optional; `following` is `false` for anonymous callers.
+      operationId: GetProfileByUsername
+      security:
+        - {}
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/username'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProfileResponse'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D06, D11, D20]
+  /profiles/{username}/follow:
+    post:
+      tags: [Profile]
+      summary: Follow a user
+      operationId: FollowUserByUsername
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/username'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D04, D05, D11, D20]
+    delete:
+      tags: [Profile]
+      summary: Unfollow a user
+      description: Returns `404` if the caller is not currently following the user.
+      operationId: UnfollowUserByUsername
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/username'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D04, D05, D11, D20, D26]
+  /articles/feed:
+    get:
+      tags: [Articles]
+      summary: Get articles by followed users
+      description: >-
+        Returns a `500` when the caller follows at least one user but none of
+        the followed users have articles (see D19).
+      operationId: GetArticlesFeed
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          $ref: '#/components/responses/MultipleArticlesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      x-realworld-divergences: [D01, D03, D04, D05, D18, D19, D20, D21, D22, D23]
+  /articles:
+    get:
+      tags: [Articles]
+      summary: List articles
+      description: Auth is optional. Ordered by `createdAt` descending.
+      operationId: GetArticles
+      security:
+        - {}
+        - Token: []
+      parameters:
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: author
+          in: query
+          description: Author username
+          schema:
+            type: string
+        - name: favorited
+          in: query
+          description: Username of a user who favorited the article
+          schema:
+            type: string
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          $ref: '#/components/responses/MultipleArticlesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      x-realworld-divergences: [D01, D03, D06, D18, D20, D21, D22, D23]
+    post:
+      tags: [Articles]
+      summary: Create an article
+      description: >-
+        Omitting `tagList` causes a `500` (NullPointerException). A title
+        whose slug already exists is rejected with `422`
+        (`article name exists`).
+      operationId: CreateArticle
+      security:
+        - Token: []
+      requestBody:
+        $ref: '#/components/requestBodies/NewArticleRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      x-realworld-divergences: [D01, D03, D04, D05, D08, D10, D13, D15, D20, D21, D23]
+  /articles/{slug}:
+    get:
+      tags: [Articles]
+      summary: Get an article
+      description: Auth is optional.
+      operationId: GetArticle
+      security:
+        - {}
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/slug'
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D06, D11, D20, D21, D23]
+    put:
+      tags: [Articles]
+      summary: Update an article
+      description: >-
+        `tagList` is not supported and is silently ignored (including `null`).
+        Empty-string fields are treated as "leave unchanged". The slug is
+        regenerated when `title` changes. `updatedAt` is not persisted, so it
+        never changes after creation.
+      operationId: UpdateArticle
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/slug'
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateArticleRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/SpringForbidden'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D03, D04, D05, D11, D12, D16, D17, D20, D21, D23]
+    delete:
+      tags: [Articles]
+      summary: Delete an article
+      operationId: DeleteArticle
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/slug'
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/SpringForbidden'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D04, D05, D11, D12]
+  /articles/{slug}/comments:
+    get:
+      tags: [Comments]
+      summary: List comments on an article
+      description: Auth is optional.
+      operationId: GetArticleComments
+      security:
+        - {}
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/slug'
+      responses:
+        '200':
+          $ref: '#/components/responses/MultipleCommentsResponse'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D06, D11, D20, D24, D25]
+    post:
+      tags: [Comments]
+      summary: Add a comment to an article
+      operationId: CreateArticleComment
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/slug'
+      requestBody:
+        $ref: '#/components/requestBodies/NewCommentRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/SingleCommentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      x-realworld-divergences: [D01, D03, D04, D05, D11, D13, D20, D24, D25]
+  /articles/{slug}/comments/{id}:
+    delete:
+      tags: [Comments]
+      summary: Delete a comment
+      description: Allowed for the comment author and for the article author.
+      operationId: DeleteArticleComment
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/slug'
+        - name: id
+          in: path
+          required: true
+          description: Comment id (UUID string)
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/SpringForbidden'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D04, D05, D11, D12, D24, D27]
+  /articles/{slug}/favorite:
+    post:
+      tags: [Favorites]
+      summary: Favorite an article
+      operationId: CreateArticleFavorite
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/slug'
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D04, D05, D11, D20, D21, D23]
+    delete:
+      tags: [Favorites]
+      summary: Unfavorite an article
+      description: Idempotent; succeeds even if the article was not favorited.
+      operationId: DeleteArticleFavorite
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/slug'
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/SpringNotFound'
+      x-realworld-divergences: [D01, D04, D05, D11, D20, D21, D23]
+  /tags:
+    get:
+      tags: [Tags]
+      summary: List all tags
+      operationId: GetTags
+      security:
+        - {}
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tags]
+                properties:
+                  tags:
+                    type: array
+                    items:
+                      type: string
+      x-realworld-divergences: [D01]
+components:
+  securitySchemes:
+    Token:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: >-
+        `Token <jwt>`. The filter splits the header on a space and uses the
+        second segment, so any scheme word (e.g. `Bearer`) is accepted.
+        Missing, malformed, expired or unknown tokens on a protected route
+        produce an empty `401`. On public routes an invalid token is ignored
+        and the request proceeds anonymously.
+  parameters:
+    username:
+      name: username
+      in: path
+      required: true
+      schema:
+        type: string
+    slug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        default: 0
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+  requestBodies:
+    LoginUserRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [user]
+            properties:
+              user:
+                $ref: '#/components/schemas/LoginUser'
+    NewUserRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [user]
+            properties:
+              user:
+                $ref: '#/components/schemas/NewUser'
+    UpdateUserRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [user]
+            properties:
+              user:
+                $ref: '#/components/schemas/UpdateUser'
+    NewArticleRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [article]
+            properties:
+              article:
+                $ref: '#/components/schemas/NewArticle'
+    UpdateArticleRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [article]
+            properties:
+              article:
+                $ref: '#/components/schemas/UpdateArticle'
+    NewCommentRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [comment]
+            properties:
+              comment:
+                $ref: '#/components/schemas/NewComment'
+  schemas:
+    LoginUser:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          format: password
+          minLength: 1
+    NewUser:
+      type: object
+      required: [email, password, username]
+      properties:
+        username:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          format: password
+          minLength: 1
+    UpdateUser:
+      type: object
+      description: >-
+        All fields optional. `null` and `""` mean "unchanged". `email`, if
+        non-empty, must be a valid, unused email; `username`, if non-empty,
+        must be unused.
+      properties:
+        email:
+          type: [string, 'null']
+        password:
+          type: [string, 'null']
+        username:
+          type: [string, 'null']
+        bio:
+          type: [string, 'null']
+        image:
+          type: [string, 'null']
+    User:
+      type: object
+      required: [email, token, username, bio, image]
+      properties:
+        email:
+          type: string
+        token:
+          type: string
+        username:
+          type: string
+        bio:
+          type: string
+          description: Defaults to `""` on registration; never `null`.
+        image:
+          type: string
+          description: >-
+            Defaults to the configured `image.default`
+            (`https://static.productionready.io/images/smiley-cyrus.jpg`); never `null`.
+    Profile:
+      type: object
+      required: [username, bio, image, following]
+      properties:
+        username:
+          type: string
+        bio:
+          type: string
+        image:
+          type: string
+        following:
+          type: boolean
+    Cursor:
+      type: object
+      description: Pagination cursor leaked from the GraphQL `Node` interface.
+      required: [data]
+      properties:
+        data:
+          type: string
+          format: date-time
+    Article:
+      type: object
+      description: Used for single-article and list responses alike (lists include `body`).
+      required:
+        - id
+        - slug
+        - title
+        - description
+        - body
+        - favorited
+        - favoritesCount
+        - createdAt
+        - updatedAt
+        - tagList
+        - cursor
+        - author
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        body:
+          type: string
+        favorited:
+          type: boolean
+        favoritesCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        tagList:
+          type: array
+          description: Sorted alphabetically (not in submission order).
+          items:
+            type: string
+        cursor:
+          $ref: '#/components/schemas/Cursor'
+        author:
+          $ref: '#/components/schemas/Profile'
+    NewArticle:
+      type: object
+      required: [title, description, body, tagList]
+      description: >-
+        `tagList` is not validated as required, but omitting it causes a `500`,
+        so it is effectively required.
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        body:
+          type: string
+          minLength: 1
+        tagList:
+          type: array
+          items:
+            type: string
+    UpdateArticle:
+      type: object
+      description: Any other property (including `tagList`) is ignored.
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        body:
+          type: string
+    Comment:
+      type: object
+      required: [id, body, createdAt, updatedAt, cursor, author]
+      properties:
+        id:
+          type: string
+          format: uuid
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        cursor:
+          $ref: '#/components/schemas/Cursor'
+        author:
+          $ref: '#/components/schemas/Profile'
+    NewComment:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+          minLength: 1
+    FieldErrors:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      example:
+        errors:
+          title: ["can't be empty"]
+    MessageError:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+      example:
+        message: invalid email or password
+    SpringError:
+      type: object
+      description: Spring Boot `BasicErrorController` default body.
+      required: [timestamp, status, error, path]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+  responses:
+    UserResponse:
+      description: User
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [user]
+            properties:
+              user:
+                $ref: '#/components/schemas/User'
+    ProfileResponse:
+      description: Profile
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [profile]
+            properties:
+              profile:
+                $ref: '#/components/schemas/Profile'
+    SingleArticleResponse:
+      description: Single article
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [article]
+            properties:
+              article:
+                $ref: '#/components/schemas/Article'
+    MultipleArticlesResponse:
+      description: Multiple articles
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [articles, articlesCount]
+            properties:
+              articles:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Article'
+              articlesCount:
+                type: integer
+    SingleCommentResponse:
+      description: Single comment
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [comment]
+            properties:
+              comment:
+                $ref: '#/components/schemas/Comment'
+    MultipleCommentsResponse:
+      description: Multiple comments
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [comments]
+            properties:
+              comments:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+    ValidationError:
+      description: Bean-validation failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FieldErrors'
+    BadRequest:
+      description: Body missing/unparseable or not wrapped in its root object, or a non-numeric query parameter. Empty body.
+    Unauthorized:
+      description: Authentication required or token invalid. Empty body (Spring Security `HttpStatusEntryPoint`).
+    SpringForbidden:
+      description: Caller is not the owner of the resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SpringError'
+    SpringNotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SpringError'
+    InternalServerError:
+      description: Unhandled server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SpringError'
