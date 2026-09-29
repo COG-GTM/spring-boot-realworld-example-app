@@ -2,6 +2,7 @@ package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -111,6 +112,10 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .prettyPeek()
         .then()
         .statusCode(422)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:validation-failed"))
+        .body("status", equalTo(422))
+        .body("instance", equalTo("/articles"))
         .body("errors.body[0]", equalTo("can't be empty"));
   }
 
@@ -150,7 +155,10 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .post("/articles")
         .prettyPeek()
         .then()
-        .statusCode(422);
+        .statusCode(422)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:validation-failed"))
+        .body("status", equalTo(422));
   }
 
   private HashMap<String, Object> prepareParam(

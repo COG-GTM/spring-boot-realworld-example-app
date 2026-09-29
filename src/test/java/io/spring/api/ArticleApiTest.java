@@ -1,6 +1,7 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -80,7 +81,16 @@ public class ArticleApiTest extends TestWithCurrentUser {
   @Test
   public void should_404_if_article_not_found() throws Exception {
     when(articleQueryService.findBySlug(anyString(), any())).thenReturn(Optional.empty());
-    RestAssuredMockMvc.when().get("/articles/not-exists").then().statusCode(404);
+    RestAssuredMockMvc.when()
+        .get("/articles/not-exists")
+        .then()
+        .statusCode(404)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:resource-not-found"))
+        .body("status", equalTo(404))
+        .body("title", equalTo("Resource Not Found"))
+        .body("detail", equalTo("The requested resource was not found"))
+        .body("instance", equalTo("/articles/not-exists"));
   }
 
   @Test
@@ -162,7 +172,11 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .when()
         .put("/articles/{slug}", article.getSlug())
         .then()
-        .statusCode(403);
+        .statusCode(403)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:forbidden"))
+        .body("status", equalTo(403))
+        .body("detail", equalTo("You are not allowed to perform this action"));
   }
 
   @Test
@@ -203,7 +217,10 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .when()
         .delete("/articles/{slug}", article.getSlug())
         .then()
-        .statusCode(403);
+        .statusCode(403)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:forbidden"))
+        .body("status", equalTo(403));
   }
 
   private HashMap<String, Object> prepareUpdateParam(

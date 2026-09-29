@@ -1,6 +1,8 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -66,7 +68,18 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_get_401_without_token() throws Exception {
-    given().contentType("application/json").when().get("/user").then().statusCode(401);
+    given()
+        .contentType("application/json")
+        .when()
+        .get("/user")
+        .then()
+        .statusCode(401)
+        .header("WWW-Authenticate", equalTo("Token"))
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:authentication-required"))
+        .body("status", equalTo(401))
+        .body("title", equalTo("Authentication Required"))
+        .body("instance", equalTo("/user"));
   }
 
   @Test
@@ -79,7 +92,10 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .when()
         .get("/user")
         .then()
-        .statusCode(401);
+        .statusCode(401)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:authentication-required"))
+        .body("status", equalTo(401));
   }
 
   @Test
@@ -141,6 +157,9 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .prettyPeek()
         .then()
         .statusCode(422)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:validation-failed"))
+        .body("status", equalTo(422))
         .body("errors.email[0]", equalTo("email already exist"));
   }
 
@@ -174,6 +193,25 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .when()
         .put("/user")
         .then()
-        .statusCode(401);
+        .statusCode(401)
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("urn:problem-type:realworld:authentication-required"))
+        .body("status", equalTo(401));
+  }
+
+  @Test
+  public void should_get_405_problem_for_unsupported_method() throws Exception {
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/user")
+        .then()
+        .statusCode(405)
+        .header("Allow", containsString("GET"))
+        .contentType(startsWith("application/problem+json"))
+        .body("type", equalTo("about:blank"))
+        .body("title", equalTo("Method Not Allowed"))
+        .body("status", equalTo(405))
+        .body("instance", equalTo("/user"));
   }
 }
