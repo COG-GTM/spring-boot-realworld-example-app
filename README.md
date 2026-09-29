@@ -70,6 +70,37 @@ The repository contains a lot of test cases to cover both api test and repositor
 
     ./gradlew test
 
+## Integration tests against PostgreSQL
+
+`./gradlew test` runs against an in-memory SQLite database. A separate integration test suite in
+`src/integrationTest` boots the whole application (Flyway migrations, MyBatis mappers, REST API over
+real HTTP) against a PostgreSQL database started with [Testcontainers](https://testcontainers.com/).
+
+Requirements: a running Docker daemon (Docker Desktop, Colima, Rancher Desktop or a native Docker
+Engine) that your user can access. No local PostgreSQL install is needed; the container is started
+and removed automatically.
+
+    ./gradlew integrationTest
+
+Run a single class or method:
+
+    ./gradlew integrationTest --tests 'io.spring.integration.RealWorldApiPostgresIT'
+    ./gradlew integrationTest --tests '*ArticleQueryServicePostgresIT.should_paginate*'
+
+The suite uses the `postgres:15-alpine` image by default. Use `-PpostgresImage` to test another
+PostgreSQL version or to pull from a registry mirror (for example when Docker Hub rate-limits you):
+
+    ./gradlew integrationTest -PpostgresImage=postgres:16-alpine
+    ./gradlew integrationTest -PpostgresImage=mirror.gcr.io/library/postgres:15-alpine
+
+The integration tests are not part of `./gradlew test` or `./gradlew build`, so the default build
+still works without Docker. Run both suites with `./gradlew test integrationTest`. Test reports are
+written to `build/reports/tests/integrationTest/index.html`.
+
+To add a test, extend `io.spring.integration.PostgresIntegrationTest` and name the class `*IT`. All
+subclasses share one PostgreSQL container and Spring context, and every table is truncated before
+each test.
+
 # Code format
 
 Use spotless for code format.
