@@ -28,6 +28,6 @@ public class ArticleData implements io.spring.application.Node {
 
   @Override
   public DateTimeCursor getCursor() {
-    return new DateTimeCursor(updatedAt);
+    return new DateTimeCursor(createdAt);
   }
 }

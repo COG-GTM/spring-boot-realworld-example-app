@@ -83,15 +83,16 @@ public class ArticleQueryService {
     if (followdUsers.size() == 0) {
       return new CursorPager<>(new ArrayList<>(), page.getDirection(), false);
     } else {
-      List<ArticleData> articles =
-          articleReadService.findArticlesOfAuthorsWithCursor(followdUsers, page);
-      boolean hasExtra = articles.size() > page.getLimit();
+      List<String> articleIds =
+          articleReadService.findArticleIdsOfAuthorsWithCursor(followdUsers, page);
+      if (articleIds.isEmpty()) {
+        return new CursorPager<>(new ArrayList<>(), page.getDirection(), false);
+      }
+      boolean hasExtra = articleIds.size() > page.getLimit();
       if (hasExtra) {
-        articles.remove(page.getLimit());
+        articleIds.remove(page.getLimit());
       }
-      if (!page.isNext()) {
-        Collections.reverse(articles);
-      }
+      List<ArticleData> articles = articleReadService.findArticles(articleIds);
       fillExtraInfo(articles, user);
       return new CursorPager<>(articles, page.getDirection(), hasExtra);
     }
@@ -115,9 +116,13 @@ public class ArticleQueryService {
     if (followdUsers.size() == 0) {
       return new ArticleDataList(new ArrayList<>(), 0);
     } else {
-      List<ArticleData> articles = articleReadService.findArticlesOfAuthors(followdUsers, page);
-      fillExtraInfo(articles, user);
       int count = articleReadService.countFeedSize(followdUsers);
+      List<String> articleIds = articleReadService.findArticleIdsOfAuthors(followdUsers, page);
+      if (articleIds.isEmpty()) {
+        return new ArticleDataList(new ArrayList<>(), count);
+      }
+      List<ArticleData> articles = articleReadService.findArticles(articleIds);
+      fillExtraInfo(articles, user);
       return new ArticleDataList(articles, count);
     }
   }

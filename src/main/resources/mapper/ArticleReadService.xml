@@ -90,12 +90,13 @@
         </foreach>
         order by A.created_at desc
     </select>
-    <select id="findArticlesOfAuthors" resultMap="transfer.data.articleData">
-        <include refid="selectArticleData"/>
+    <select id="findArticleIdsOfAuthors" resultType="java.lang.String">
+        select A.id from articles A
         where A.user_id in
         <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+        order by A.created_at desc
         limit #{page.offset}, #{page.limit}
     </select>
     <select id="countFeedSize" resultType="java.lang.Integer">
@@ -131,8 +132,8 @@
         </if>
         limit #{page.queryLimit}
     </select>
-    <select id="findArticlesOfAuthorsWithCursor" resultMap="transfer.data.articleData">
-        <include refid="selectArticleData"/>
+    <select id="findArticleIdsOfAuthorsWithCursor" resultType="java.lang.String">
+        select A.id from articles A
         <where>
         A.user_id in
         <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
@@ -144,13 +145,13 @@
         <if test='page.cursor != null and page.direction.name() == "PREV"'>
             AND A.created_at > #{page.cursor}
         </if>
+        </where>
         <if test='page.direction.name() == "NEXT"'>
             order by A.created_at desc
         </if>
         <if test='page.direction.name() == "PREV"'>
             order by A.created_at asc
         </if>
-        </where>
         limit #{page.queryLimit}
     </select>
 

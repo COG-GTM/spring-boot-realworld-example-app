@@ -19,8 +19,11 @@ import io.spring.infrastructure.DbTestBase;
 import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -226,5 +229,94 @@ public class ArticleQueryServiceTest extends DbTestBase {
     Assertions.assertEquals(anotherUserFeed.getCount(), 1);
     ArticleData articleData = anotherUserFeed.getArticleDatas().get(0);
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
+  }
+
+  @Test
+  public void should_page_user_feed_with_offset() {
+    User follower = followerOfUser();
+    List<Article> older = saveArticlesOfUser(3);
+
+    ArticleDataList firstPage = queryService.findUserFeed(follower, new Page(0, 2));
+    Assertions.assertEquals(4, firstPage.getCount());
+    Assertions.assertEquals(
+        Arrays.asList(article.getId(), older.get(0).getId()), ids(firstPage.getArticleDatas()));
+
+    ArticleDataList lastPage = queryService.findUserFeed(follower, new Page(2, 2));
+    Assertions.assertEquals(4, lastPage.getCount());
+    Assertions.assertEquals(
+        Arrays.asList(older.get(1).getId(), older.get(2).getId()), ids(lastPage.getArticleDatas()));
+  }
+
+  @Test
+  public void should_page_user_feed_with_cursor() {
+    User follower = followerOfUser();
+    List<Article> older = saveArticlesOfUser(3);
+
+    CursorPager<ArticleData> firstPage =
+        queryService.findUserFeedWithCursor(
+            follower, new CursorPageParameter<>(null, 2, Direction.NEXT));
+    Assertions.assertEquals(Arrays.asList(article.getId(), older.get(0).getId()), ids(firstPage));
+    Assertions.assertTrue(firstPage.hasNext());
+    Assertions.assertEquals(2, firstPage.getData().get(0).getTagList().size());
+    Assertions.assertTrue(firstPage.getData().get(0).getProfileData().isFollowing());
+
+    CursorPager<ArticleData> secondPage =
+        queryService.findUserFeedWithCursor(
+            follower,
+            new CursorPageParameter<>(
+                DateTimeCursor.parse(firstPage.getEndCursor().toString()), 2, Direction.NEXT));
+    Assertions.assertEquals(
+        Arrays.asList(older.get(1).getId(), older.get(2).getId()), ids(secondPage));
+    Assertions.assertFalse(secondPage.hasNext());
+
+    CursorPager<ArticleData> backToFirst =
+        queryService.findUserFeedWithCursor(
+            follower,
+            new CursorPageParameter<>(
+                DateTimeCursor.parse(secondPage.getStartCursor().toString()), 2, Direction.PREV));
+    Assertions.assertEquals(ids(firstPage), ids(backToFirst));
+    Assertions.assertFalse(backToFirst.hasPrevious());
+  }
+
+  @Test
+  public void should_return_empty_cursor_feed_without_followings() {
+    CursorPager<ArticleData> feed =
+        queryService.findUserFeedWithCursor(
+            user, new CursorPageParameter<>(null, 20, Direction.NEXT));
+    Assertions.assertTrue(feed.getData().isEmpty());
+    Assertions.assertFalse(feed.hasNext());
+    Assertions.assertNull(feed.getEndCursor());
+  }
+
+  private User followerOfUser() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+    return follower;
+  }
+
+  private List<Article> saveArticlesOfUser(int count) {
+    List<Article> articles = new ArrayList<>();
+    for (int i = 1; i <= count; i++) {
+      Article older =
+          new Article(
+              "older " + i,
+              "desc",
+              "body",
+              Arrays.asList("tag-a", "tag-b"),
+              user.getId(),
+              article.getCreatedAt().minusHours(i));
+      articleRepository.save(older);
+      articles.add(older);
+    }
+    return articles;
+  }
+
+  private static List<String> ids(CursorPager<ArticleData> pager) {
+    return ids(pager.getData());
+  }
+
+  private static List<String> ids(List<ArticleData> articles) {
+    return articles.stream().map(ArticleData::getId).collect(Collectors.toList());
   }
 }
