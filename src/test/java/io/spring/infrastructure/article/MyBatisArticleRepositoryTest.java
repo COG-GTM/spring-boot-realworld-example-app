@@ -63,4 +63,43 @@ public class MyBatisArticleRepositoryTest extends DbTestBase {
     articleRepository.remove(article);
     Assertions.assertFalse(articleRepository.findById(article.getId()).isPresent());
   }
+
+  @Test
+  public void should_hide_soft_deleted_article_from_active_lookups() {
+    articleRepository.save(article);
+
+    article.softDelete();
+    articleRepository.save(article);
+
+    Assertions.assertFalse(articleRepository.findById(article.getId()).isPresent());
+    Assertions.assertFalse(articleRepository.findBySlug(article.getSlug()).isPresent());
+    Optional<Article> deleted = articleRepository.findDeletedBySlug(article.getSlug());
+    Assertions.assertTrue(deleted.isPresent());
+    Assertions.assertTrue(deleted.get().isDeleted());
+    Assertions.assertEquals(deleted.get().getTitle(), "test");
+    Assertions.assertTrue(deleted.get().getTags().contains(new Tag("java")));
+  }
+
+  @Test
+  public void should_restore_soft_deleted_article() {
+    articleRepository.save(article);
+    article.softDelete();
+    articleRepository.save(article);
+
+    Article deleted = articleRepository.findDeletedBySlug(article.getSlug()).get();
+    deleted.restore();
+    articleRepository.save(deleted);
+
+    Optional<Article> restored = articleRepository.findBySlug(article.getSlug());
+    Assertions.assertTrue(restored.isPresent());
+    Assertions.assertFalse(restored.get().isDeleted());
+    Assertions.assertEquals(restored.get().getBody(), "body");
+    Assertions.assertFalse(articleRepository.findDeletedBySlug(article.getSlug()).isPresent());
+  }
+
+  @Test
+  public void should_not_find_active_article_as_deleted() {
+    articleRepository.save(article);
+    Assertions.assertFalse(articleRepository.findDeletedBySlug(article.getSlug()).isPresent());
+  }
 }

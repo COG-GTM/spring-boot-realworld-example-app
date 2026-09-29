@@ -51,6 +51,10 @@ public class ArticleQueryService {
     }
   }
 
+  public boolean isSlugUsedByDeletedArticle(String slug) {
+    return articleReadService.countDeletedBySlug(slug) > 0;
+  }
+
   public CursorPager<ArticleData> findRecentArticlesWithCursor(
       String tag,
       String author,
@@ -123,6 +127,9 @@ public class ArticleQueryService {
   }
 
   private void fillExtraInfo(List<ArticleData> articles, User currentUser) {
+    if (articles.isEmpty()) {
+      return;
+    }
     setFavoriteCount(articles);
     if (currentUser != null) {
       setIsFavorite(articles, currentUser);

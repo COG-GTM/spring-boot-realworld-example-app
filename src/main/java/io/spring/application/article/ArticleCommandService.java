@@ -35,4 +35,15 @@ public class ArticleCommandService {
     articleRepository.save(article);
     return article;
   }
+
+  public void deleteArticle(Article article) {
+    article.softDelete();
+    articleRepository.save(article);
+  }
+
+  public Article restoreArticle(Article article) {
+    article.restore();
+    articleRepository.save(article);
+    return article;
+  }
 }

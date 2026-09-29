@@ -10,5 +10,7 @@ public interface ArticleRepository {
 
   Optional<Article> findBySlug(String slug);
 
+  Optional<Article> findDeletedBySlug(String slug);
+
   void remove(Article article);
 }

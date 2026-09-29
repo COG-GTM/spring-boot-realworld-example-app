@@ -19,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,8 +73,26 @@ public class ArticleApi {
               if (!AuthorizationService.canWriteArticle(user, article)) {
                 throw new NoAuthorizationException();
               }
-              articleRepository.remove(article);
+              articleCommandService.deleteArticle(article);
               return ResponseEntity.noContent().build();
+            })
+        .orElseThrow(ResourceNotFoundException::new);
+  }
+
+  @PostMapping(path = "restore")
+  public ResponseEntity<?> restoreArticle(
+      @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+    return articleRepository
+        .findDeletedBySlug(slug)
+        .map(
+            article -> {
+              if (!AuthorizationService.canWriteArticle(user, article)) {
+                throw new NoAuthorizationException();
+              }
+              Article restoredArticle = articleCommandService.restoreArticle(article);
+              return ResponseEntity.ok(
+                  articleResponse(
+                      articleQueryService.findById(restoredArticle.getId(), user).get()));
             })
         .orElseThrow(ResourceNotFoundException::new);
   }

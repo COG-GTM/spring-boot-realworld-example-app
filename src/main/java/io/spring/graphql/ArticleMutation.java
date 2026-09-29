@@ -109,7 +109,24 @@ public class ArticleMutation {
       throw new NoAuthorizationException();
     }
 
-    articleRepository.remove(article);
+    articleCommandService.deleteArticle(article);
     return DeletionStatus.newBuilder().success(true).build();
+  }
+
+  @DgsMutation(field = MUTATION.RestoreArticle)
+  public DataFetcherResult<ArticlePayload> restoreArticle(@InputArgument("slug") String slug) {
+    User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+    Article article =
+        articleRepository.findDeletedBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+
+    if (!AuthorizationService.canWriteArticle(user, article)) {
+      throw new NoAuthorizationException();
+    }
+
+    article = articleCommandService.restoreArticle(article);
+    return DataFetcherResult.<ArticlePayload>newResult()
+        .data(ArticlePayload.newBuilder().build())
+        .localContext(article)
+        .build();
   }
 }

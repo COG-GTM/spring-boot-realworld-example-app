@@ -13,6 +13,8 @@ public interface ArticleReadService {
 
   ArticleData findBySlug(@Param("slug") String slug);
 
+  int countDeletedBySlug(@Param("slug") String slug);
+
   List<String> queryArticles(
       @Param("tag") String tag,
       @Param("author") String author,

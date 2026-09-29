@@ -25,7 +25,8 @@
               <if test="article.title != ''">title = #{article.title},</if>
               <if test="article.title != ''">slug = #{article.slug},</if>
               <if test="article.description != ''">description = #{article.description},</if>
-              <if test="article.body != ''">body = #{article.body}</if>
+              <if test="article.body != ''">body = #{article.body},</if>
+              deleted_at = #{article.deletedAt}
           </set>
         where id = #{article.id}
     </update>
@@ -42,6 +43,7 @@
         A.user_id articleUserId,
         A.created_at articleCreatedAt,
         A.updated_at articleUpdatedAt,
+        A.deleted_at articleDeletedAt,
         T.id tagId,
         T.name tagName
         from articles A
@@ -72,6 +74,7 @@
         <result column="articleBody" property="body"/>
         <result column="articleCreatedAt" property="createdAt"/>
         <result column="articleUpdatedAt" property="updatedAt"/>
+        <result column="articleDeletedAt" property="deletedAt"/>
         <collection property="tags" ofType="arraylist" resultMap="tag"/>
     </resultMap>
 

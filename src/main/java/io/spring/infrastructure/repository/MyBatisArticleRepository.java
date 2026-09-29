@@ -42,12 +42,18 @@ public class MyBatisArticleRepository implements ArticleRepository {
 
   @Override
   public Optional<Article> findById(String id) {
-    return Optional.ofNullable(articleMapper.findById(id));
+    return Optional.ofNullable(articleMapper.findById(id)).filter(article -> !article.isDeleted());
   }
 
   @Override
   public Optional<Article> findBySlug(String slug) {
-    return Optional.ofNullable(articleMapper.findBySlug(slug));
+    return Optional.ofNullable(articleMapper.findBySlug(slug))
+        .filter(article -> !article.isDeleted());
+  }
+
+  @Override
+  public Optional<Article> findDeletedBySlug(String slug) {
+    return Optional.ofNullable(articleMapper.findBySlug(slug)).filter(Article::isDeleted);
   }
 
   @Override

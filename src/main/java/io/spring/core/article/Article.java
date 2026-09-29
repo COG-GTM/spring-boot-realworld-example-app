@@ -24,6 +24,7 @@ public class Article {
   private List<Tag> tags;
   private DateTime createdAt;
   private DateTime updatedAt;
+  private DateTime deletedAt;
 
   public Article(
       String title, String description, String body, List<String> tagList, String userId) {
@@ -62,6 +63,20 @@ public class Article {
       this.body = body;
       this.updatedAt = new DateTime();
     }
+  }
+
+  public void softDelete() {
+    if (!isDeleted()) {
+      this.deletedAt = new DateTime();
+    }
+  }
+
+  public void restore() {
+    this.deletedAt = null;
+  }
+
+  public boolean isDeleted() {
+    return deletedAt != null;
   }
 
   public static String toSlug(String title) {

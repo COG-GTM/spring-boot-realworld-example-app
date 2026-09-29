@@ -153,6 +153,27 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .statusCode(422);
   }
 
+  @Test
+  public void should_get_error_message_when_title_matches_soft_deleted_article() throws Exception {
+    String title = "How to train your dragon";
+    Map<String, Object> param =
+        prepareParam(title, "Ever wonder how?", "You have to believe", asList("dragons"));
+
+    when(articleQueryService.findBySlug(eq(Article.toSlug(title)), any()))
+        .thenReturn(Optional.empty());
+    when(articleQueryService.isSlugUsedByDeletedArticle(eq(Article.toSlug(title))))
+        .thenReturn(true);
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles")
+        .then()
+        .statusCode(422);
+  }
+
   private HashMap<String, Object> prepareParam(
       final String title, final String description, final String body, final List<String> tagList) {
     return new HashMap<String, Object>() {

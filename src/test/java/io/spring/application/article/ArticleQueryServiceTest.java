@@ -227,4 +227,68 @@ public class ArticleQueryServiceTest extends DbTestBase {
     ArticleData articleData = anotherUserFeed.getArticleDatas().get(0);
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
   }
+
+  @Test
+  public void should_exclude_soft_deleted_article_from_queries() {
+    User anotherUser = new User("other@email.com", "other", "123", "", "");
+    userRepository.save(anotherUser);
+    userRepository.saveRelation(new FollowRelation(anotherUser.getId(), user.getId()));
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), anotherUser.getId()));
+
+    article.softDelete();
+    articleRepository.save(article);
+
+    Assertions.assertFalse(queryService.findById(article.getId(), user).isPresent());
+    Assertions.assertFalse(queryService.findBySlug(article.getSlug(), user).isPresent());
+
+    ArticleDataList recent = queryService.findRecentArticles(null, null, null, new Page(), user);
+    Assertions.assertEquals(recent.getCount(), 0);
+    Assertions.assertEquals(recent.getArticleDatas().size(), 0);
+    Assertions.assertEquals(
+        queryService.findRecentArticles("java", null, null, new Page(), user).getCount(), 0);
+    Assertions.assertEquals(
+        queryService
+            .findRecentArticles(null, user.getUsername(), null, new Page(), user)
+            .getCount(),
+        0);
+    Assertions.assertEquals(
+        queryService
+            .findRecentArticles(null, null, anotherUser.getUsername(), new Page(), anotherUser)
+            .getCount(),
+        0);
+
+    CursorPager<ArticleData> cursor =
+        queryService.findRecentArticlesWithCursor(
+            null, null, null, new CursorPageParameter<>(null, 20, Direction.NEXT), user);
+    Assertions.assertEquals(cursor.getData().size(), 0);
+
+    ArticleDataList feed = queryService.findUserFeed(anotherUser, new Page());
+    Assertions.assertEquals(feed.getCount(), 0);
+    Assertions.assertEquals(feed.getArticleDatas().size(), 0);
+    CursorPager<ArticleData> feedCursor =
+        queryService.findUserFeedWithCursor(
+            anotherUser, new CursorPageParameter<>(null, 20, Direction.NEXT));
+    Assertions.assertEquals(feedCursor.getData().size(), 0);
+  }
+
+  @Test
+  public void should_show_restored_article_again() {
+    article.softDelete();
+    articleRepository.save(article);
+    Assertions.assertTrue(queryService.isSlugUsedByDeletedArticle(article.getSlug()));
+
+    article.restore();
+    articleRepository.save(article);
+
+    Assertions.assertFalse(queryService.isSlugUsedByDeletedArticle(article.getSlug()));
+    Assertions.assertTrue(queryService.findBySlug(article.getSlug(), user).isPresent());
+    Assertions.assertEquals(
+        queryService.findRecentArticles(null, null, null, new Page(), user).getCount(), 1);
+  }
+
+  @Test
+  public void should_not_report_active_or_missing_slug_as_deleted() {
+    Assertions.assertFalse(queryService.isSlugUsedByDeletedArticle(article.getSlug()));
+    Assertions.assertFalse(queryService.isSlugUsedByDeletedArticle("not-exists"));
+  }
 }

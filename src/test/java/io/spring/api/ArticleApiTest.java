@@ -5,6 +5,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -182,7 +183,8 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .then()
         .statusCode(204);
 
-    verify(articleRepository).remove(eq(article));
+    verify(articleCommandService).deleteArticle(eq(article));
+    verify(articleRepository, never()).remove(any());
   }
 
   @Test
@@ -204,6 +206,83 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .delete("/articles/{slug}", article.getSlug())
         .then()
         .statusCode(403);
+  }
+
+  @Test
+  public void should_404_when_deleting_already_deleted_article() throws Exception {
+    when(articleRepository.findBySlug(eq("deleted-article"))).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .delete("/articles/{slug}", "deleted-article")
+        .then()
+        .statusCode(404);
+
+    verify(articleCommandService, never()).deleteArticle(any());
+  }
+
+  @Test
+  public void should_restore_article_success() throws Exception {
+    Article article =
+        new Article("title", "description", "body", Arrays.asList("java"), user.getId());
+    article.softDelete();
+    ArticleData articleData = TestHelper.getArticleDataFromArticleAndUser(article, user);
+
+    when(articleRepository.findDeletedBySlug(eq(article.getSlug())))
+        .thenReturn(Optional.of(article));
+    when(articleCommandService.restoreArticle(eq(article))).thenReturn(article);
+    when(articleQueryService.findById(eq(article.getId()), eq(user)))
+        .thenReturn(Optional.of(articleData));
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/articles/{slug}/restore", article.getSlug())
+        .then()
+        .statusCode(200)
+        .body("article.slug", equalTo(article.getSlug()));
+
+    verify(articleCommandService).restoreArticle(eq(article));
+  }
+
+  @Test
+  public void should_404_if_no_deleted_article_to_restore() throws Exception {
+    when(articleRepository.findDeletedBySlug(anyString())).thenReturn(Optional.empty());
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/articles/{slug}/restore", "not-deleted")
+        .then()
+        .statusCode(404);
+
+    verify(articleCommandService, never()).restoreArticle(any());
+  }
+
+  @Test
+  public void should_403_if_not_author_restore_article() throws Exception {
+    User anotherUser = new User("test@test.com", "test", "123123", "", "");
+    Article article =
+        new Article("title", "description", "body", Arrays.asList("java"), anotherUser.getId());
+    article.softDelete();
+
+    when(articleRepository.findDeletedBySlug(eq(article.getSlug())))
+        .thenReturn(Optional.of(article));
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/articles/{slug}/restore", article.getSlug())
+        .then()
+        .statusCode(403);
+
+    verify(articleCommandService, never()).restoreArticle(any());
+  }
+
+  @Test
+  public void should_401_if_restore_without_token() throws Exception {
+    given().when().post("/articles/{slug}/restore", "some-slug").then().statusCode(401);
   }
 
   private HashMap<String, Object> prepareUpdateParam(
