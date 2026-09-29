@@ -3,6 +3,7 @@ package io.spring.api;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -68,7 +69,7 @@ public class RateLimitApiTest extends TestWithCurrentUser {
         .andExpect(header().string("X-RateLimit-Limit", "2"))
         .andExpect(header().string("X-RateLimit-Remaining", "0"))
         .andExpect(header().string("X-RateLimit-Reset", secondsWithin(60)))
-        .andExpect(jsonPath("$.message").value("too many requests"))
+        .andExpect(jsonPath("$.message").value(startsWith("too many requests, retry after ")))
         .andExpect(
             jsonPath("$.retryAfter").value(allOf(greaterThanOrEqualTo(1), lessThanOrEqualTo(60))));
   }
@@ -104,7 +105,7 @@ public class RateLimitApiTest extends TestWithCurrentUser {
     mvc.perform(createArticle("10.0.1.2"))
         .andExpect(status().isTooManyRequests())
         .andExpect(header().string("Retry-After", secondsWithin(3600)))
-        .andExpect(jsonPath("$.message").value("too many requests"));
+        .andExpect(jsonPath("$.message").value(startsWith("too many requests, retry after ")));
   }
 
   @Test

@@ -4,7 +4,9 @@ import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
+import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.api.ratelimit.RateLimitPolicy;
 import io.spring.application.user.RegisterParam;
 import io.spring.application.user.UpdateUserCommand;
 import io.spring.application.user.UpdateUserParam;
@@ -32,9 +34,12 @@ public class UserMutation {
   private UserRepository userRepository;
   private PasswordEncoder encryptService;
   private UserService userService;
+  private GraphQLRateLimiter rateLimiter;
 
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.CreateUser)
-  public DataFetcherResult<UserResult> createUser(@InputArgument("input") CreateUserInput input) {
+  public DataFetcherResult<UserResult> createUser(
+      @InputArgument("input") CreateUserInput input, DataFetchingEnvironment env) {
+    rateLimiter.acquire(RateLimitPolicy.AUTH, env);
     RegisterParam registerParam =
         new RegisterParam(input.getEmail(), input.getUsername(), input.getPassword());
     User user;
@@ -54,7 +59,10 @@ public class UserMutation {
 
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.Login)
   public DataFetcherResult<UserPayload> login(
-      @InputArgument("password") String password, @InputArgument("email") String email) {
+      @InputArgument("password") String password,
+      @InputArgument("email") String email,
+      DataFetchingEnvironment env) {
+    rateLimiter.acquire(RateLimitPolicy.AUTH, env);
     Optional<User> optional = userRepository.findByEmail(email);
     if (optional.isPresent() && encryptService.matches(password, optional.get().getPassword())) {
       return DataFetcherResult.<UserPayload>newResult()

@@ -5,22 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class FixedWindowRateLimiterTest {
-  private MutableClock clock;
+  private FakeTicker clock;
   private FixedWindowRateLimiter limiter;
 
   @BeforeEach
   public void setUp() {
-    clock = new MutableClock(Instant.parse("2024-01-01T00:00:00Z"));
-    limiter = new FixedWindowRateLimiter(3, Duration.ofSeconds(60), clock);
+    clock = new FakeTicker(Long.MAX_VALUE - Duration.ofSeconds(30).toNanos());
+    limiter = new FixedWindowRateLimiter(3, Duration.ofSeconds(60), clock::nanos);
   }
 
   @Test
@@ -77,35 +74,77 @@ public class FixedWindowRateLimiterTest {
   public void should_reject_invalid_configuration() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new FixedWindowRateLimiter(0, Duration.ofSeconds(1), clock));
+        () -> new FixedWindowRateLimiter(0, Duration.ofSeconds(1), clock::nanos));
     assertThrows(
-        IllegalArgumentException.class, () -> new FixedWindowRateLimiter(1, Duration.ZERO, clock));
+        IllegalArgumentException.class,
+        () -> new FixedWindowRateLimiter(1, Duration.ZERO, clock::nanos));
   }
 
-  private static class MutableClock extends Clock {
-    private Instant now;
+  @Test
+  public void should_enforce_submillisecond_windows() {
+    FixedWindowRateLimiter tiny =
+        new FixedWindowRateLimiter(1, Duration.ofNanos(500), clock::nanos);
 
-    MutableClock(Instant now) {
-      this.now = now;
+    assertTrue(tiny.tryAcquire("a").isAllowed());
+    assertFalse(tiny.tryAcquire("a").isAllowed());
+
+    clock.advance(Duration.ofNanos(500));
+    assertTrue(tiny.tryAcquire("a").isAllowed());
+  }
+
+  @Test
+  public void should_report_remaining_correctly_at_max_limit() {
+    FixedWindowRateLimiter max =
+        new FixedWindowRateLimiter(Integer.MAX_VALUE, Duration.ofSeconds(1), clock::nanos);
+
+    assertEquals(Integer.MAX_VALUE - 1, max.tryAcquire("a").getRemaining());
+    RateLimitResult second = max.tryAcquire("a");
+    assertTrue(second.isAllowed());
+    assertEquals(Integer.MAX_VALUE - 2, second.getRemaining());
+  }
+
+  @Test
+  public void should_sweep_expired_windows_at_most_once_per_window() {
+    fill("a");
+    clock.advance(Duration.ofSeconds(60));
+    limiter.tryAcquire("x");
+    assertEquals(1, limiter.size());
+
+    fill("b");
+    clock.advance(Duration.ofSeconds(30));
+    fill("c");
+    clock.advance(Duration.ofSeconds(30));
+    limiter.tryAcquire("y");
+    assertEquals(10_002, limiter.size());
+
+    clock.advance(Duration.ofSeconds(30));
+    limiter.tryAcquire("z");
+    assertEquals(10_003, limiter.size());
+
+    clock.advance(Duration.ofSeconds(30));
+    limiter.tryAcquire("w");
+    assertEquals(2, limiter.size());
+  }
+
+  private void fill(String prefix) {
+    for (int i = 0; i <= 10_000; i++) {
+      limiter.tryAcquire(prefix + i);
+    }
+  }
+
+  private static class FakeTicker {
+    private final AtomicLong nanos;
+
+    FakeTicker(long start) {
+      nanos = new AtomicLong(start);
+    }
+
+    long nanos() {
+      return nanos.get();
     }
 
     void advance(Duration duration) {
-      now = now.plus(duration);
-    }
-
-    @Override
-    public ZoneId getZone() {
-      return ZoneOffset.UTC;
-    }
-
-    @Override
-    public Clock withZone(ZoneId zone) {
-      return this;
-    }
-
-    @Override
-    public Instant instant() {
-      return now;
+      nanos.addAndGet(duration.toNanos());
     }
   }
 }

@@ -1,6 +1,7 @@
 package io.spring.graphql.exception;
 
 import com.netflix.graphql.dgs.exceptions.DefaultDataFetcherExceptionHandler;
+import com.netflix.graphql.types.errors.ErrorDetail;
 import com.netflix.graphql.types.errors.ErrorType;
 import com.netflix.graphql.types.errors.TypedGraphQLError;
 import graphql.GraphQLError;
@@ -9,10 +10,12 @@ import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
 import io.spring.api.exception.FieldErrorResource;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.api.exception.RateLimitExceededException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +39,19 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .errorType(ErrorType.UNAUTHENTICATED)
               .message(handlerParameters.getException().getMessage())
               .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (handlerParameters.getException() instanceof RateLimitExceededException) {
+      RateLimitExceededException exception =
+          (RateLimitExceededException) handlerParameters.getException();
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBuilder()
+              .errorDetail(ErrorDetail.Common.ENHANCE_YOUR_CALM)
+              .message(exception.getMessage())
+              .path(handlerParameters.getPath())
+              .extensions(
+                  Collections.singletonMap(
+                      "retryAfter", exception.getResult().getResetAfterSeconds()))
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
     } else if (handlerParameters.getException() instanceof ConstraintViolationException) {

@@ -8,7 +8,7 @@ public class RateLimitExceededException extends RuntimeException {
   private final RateLimitResult result;
 
   public RateLimitExceededException(RateLimitResult result) {
-    super("too many requests");
+    super("too many requests, retry after " + result.getResetAfterSeconds() + " seconds");
     this.result = result;
   }
 }
