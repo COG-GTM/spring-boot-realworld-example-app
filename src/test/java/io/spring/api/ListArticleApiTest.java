@@ -3,6 +3,7 @@ package io.spring.api;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.spring.TestHelper.articleDataFixture;
 import static java.util.Arrays.asList;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +50,31 @@ public class ListArticleApiTest extends TestWithCurrentUser {
             eq(null), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
         .thenReturn(articleDataList);
     RestAssuredMockMvc.when().get("/articles").prettyPeek().then().statusCode(200);
+  }
+
+  @Test
+  public void should_search_articles_with_pagination() throws Exception {
+    ArticleDataList articleDataList = new ArticleDataList(asList(articleDataFixture("1", user)), 3);
+    when(articleQueryService.searchArticles(eq("spring boot"), eq(new Page(1, 1)), eq(null)))
+        .thenReturn(articleDataList);
+
+    given()
+        .queryParam("q", "spring boot")
+        .queryParam("offset", 1)
+        .queryParam("limit", 1)
+        .when()
+        .get("/articles/search")
+        .prettyPeek()
+        .then()
+        .statusCode(200)
+        .body("articlesCount", equalTo(3))
+        .body("articles.size()", equalTo(1))
+        .body("articles[0].slug", equalTo("title-1"));
+  }
+
+  @Test
+  public void should_get_400_when_search_query_missing() throws Exception {
+    RestAssuredMockMvc.when().get("/articles/search").then().statusCode(400);
   }
 
   @Test

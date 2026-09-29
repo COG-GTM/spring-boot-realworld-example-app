@@ -153,6 +153,24 @@
         </where>
         limit #{page.queryLimit}
     </select>
+    <!--
+        Relevance ranking: BM25 over the articles_fts index with per-column weights
+        (title 10, description 5, body 1). bm25() returns lower values
+        for better matches, so results are ordered ascending; ties are broken by
+        recency and then id to keep pagination stable.
+    -->
+    <select id="searchArticleIds" resultType="java.lang.String">
+        select A.id
+        from articles_fts
+        join article_search_ids S on S.fts_rowid = articles_fts.rowid
+        join articles A on A.id = S.article_id
+        where articles_fts match #{query}
+        order by bm25(articles_fts, 10.0, 5.0, 1.0), A.created_at desc, A.id
+        limit #{page.offset}, #{page.limit}
+    </select>
+    <select id="countSearchResults" resultType="java.lang.Integer">
+        select count(1) from articles_fts where articles_fts match #{query}
+    </select>
 
     <resultMap id="articleId" type="string">
         <id javaType="string" column="articleId"/>

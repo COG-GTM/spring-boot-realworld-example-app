@@ -34,6 +34,10 @@ public interface ArticleReadService {
 
   int countFeedSize(@Param("authors") List<String> authors);
 
+  List<String> searchArticleIds(@Param("query") String query, @Param("page") Page page);
+
+  int countSearchResults(@Param("query") String query);
+
   List<String> findArticlesWithCursor(
       @Param("tag") String tag,
       @Param("author") String author,
