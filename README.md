@@ -64,6 +64,10 @@ You'll need Docker installed.
 
 The entry point address of the backend API is at http://localhost:8080, **not** http://localhost:8080/api as some of the frontend documentation suggests.
 
+# Metrics
+
+Micrometer metrics are exposed in Prometheus format at http://localhost:8080/actuator/prometheus (no authentication). See [docs/metrics.md](docs/metrics.md) for what each metric measures.
+
 # Run test
 
 The repository contains a lot of test cases to cover both api test and repository test.
