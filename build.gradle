@@ -33,6 +33,9 @@ configurations {
 
 ext {
     lombokVersion = '1.18.48'
+    set('jackson-bom.version', '2.21.7')
+    set('tomcat.version', '10.1.60')
+    set('logback.version', '1.5.38')
 }
 
 dependencies {
