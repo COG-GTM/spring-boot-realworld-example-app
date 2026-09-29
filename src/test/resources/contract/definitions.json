@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Shared RealWorld API object shapes. See https://realworld-docs.netlify.app/specifications/backend/api-response-format/",
+  "definitions": {
+    "timestamp": {
+      "description": "ISO-8601 UTC timestamp with millisecond precision, e.g. 2016-02-18T03:22:56.637Z",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+    },
+    "nullableString": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "email",
+        "token",
+        "username",
+        "bio",
+        "image"
+      ],
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "username": {
+          "type": "string"
+        },
+        "bio": {
+          "$ref": "#/definitions/nullableString"
+        },
+        "image": {
+          "$ref": "#/definitions/nullableString"
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "username",
+        "bio",
+        "image",
+        "following"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "bio": {
+          "$ref": "#/definitions/nullableString"
+        },
+        "image": {
+          "$ref": "#/definitions/nullableString"
+        },
+        "following": {
+          "type": "boolean"
+        }
+      }
+    },
+    "article": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "slug",
+        "title",
+        "description",
+        "body",
+        "tagList",
+        "createdAt",
+        "updatedAt",
+        "favorited",
+        "favoritesCount",
+        "author",
+        "cursor"
+      ],
+      "properties": {
+        "id": {
+          "description": "Not part of the RealWorld spec; emitted by this implementation and pinned so removing it is a deliberate change.",
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "tagList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "updatedAt": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "favorited": {
+          "type": "boolean"
+        },
+        "favoritesCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "author": {
+          "$ref": "#/definitions/profile"
+        },
+        "cursor": {
+          "$ref": "#/definitions/cursor"
+        }
+      }
+    },
+    "comment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "createdAt",
+        "updatedAt",
+        "body",
+        "author",
+        "cursor"
+      ],
+      "properties": {
+        "id": {
+          "description": "The RealWorld spec shows an integer id; this implementation uses string UUIDs.",
+          "type": "string"
+        },
+        "createdAt": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "updatedAt": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "body": {
+          "type": "string"
+        },
+        "author": {
+          "$ref": "#/definitions/profile"
+        },
+        "cursor": {
+          "$ref": "#/definitions/cursor"
+        }
+      }
+    },
+    "cursor": {
+      "description": "Not part of the RealWorld spec; GraphQL pagination cursor that leaks into REST responses via Node#getCursor. Pinned as current behaviour.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/timestamp"
+        }
+      }
+    }
+  }
+}

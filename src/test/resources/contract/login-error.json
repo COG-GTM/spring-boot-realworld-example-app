@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Failed login body. Deviates from the spec's errors shape; pinned as current behaviour.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["message"],
+  "properties": {
+    "message": { "type": "string" }
+  }
+}

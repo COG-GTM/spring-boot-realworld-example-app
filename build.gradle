@@ -51,6 +51,7 @@ dependencies {
     testImplementation 'io.rest-assured:json-path:4.5.1'
     testImplementation 'io.rest-assured:xml-path:4.5.1'
     testImplementation 'io.rest-assured:spring-mock-mvc:4.5.1'
+    testImplementation 'io.rest-assured:json-schema-validator:4.5.1'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
