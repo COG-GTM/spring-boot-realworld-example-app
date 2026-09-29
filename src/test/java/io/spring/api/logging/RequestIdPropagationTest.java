@@ -35,6 +35,7 @@ public class RequestIdPropagationTest {
   public void should_put_request_id_on_every_log_line_of_the_request(CapturedOutput output)
       throws Exception {
     String requestId = "propagation-test-42";
+    String testThread = Thread.currentThread().getName();
 
     mvc.perform(get("/articles").header(RequestIdFilter.HEADER, requestId))
         .andExpect(status().isOk())
@@ -42,6 +43,7 @@ public class RequestIdPropagationTest {
 
     List<JsonNode> requestLines =
         jsonLines(output).stream()
+            .filter(line -> line.path("thread_name").asText().equals(testThread))
             .filter(
                 line ->
                     line.path("logger_name").asText().startsWith("io.spring.infrastructure")
