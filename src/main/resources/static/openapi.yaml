@@ -1,0 +1,752 @@
+openapi: 3.0.3
+info:
+  title: RealWorld Conduit REST API
+  description: |
+    REST API of the Spring Boot + MyBatis implementation of the RealWorld ("Conduit") spec.
+
+    This document describes what this server actually does, which differs from the upstream
+    RealWorld spec in a few places (e.g. `POST /articles` returns `200`, comment ids are strings,
+    articles expose their `id`).
+
+    The document is verified by `io.spring.api.OpenApiContractTest`: every REST handler must be
+    documented here, every documented operation/status must be exercised, and every exercised
+    request/response must validate against the schemas below. Response schemas use
+    `additionalProperties: false`, so adding, removing or renaming a response field without
+    updating this file fails the build.
+
+    Authentication uses a JWT sent as `Authorization: Token <jwt>`.
+  version: 1.0.0
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: User and Authentication
+  - name: Profile
+  - name: Articles
+  - name: Comments
+  - name: Favorites
+  - name: Tags
+paths:
+  /users/login:
+    post:
+      tags: [User and Authentication]
+      operationId: login
+      summary: Log in an existing user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        '422':
+          description: Missing/invalid fields, or unknown email / wrong password
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationError'
+                  - $ref: '#/components/schemas/MessageError'
+  /users:
+    post:
+      tags: [User and Authentication]
+      operationId: createUser
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUserRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/UserResponse'
+        '422':
+          $ref: '#/components/responses/ValidationErrorResponse'
+  /user:
+    get:
+      tags: [User and Authentication]
+      operationId: getCurrentUser
+      summary: Get the current user
+      security:
+        - Token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags: [User and Authentication]
+      operationId: updateCurrentUser
+      summary: Update the current user
+      security:
+        - Token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationErrorResponse'
+  /profiles/{username}:
+    parameters:
+      - $ref: '#/components/parameters/Username'
+    get:
+      tags: [Profile]
+      operationId: getProfile
+      summary: Get a profile
+      security:
+        - {}
+        - Token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/ProfileResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /profiles/{username}/follow:
+    parameters:
+      - $ref: '#/components/parameters/Username'
+    post:
+      tags: [Profile]
+      operationId: followUser
+      summary: Follow a user
+      security:
+        - Token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/ProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Profile]
+      operationId: unfollowUser
+      summary: Unfollow a user
+      description: Returns `404` if the user does not exist or is not currently followed.
+      security:
+        - Token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/ProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /articles:
+    get:
+      tags: [Articles]
+      operationId: getArticles
+      summary: List articles, most recent first
+      security:
+        - {}
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - name: tag
+          in: query
+          description: Only articles with this tag
+          schema:
+            type: string
+        - name: author
+          in: query
+          description: Only articles written by this username
+          schema:
+            type: string
+        - name: favorited
+          in: query
+          description: Only articles favorited by this username
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/MultipleArticlesResponse'
+    post:
+      tags: [Articles]
+      operationId: createArticle
+      summary: Create an article
+      security:
+        - Token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewArticleRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationErrorResponse'
+  /articles/feed:
+    get:
+      tags: [Articles]
+      operationId: getArticlesFeed
+      summary: List articles written by users the current user follows
+      security:
+        - Token: []
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          $ref: '#/components/responses/MultipleArticlesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /articles/{slug}:
+    parameters:
+      - $ref: '#/components/parameters/Slug'
+    get:
+      tags: [Articles]
+      operationId: getArticle
+      summary: Get an article
+      security:
+        - {}
+        - Token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Articles]
+      operationId: updateArticle
+      summary: Update an article (author only)
+      security:
+        - Token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateArticleRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Articles]
+      operationId: deleteArticle
+      summary: Delete an article (author only)
+      security:
+        - Token: []
+      responses:
+        '204':
+          description: Article deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /articles/{slug}/comments:
+    parameters:
+      - $ref: '#/components/parameters/Slug'
+    get:
+      tags: [Comments]
+      operationId: getArticleComments
+      summary: List the comments of an article
+      security:
+        - {}
+        - Token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/MultipleCommentsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Comments]
+      operationId: createArticleComment
+      summary: Comment on an article
+      security:
+        - Token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCommentRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/SingleCommentResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationErrorResponse'
+  /articles/{slug}/comments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Slug'
+      - name: id
+        in: path
+        required: true
+        description: Comment id
+        schema:
+          type: string
+    delete:
+      tags: [Comments]
+      operationId: deleteArticleComment
+      summary: Delete a comment (comment or article author only)
+      security:
+        - Token: []
+      responses:
+        '204':
+          description: Comment deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /articles/{slug}/favorite:
+    parameters:
+      - $ref: '#/components/parameters/Slug'
+    post:
+      tags: [Favorites]
+      operationId: createArticleFavorite
+      summary: Favorite an article
+      security:
+        - Token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Favorites]
+      operationId: deleteArticleFavorite
+      summary: Unfavorite an article
+      security:
+        - Token: []
+      responses:
+        '200':
+          $ref: '#/components/responses/SingleArticleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tags:
+    get:
+      tags: [Tags]
+      operationId: getTags
+      summary: List all tags
+      security:
+        - {}
+      responses:
+        '200':
+          description: All tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagsResponse'
+components:
+  securitySchemes:
+    Token:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: 'JWT prefixed with "Token ", e.g. `Token eyJhbGciOi...`'
+  parameters:
+    Username:
+      name: username
+      in: path
+      required: true
+      schema:
+        type: string
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    Offset:
+      name: offset
+      in: query
+      description: Number of articles to skip
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Limit:
+      name: limit
+      in: query
+      description: Maximum number of articles to return
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+  responses:
+    UserResponse:
+      description: The user, including a fresh JWT
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserResponse'
+    ProfileResponse:
+      description: The profile
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProfileResponse'
+    SingleArticleResponse:
+      description: The article
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SingleArticleResponse'
+    MultipleArticlesResponse:
+      description: A page of articles and the total number of matching articles
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MultipleArticlesResponse'
+    SingleCommentResponse:
+      description: The comment
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SingleCommentResponse'
+    MultipleCommentsResponse:
+      description: The comments, oldest first
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MultipleCommentsResponse'
+    ValidationErrorResponse:
+      description: Request body failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+    Unauthorized:
+      description: Missing, invalid or expired token (empty body)
+    Forbidden:
+      description: The current user is not allowed to modify this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SpringBootError'
+    NotFound:
+      description: The resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SpringBootError'
+  schemas:
+    LoginUserRequest:
+      type: object
+      required: [user]
+      properties:
+        user:
+          type: object
+          required: [email, password]
+          properties:
+            email:
+              type: string
+              format: email
+            password:
+              type: string
+              format: password
+    NewUserRequest:
+      type: object
+      required: [user]
+      properties:
+        user:
+          type: object
+          required: [email, username, password]
+          properties:
+            email:
+              type: string
+              format: email
+            username:
+              type: string
+            password:
+              type: string
+              format: password
+    UpdateUserRequest:
+      type: object
+      required: [user]
+      properties:
+        user:
+          type: object
+          description: Only non-empty fields are applied.
+          properties:
+            email:
+              type: string
+              format: email
+            username:
+              type: string
+            password:
+              type: string
+              format: password
+            bio:
+              type: string
+            image:
+              type: string
+    NewArticleRequest:
+      type: object
+      required: [article]
+      properties:
+        article:
+          type: object
+          required: [title, description, body]
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+            body:
+              type: string
+            tagList:
+              type: array
+              items:
+                type: string
+    UpdateArticleRequest:
+      type: object
+      required: [article]
+      properties:
+        article:
+          type: object
+          description: Only non-empty fields are applied. Changing the title changes the slug.
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+            body:
+              type: string
+    NewCommentRequest:
+      type: object
+      required: [comment]
+      properties:
+        comment:
+          type: object
+          required: [body]
+          properties:
+            body:
+              type: string
+    User:
+      type: object
+      additionalProperties: false
+      required: [email, token, username, bio, image]
+      properties:
+        email:
+          type: string
+          format: email
+        token:
+          type: string
+        username:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        image:
+          type: string
+          nullable: true
+    UserResponse:
+      type: object
+      additionalProperties: false
+      required: [user]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+    Profile:
+      type: object
+      additionalProperties: false
+      required: [username, bio, image, following]
+      properties:
+        username:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        image:
+          type: string
+          nullable: true
+        following:
+          type: boolean
+    ProfileResponse:
+      type: object
+      additionalProperties: false
+      required: [profile]
+      properties:
+        profile:
+          $ref: '#/components/schemas/Profile'
+    Article:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - slug
+        - title
+        - description
+        - body
+        - tagList
+        - createdAt
+        - updatedAt
+        - favorited
+        - favoritesCount
+        - author
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        body:
+          type: string
+        tagList:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        favorited:
+          type: boolean
+        favoritesCount:
+          type: integer
+          minimum: 0
+        author:
+          $ref: '#/components/schemas/Profile'
+        cursor:
+          $ref: '#/components/schemas/Cursor'
+    SingleArticleResponse:
+      type: object
+      additionalProperties: false
+      required: [article]
+      properties:
+        article:
+          $ref: '#/components/schemas/Article'
+    MultipleArticlesResponse:
+      type: object
+      additionalProperties: false
+      required: [articles, articlesCount]
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+        articlesCount:
+          type: integer
+          minimum: 0
+    Cursor:
+      description: >-
+        Internal pagination cursor (the timestamp used by the GraphQL cursor pagination). It leaks
+        into REST responses because `ArticleData`/`CommentData` expose `getCursor()`.
+      type: object
+      additionalProperties: false
+      required: [data]
+      properties:
+        data:
+          type: string
+          format: date-time
+    Comment:
+      type: object
+      additionalProperties: false
+      required: [id, createdAt, updatedAt, body, author, cursor]
+      properties:
+        id:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        body:
+          type: string
+        author:
+          $ref: '#/components/schemas/Profile'
+        cursor:
+          $ref: '#/components/schemas/Cursor'
+    SingleCommentResponse:
+      type: object
+      additionalProperties: false
+      required: [comment]
+      properties:
+        comment:
+          $ref: '#/components/schemas/Comment'
+    MultipleCommentsResponse:
+      type: object
+      additionalProperties: false
+      required: [comments]
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+    TagsResponse:
+      type: object
+      additionalProperties: false
+      required: [tags]
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+    ValidationError:
+      type: object
+      description: Field name mapped to the list of problems with that field.
+      additionalProperties: false
+      required: [errors]
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      example:
+        errors:
+          email: ["can't be empty", "should be an email"]
+    MessageError:
+      type: object
+      additionalProperties: false
+      required: [message]
+      properties:
+        message:
+          type: string
+      example:
+        message: invalid email or password
+    SpringBootError:
+      type: object
+      description: Default Spring Boot error body (rendered by `BasicErrorController`).
+      additionalProperties: false
+      required: [timestamp, status, error, path]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
