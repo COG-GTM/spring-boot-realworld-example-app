@@ -2,6 +2,8 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import jakarta.servlet.DispatcherType;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,6 +32,15 @@ public class WebSecurityConfig {
   }
 
   @Bean
+  public FilterRegistrationBean<JwtTokenFilter> jwtTokenFilterRegistration(
+      JwtTokenFilter jwtTokenFilter) {
+    FilterRegistrationBean<JwtTokenFilter> registration =
+        new FilterRegistrationBean<>(jwtTokenFilter);
+    registration.setEnabled(false);
+    return registration;
+  }
+
+  @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
@@ -48,6 +59,8 @@ public class WebSecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
+                    .dispatcherTypeMatchers(DispatcherType.ERROR)
+                    .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()
                     .requestMatchers("/graphiql")
