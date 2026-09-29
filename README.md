@@ -38,6 +38,21 @@ Integration with Spring Security and add other filter for jwt token process.
 
 The secret key is stored in `application.properties`.
 
+# Request logging and correlation ids
+
+Every request gets a correlation id (taken from an incoming `X-Correlation-Id` header when it is a safe value, otherwise a new UUID). It is echoed back in the `X-Correlation-Id` response header and put in the logging MDC as `correlationId`, so every log line written while handling the request (controllers, `application` services, MyBatis SQL) is tagged with it.
+
+Behaviour is configured with `app.logging.*` properties in `application.properties` and overridden per Spring profile:
+
+| Profile | HTTP log | Headers/payloads | Service-layer trace |
+|---------|----------|------------------|---------------------|
+| default | summary line | off | off |
+| `dev`   | summary line | on (secrets masked) | on (`io.spring.service=DEBUG`) |
+| `prod`  | summary line | off | off, SQL logging at WARN |
+| `test`  | off (WARN) | off | off |
+
+Run with a profile, e.g. `SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun`. Sensitive headers (`app.logging.http.masked-headers`) and JSON fields (`app.logging.http.masked-fields`, default `password,token`) are masked.
+
 # Database
 
 It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.

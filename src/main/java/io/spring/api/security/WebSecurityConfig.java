@@ -2,6 +2,7 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +22,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+  @Value("${app.logging.correlation.header-name:X-Correlation-Id}")
+  private String correlationIdHeader;
 
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
@@ -75,7 +79,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     configuration.setAllowCredentials(false);
     // setAllowedHeaders is important! Without it, OPTIONS preflight request
     // will fail with 403 Invalid CORS request
-    configuration.setAllowedHeaders(asList("Authorization", "Cache-Control", "Content-Type"));
+    configuration.setAllowedHeaders(
+        asList("Authorization", "Cache-Control", "Content-Type", correlationIdHeader));
+    configuration.setExposedHeaders(asList(correlationIdHeader));
     final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
