@@ -2,7 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.6.3'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
-    id "com.netflix.dgs.codegen" version "5.0.6"
+    id "com.netflix.dgs.codegen" version "8.6.0"
     id "com.diffplug.spotless" version "6.2.1"
 }
 
@@ -66,7 +66,13 @@ tasks.named('clean') {
     }
 }
 
+codegen {
+    // Only server-side types are generated; the client-core runtime (graphql-dgs-codegen-shared-core) targets Java 17+.
+    clientCoreConventionsEnabled = false
+}
+
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
+    typeMapping = ["PageInfo": "graphql.relay.PageInfo"] // Relay PageInfo is no longer mapped implicitly
 }
