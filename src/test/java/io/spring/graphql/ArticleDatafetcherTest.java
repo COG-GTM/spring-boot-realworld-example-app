@@ -337,6 +337,77 @@ public class ArticleDatafetcherTest {
         .findRecentArticlesWithCursor(eq("java"), eq("john"), eq("jane"), any(), isNull());
   }
 
+  @Test
+  public void userFeed_should_request_previous_page_when_last_provided() {
+    User target = new User("target@example.com", "target", "pass", "", "");
+    Profile profile = Profile.newBuilder().username("target").build();
+    DataFetchingEnvironment inner = mock(DataFetchingEnvironment.class);
+    when(inner.getSource()).thenReturn(profile);
+    when(userRepository.findByUsername("target")).thenReturn(Optional.of(target));
+    when(articleQueryService.findUserFeedWithCursor(any(), any()))
+        .thenReturn(pagerWith(Direction.PREV, false, "p1"));
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.userFeed(null, null, 3, "1000", dgsEnv(inner));
+
+    assertConnection(result, "p1");
+    ArgumentCaptor<CursorPageParameter<DateTime>> captor =
+        ArgumentCaptor.forClass(CursorPageParameter.class);
+    verify(articleQueryService).findUserFeedWithCursor(eq(target), captor.capture());
+    assertEquals(Direction.PREV, captor.getValue().getDirection());
+    assertEquals(3, captor.getValue().getLimit());
+  }
+
+  @Test
+  public void userFavorites_should_request_previous_page_when_last_provided() {
+    anonymous();
+    Profile profile = Profile.newBuilder().username("target").build();
+    DataFetchingEnvironment inner = mock(DataFetchingEnvironment.class);
+    when(inner.getSource()).thenReturn(profile);
+    when(articleQueryService.findRecentArticlesWithCursor(
+            isNull(), isNull(), eq("target"), any(), isNull()))
+        .thenReturn(pagerWith(Direction.PREV, true, "fav2"));
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.userFavorites(null, null, 2, null, dgsEnv(inner));
+
+    assertConnection(result, "fav2");
+    assertTrue(result.getData().getPageInfo().isHasPreviousPage());
+  }
+
+  @Test
+  public void userArticles_should_request_next_page_when_first_provided() {
+    anonymous();
+    Profile profile = Profile.newBuilder().username("target").build();
+    DataFetchingEnvironment inner = mock(DataFetchingEnvironment.class);
+    when(inner.getSource()).thenReturn(profile);
+    when(articleQueryService.findRecentArticlesWithCursor(
+            isNull(), eq("target"), isNull(), any(), isNull()))
+        .thenReturn(pagerWith(Direction.NEXT, true, "art2"));
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.userArticles(4, "1000", null, null, dgsEnv(inner));
+
+    assertConnection(result, "art2");
+    assertTrue(result.getData().getPageInfo().isHasNextPage());
+  }
+
+  @Test
+  public void getArticles_should_return_empty_connection_for_previous_page() {
+    anonymous();
+    when(articleQueryService.findRecentArticlesWithCursor(
+            isNull(), isNull(), isNull(), any(), isNull()))
+        .thenReturn(pagerWith(Direction.PREV, false));
+
+    DataFetcherResult<ArticlesConnection> result =
+        articleDatafetcher.getArticles(null, null, 10, null, null, null, null, dgsEnv());
+
+    assertConnection(result);
+    assertEquals(null, result.getData().getPageInfo().getStartCursor());
+    assertEquals(null, result.getData().getPageInfo().getEndCursor());
+    assertFalse(result.getData().getPageInfo().isHasNextPage());
+  }
+
   // getArticle --------------------------------------------------------------
 
   @Test
