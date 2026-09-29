@@ -4,6 +4,7 @@ plugins {
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
+    id "org.flywaydb.flyway" version "8.0.5"
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -64,6 +65,17 @@ tasks.named('clean') {
     doFirst {
         delete './dev.db'
     }
+}
+
+flyway {
+    url = "jdbc:sqlite:${projectDir}/dev.db"
+    user = ''
+    password = ''
+    locations = ["filesystem:${projectDir}/src/main/resources/db/migration"]
+    baselineVersion = '1'
+    baselineDescription = 'baseline of pre-migration schema'
+    cleanDisabled = true
+    configurations = ['runtimeClasspath']
 }
 
 tasks.named('generateJava') {
