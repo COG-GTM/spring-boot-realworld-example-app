@@ -1,6 +1,7 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -12,6 +13,8 @@ import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
+import io.spring.application.user.LoginAttemptLimiter;
+import io.spring.application.user.LoginService;
 import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
@@ -34,6 +37,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({
   WebSecurityConfig.class,
   UserQueryService.class,
+  LoginService.class,
+  LoginAttemptLimiter.class,
   BCryptPasswordEncoder.class,
   JacksonCustomizations.class
 })
@@ -267,5 +272,46 @@ public class UsersApiTest {
         .then()
         .statusCode(422)
         .body("message", equalTo("invalid email or password"));
+  }
+
+  @Test
+  public void should_throttle_login_after_repeated_failures_for_unknown_email() throws Exception {
+    String email = "nobody@jacob.com";
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", email);
+                    put("password", "guess");
+                  }
+                });
+          }
+        };
+
+    for (int i = 0; i < 5; i++) {
+      given()
+          .contentType("application/json")
+          .body(param)
+          .when()
+          .post("/users/login")
+          .then()
+          .statusCode(422)
+          .body("message", equalTo("invalid email or password"));
+    }
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(429)
+        .header("Retry-After", notNullValue())
+        .body("message", equalTo("too many login attempts, try again later"));
   }
 }

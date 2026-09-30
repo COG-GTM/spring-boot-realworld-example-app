@@ -1,6 +1,7 @@
 package io.spring.graphql.exception;
 
 import com.netflix.graphql.dgs.exceptions.DefaultDataFetcherExceptionHandler;
+import com.netflix.graphql.types.errors.ErrorDetail;
 import com.netflix.graphql.types.errors.ErrorType;
 import com.netflix.graphql.types.errors.TypedGraphQLError;
 import graphql.GraphQLError;
@@ -9,6 +10,7 @@ import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
 import io.spring.api.exception.FieldErrorResource;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.application.user.TooManyLoginAttemptsException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
 import java.util.ArrayList;
@@ -36,6 +38,19 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .errorType(ErrorType.UNAUTHENTICATED)
               .message(handlerParameters.getException().getMessage())
               .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (handlerParameters.getException() instanceof TooManyLoginAttemptsException) {
+      TooManyLoginAttemptsException e =
+          (TooManyLoginAttemptsException) handlerParameters.getException();
+      Map<String, Object> extensions = new HashMap<>();
+      extensions.put("retryAfterSeconds", e.getRetryAfterSeconds());
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBuilder()
+              .errorDetail(ErrorDetail.Common.ENHANCE_YOUR_CALM)
+              .message(e.getMessage())
+              .path(handlerParameters.getPath())
+              .extensions(extensions)
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
     } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
