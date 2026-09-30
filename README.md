@@ -36,7 +36,10 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The secret key is stored in `application.properties`.
+The JWT signing secret is read from the `JWT_SECRET` environment variable and is not stored in the repository.
+The application refuses to start if it is missing, shorter than 64 bytes, or equal to the secret that was previously committed.
+
+    export JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')"
 
 # Database
 
@@ -58,7 +61,7 @@ Alternatively, you can run
 You'll need Docker installed.
 	
     ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+    docker run -p 8081:8080 -e JWT_SECRET spring-boot-realworld-example-app
 
 # Try it out with a RealWorld frontend
 

@@ -58,6 +58,9 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	def testJwtSecret = new byte[64]
+	new java.security.SecureRandom().nextBytes(testJwtSecret)
+	environment 'JWT_SECRET', testJwtSecret.encodeBase64().toString()
 }
 
 tasks.named('clean') {
