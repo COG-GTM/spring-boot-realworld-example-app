@@ -34,6 +34,8 @@ configurations {
 ext['tomcat.version'] = '10.1.60'
 ext['jackson-bom.version'] = '2.21.7'
 ext['commons-lang3.version'] = '3.20.0'
+ext['logback.version'] = '1.6.3'
+ext['kotlin.version'] = '2.1.21'
 
 dependencyManagement {
     imports {
@@ -44,6 +46,7 @@ dependencyManagement {
             entry 'log4j-api'
             entry 'log4j-to-slf4j'
         }
+        dependency 'io.projectreactor:reactor-core:3.8.7'
     }
 }
 
