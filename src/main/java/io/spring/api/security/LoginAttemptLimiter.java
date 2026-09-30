@@ -1,27 +1,35 @@
 package io.spring.api.security;
 
 import io.spring.api.exception.TooManyLoginAttemptsException;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * Locks out login attempts per client IP and per account after too many failures within a window.
+ * Locks out login attempts per client IP and per account after too many failed attempts within a
+ * window.
  *
- * <p>Each attempt is counted atomically in {@link #beginAttempt} before credentials are checked, so
- * concurrent requests cannot exceed the limit; {@link #recordSuccess} gives the attempt back.
- * Accounts are keyed by the exact submitted email (matching the case-sensitive lookup), whether or
- * not it is registered, so lockout behaviour does not reveal which emails exist. State is held in
- * memory per application instance.
+ * <p>In-flight attempts count towards the limit, so concurrent requests cannot exceed it. Accounts
+ * are keyed by the exact submitted email (matching the case-sensitive lookup), whether or not it is
+ * registered, so lockout behaviour does not reveal which emails exist. State is held in memory per
+ * application instance.
  */
 @Component
 public class LoginAttemptLimiter {
   private static final int SWEEP_THRESHOLD = 10_000;
   private static final long SWEEP_INTERVAL_NANOS = TimeUnit.SECONDS.toNanos(60);
+
+  private enum Outcome {
+    SUCCESS,
+    FAILURE,
+    ABORTED
+  }
 
   private final int maxFailuresPerAccount;
   private final int maxFailuresPerIp;
@@ -61,57 +69,74 @@ public class LoginAttemptLimiter {
   }
 
   /**
-   * Counts a login attempt against the client IP and the account. Throws {@link
-   * TooManyLoginAttemptsException} without counting if either is locked. The attempt stays counted
-   * as a failure unless {@link #recordSuccess} is called.
+   * Runs {@code credentialCheck} if neither the client IP nor the account is locked, otherwise
+   * throws {@link TooManyLoginAttemptsException}. An empty result counts as a failed attempt; a
+   * present result clears the account's failures. If the check throws, the attempt is not counted.
    */
-  public void beginAttempt(String clientIp, String email) {
+  public <T> Optional<T> attempt(
+      String clientIp, String email, Supplier<Optional<T>> credentialCheck) {
+    String ipKey = ipKey(clientIp);
+    String accountKey = accountKey(email);
+    begin(ipKey, accountKey);
+    Optional<T> result;
+    try {
+      result = credentialCheck.get();
+    } catch (RuntimeException | Error e) {
+      finish(ipKey, maxFailuresPerIp, Outcome.ABORTED, false);
+      finish(accountKey, maxFailuresPerAccount, Outcome.ABORTED, true);
+      throw e;
+    }
+    Outcome outcome = result.isPresent() ? Outcome.SUCCESS : Outcome.FAILURE;
+    finish(ipKey, maxFailuresPerIp, outcome, false);
+    finish(accountKey, maxFailuresPerAccount, outcome, true);
+    return result;
+  }
+
+  private void begin(String ipKey, String accountKey) {
     long now = nanoTime.getAsLong();
     sweepIfNeeded(now);
-    String ipKey = ipKey(clientIp);
     acquire(ipKey, maxFailuresPerIp, now);
     try {
-      acquire(accountKey(email), maxFailuresPerAccount, now);
+      acquire(accountKey, maxFailuresPerAccount, now);
     } catch (TooManyLoginAttemptsException e) {
-      release(ipKey, maxFailuresPerIp);
+      finish(ipKey, maxFailuresPerIp, Outcome.ABORTED, false);
       throw e;
     }
   }
 
-  public void recordSuccess(String clientIp, String email) {
-    release(ipKey(clientIp), maxFailuresPerIp);
-    attempts.remove(accountKey(email));
-  }
-
   private void acquire(String key, int max, long now) {
-    long[] lockedFor = new long[1];
+    long[] retryAfterNanos = new long[1];
     attempts.compute(
         key,
         (k, existing) -> {
-          if (existing == null || existing.isExpired(now)) {
-            return new Attempts(1, now + windowNanos, 1 >= max ? now + lockoutNanos : 0);
+          Attempts current = existing == null ? Attempts.EMPTY : existing.refresh(now);
+          if (current.lockedUntil != 0) {
+            retryAfterNanos[0] = current.lockedUntil - now;
+            return current;
           }
-          if (existing.lockedUntil != 0) {
-            lockedFor[0] = existing.lockedUntil - now;
-            return existing;
+          if (current.failures + current.inFlight >= max) {
+            retryAfterNanos[0] = TimeUnit.SECONDS.toNanos(1);
+            return current;
           }
-          int count = existing.count + 1;
-          return new Attempts(count, existing.windowEnd, count >= max ? now + lockoutNanos : 0);
+          return current.withInFlight(current.inFlight + 1);
         });
-    if (lockedFor[0] > 0) {
-      throw new TooManyLoginAttemptsException(toSecondsRoundedUp(lockedFor[0]));
+    if (retryAfterNanos[0] > 0) {
+      throw new TooManyLoginAttemptsException(toSecondsRoundedUp(retryAfterNanos[0]));
     }
   }
 
-  private void release(String key, int max) {
+  private void finish(String key, int max, Outcome outcome, boolean clearFailuresOnSuccess) {
+    long now = nanoTime.getAsLong();
     attempts.computeIfPresent(
         key,
         (k, existing) -> {
-          int count = existing.count - 1;
-          if (count <= 0) {
-            return null;
+          Attempts current = existing.refresh(now).withInFlight(Math.max(0, existing.inFlight - 1));
+          if (outcome == Outcome.FAILURE) {
+            current = current.withFailure(now, max, windowNanos, lockoutNanos);
+          } else if (outcome == Outcome.SUCCESS && clearFailuresOnSuccess) {
+            current = current.withoutFailures();
           }
-          return new Attempts(count, existing.windowEnd, count >= max ? existing.lockedUntil : 0);
+          return current.isIdle() ? null : current;
         });
   }
 
@@ -120,7 +145,8 @@ public class LoginAttemptLimiter {
     if (attempts.size() > SWEEP_THRESHOLD
         && now - scheduled >= 0
         && nextSweep.compareAndSet(scheduled, now + SWEEP_INTERVAL_NANOS)) {
-      attempts.values().removeIf(a -> a.isExpired(now));
+      attempts.replaceAll((k, a) -> a.refresh(now));
+      attempts.values().removeIf(Attempts::isIdle);
     }
   }
 
@@ -137,18 +163,45 @@ public class LoginAttemptLimiter {
   }
 
   private static final class Attempts {
-    private final int count;
+    private static final Attempts EMPTY = new Attempts(0, 0, 0, 0);
+
+    private final int failures;
+    private final int inFlight;
     private final long windowEnd;
     private final long lockedUntil;
 
-    private Attempts(int count, long windowEnd, long lockedUntil) {
-      this.count = count;
+    private Attempts(int failures, int inFlight, long windowEnd, long lockedUntil) {
+      this.failures = failures;
+      this.inFlight = inFlight;
       this.windowEnd = windowEnd;
       this.lockedUntil = lockedUntil;
     }
 
-    private boolean isExpired(long now) {
-      return lockedUntil != 0 ? now - lockedUntil >= 0 : now - windowEnd >= 0;
+    private Attempts refresh(long now) {
+      boolean lockExpired = lockedUntil != 0 && now - lockedUntil >= 0;
+      boolean windowExpired = lockedUntil == 0 && failures > 0 && now - windowEnd >= 0;
+      return lockExpired || windowExpired ? new Attempts(0, inFlight, 0, 0) : this;
+    }
+
+    private Attempts withInFlight(int inFlight) {
+      return new Attempts(failures, inFlight, windowEnd, lockedUntil);
+    }
+
+    private Attempts withFailure(long now, int max, long windowNanos, long lockoutNanos) {
+      if (lockedUntil != 0) {
+        return this;
+      }
+      int count = failures + 1;
+      long end = failures == 0 ? now + windowNanos : windowEnd;
+      return new Attempts(count, inFlight, end, count >= max ? now + lockoutNanos : 0);
+    }
+
+    private Attempts withoutFailures() {
+      return new Attempts(0, inFlight, 0, 0);
+    }
+
+    private boolean isIdle() {
+      return failures == 0 && inFlight == 0 && lockedUntil == 0;
     }
   }
 }
