@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class DefaultJwtService implements JwtService {
   static final int MINIMUM_SECRET_BYTES = 64;
 
-  private static final Set<String> REVOKED_SECRET_SHA256 =
+  static final Set<String> REVOKED_SECRET_SHA256 =
       Set.of("990b0164cf2b6d7441bf1e7555d93004a915c9b3e9e57cefee56b45cd2291a41");
 
   private final SecretKey signingKey;
@@ -32,12 +32,18 @@ public class DefaultJwtService implements JwtService {
   @Autowired
   public DefaultJwtService(
       @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
-    this.sessionTime = sessionTime;
-    signatureAlgorithm = SignatureAlgorithm.HS512;
-    this.signingKey = new SecretKeySpec(validatedSecret(secret), signatureAlgorithm.getJcaName());
+    this(secret, sessionTime, REVOKED_SECRET_SHA256);
   }
 
-  private static byte[] validatedSecret(String secret) {
+  DefaultJwtService(String secret, int sessionTime, Set<String> revokedSecretSha256) {
+    this.sessionTime = sessionTime;
+    signatureAlgorithm = SignatureAlgorithm.HS512;
+    this.signingKey =
+        new SecretKeySpec(
+            validatedSecret(secret, revokedSecretSha256), signatureAlgorithm.getJcaName());
+  }
+
+  private static byte[] validatedSecret(String secret, Set<String> revokedSecretSha256) {
     if (secret == null || secret.trim().isEmpty()) {
       throw new IllegalStateException(
           "JWT signing secret is not configured; set the JWT_SECRET environment variable");
@@ -47,14 +53,14 @@ public class DefaultJwtService implements JwtService {
       throw new IllegalStateException(
           "JWT signing secret must be at least " + MINIMUM_SECRET_BYTES + " bytes for HS512");
     }
-    if (REVOKED_SECRET_SHA256.contains(sha256Hex(bytes))) {
+    if (revokedSecretSha256.contains(sha256Hex(bytes))) {
       throw new IllegalStateException(
           "JWT signing secret was previously committed to source control and must be rotated");
     }
     return bytes;
   }
 
-  private static String sha256Hex(byte[] bytes) {
+  static String sha256Hex(byte[] bytes) {
     try {
       byte[] digest = MessageDigest.getInstance("SHA-256").digest(bytes);
       StringBuilder hex = new StringBuilder(digest.length * 2);

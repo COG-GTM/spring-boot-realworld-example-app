@@ -3,8 +3,10 @@ package io.spring.infrastructure.service;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,10 +71,18 @@ public class DefaultJwtServiceTest {
   }
 
   @Test
-  public void should_fail_with_previously_committed_secret() {
-    String leaked =
-        "nRvyYC4soFxBdZ-F-5Nnzz5USXstR1YylsTd-mA0aKtI9HUlriGrtkf-TiuDapkLiUCogO3JOK7kwZisrHp6wA";
-    Assertions.assertThrows(IllegalStateException.class, () -> new DefaultJwtService(leaked, 3600));
+  public void should_fail_with_revoked_secret() {
+    Set<String> revoked =
+        Set.of(DefaultJwtService.sha256Hex(SECRET.getBytes(StandardCharsets.UTF_8)));
+    Assertions.assertThrows(
+        IllegalStateException.class, () -> new DefaultJwtService(SECRET, 3600, revoked));
+  }
+
+  @Test
+  public void should_revoke_previously_committed_secret() {
+    Assertions.assertTrue(
+        DefaultJwtService.REVOKED_SECRET_SHA256.contains(
+            "990b0164cf2b6d7441bf1e7555d93004a915c9b3e9e57cefee56b45cd2291a41"));
   }
 
   @Test
