@@ -9,6 +9,7 @@ import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
 import io.spring.api.exception.FieldErrorResource;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.application.InvalidCursorException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
 import java.util.ArrayList;
@@ -34,6 +35,21 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
       GraphQLError graphqlError =
           TypedGraphQLError.newBuilder()
               .errorType(ErrorType.UNAUTHENTICATED)
+              .message(handlerParameters.getException().getMessage())
+              .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (handlerParameters.getException() instanceof AuthenticationException) {
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBuilder()
+              .errorType(ErrorType.UNAUTHENTICATED)
+              .message("Authentication required")
+              .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (handlerParameters.getException() instanceof InvalidCursorException) {
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBadRequestBuilder()
               .message(handlerParameters.getException().getMessage())
               .path(handlerParameters.getPath())
               .build();
