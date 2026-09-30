@@ -2,8 +2,12 @@ package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -17,12 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(CurrentUserApi.class)
@@ -38,6 +44,8 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
   @Autowired private MockMvc mvc;
 
   @MockBean private UserQueryService userQueryService;
+
+  @Autowired private PasswordEncoder passwordEncoder;
 
   @Override
   @BeforeEach
@@ -116,6 +124,77 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .put("/user")
         .then()
         .statusCode(200);
+  }
+
+  @Test
+  public void should_store_hashed_password_when_updating_password() throws Exception {
+    String newPassword = "n3w-s3cret";
+    String originalPassword = user.getPassword();
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("password", newPassword);
+                  }
+                });
+          }
+        };
+
+    when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(userData));
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .put("/user")
+        .then()
+        .statusCode(200);
+
+    ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+    verify(userRepository).save(saved.capture());
+    String storedPassword = saved.getValue().getPassword();
+    assertNotEquals(newPassword, storedPassword);
+    assertTrue(passwordEncoder.matches(newPassword, storedPassword));
+    assertNotEquals(originalPassword, storedPassword);
+  }
+
+  @Test
+  public void should_keep_password_when_update_omits_password() throws Exception {
+    String originalPassword = user.getPassword();
+    String newBio = "updated";
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("bio", newBio);
+                  }
+                });
+          }
+        };
+
+    when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(userData));
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .put("/user")
+        .then()
+        .statusCode(200);
+
+    ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+    verify(userRepository).save(saved.capture());
+    assertEquals(originalPassword, saved.getValue().getPassword());
   }
 
   @Test
