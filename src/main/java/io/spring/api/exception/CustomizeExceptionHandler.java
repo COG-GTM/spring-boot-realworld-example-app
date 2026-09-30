@@ -59,6 +59,19 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
             });
   }
 
+  @ExceptionHandler(TooManyLoginAttemptsException.class)
+  public ResponseEntity<Object> handleTooManyLoginAttempts(
+      TooManyLoginAttemptsException e, WebRequest request) {
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+        .header(HttpHeaders.RETRY_AFTER, String.valueOf(e.getRetryAfterSeconds()))
+        .body(
+            new HashMap<String, Object>() {
+              {
+                put("message", e.getMessage());
+              }
+            });
+  }
+
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
       MethodArgumentNotValidException e,
