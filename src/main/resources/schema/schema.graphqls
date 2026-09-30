@@ -107,7 +107,6 @@ type Profile {
     image: String
     articles(first: Int, after: String, last: Int, before: String): ArticlesConnection
     favorites(first: Int, after: String, last: Int, before: String): ArticlesConnection
-    feed(first: Int, after: String, last: Int, before: String): ArticlesConnection
 }
 
 ### User
