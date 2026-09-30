@@ -116,6 +116,34 @@ public class LoginAttemptLimiterTest {
     assertEquals(2, small.trackedKeys());
   }
 
+  @Test
+  public void should_report_retry_after_when_enough_slots_expire() {
+    LoginAttemptLimiter small = new LoginAttemptLimiter(3, 5, Duration.ofSeconds(60), 3, clock);
+    assertEquals(0, small.tryAcquire("a@b.com", "10.0.0.1"));
+    clock.advance(Duration.ofSeconds(10));
+    assertEquals(0, small.tryAcquire("b@b.com", "10.0.0.1"));
+    small.recordSuccess("a@b.com", "10.0.0.1");
+    clock.advance(Duration.ofSeconds(10));
+    assertEquals(0, small.tryAcquire("d@b.com", "10.0.0.1"));
+
+    // Stored: client (expires t=60), b@ (t=70), d@ (t=80). A new account from a new client needs
+    // two free slots, so it must wait for the second expiry, not the first.
+    assertEquals(50, small.tryAcquire("e@b.com", "10.0.0.2"));
+    clock.advance(Duration.ofSeconds(40));
+    assertEquals(10, small.tryAcquire("e@b.com", "10.0.0.2"));
+    clock.advance(Duration.ofSeconds(10));
+    assertEquals(0, small.tryAcquire("e@b.com", "10.0.0.2"));
+  }
+
+  @Test
+  public void should_refund_released_attempts() {
+    for (int i = 0; i < 10; i++) {
+      assertEquals(0, limiter.tryAcquire("a@b.com", "10.0.0.1"));
+      limiter.release("a@b.com", "10.0.0.1");
+    }
+    assertEquals(0, limiter.trackedKeys());
+  }
+
   private static class MutableClock extends Clock {
     private Instant now;
 

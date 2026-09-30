@@ -73,6 +73,18 @@ public class LoginServiceTest {
   }
 
   @Test
+  public void should_not_count_attempts_that_fail_with_backend_errors() {
+    when(userRepository.findByEmail(eq("down@jacob.com"))).thenThrow(new IllegalStateException());
+    for (int i = 0; i < 5; i++) {
+      assertThrows(
+          IllegalStateException.class,
+          () -> loginService.authenticate("down@jacob.com", "secret", "1.1.1.1"));
+    }
+    when(userRepository.findByEmail(eq("down@jacob.com"))).thenReturn(Optional.empty());
+    assertFalse(loginService.authenticate("down@jacob.com", "secret", "1.1.1.1").isPresent());
+  }
+
+  @Test
   public void should_not_touch_repository_when_throttled() {
     for (int i = 0; i < 3; i++) {
       loginService.authenticate("ghost@jacob.com", "wrong", "1.1.1.1");

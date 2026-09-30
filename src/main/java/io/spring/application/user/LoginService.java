@@ -37,9 +37,16 @@ public class LoginService {
       throw new TooManyLoginAttemptsException(retryAfter);
     }
 
-    Optional<User> user = email == null ? Optional.empty() : userRepository.findByEmail(email);
-    String hash = user.map(User::getPassword).orElse(dummyPasswordHash);
-    boolean matches = passwordEncoder.matches(password == null ? "" : password, hash);
+    Optional<User> user;
+    boolean matches;
+    try {
+      user = email == null ? Optional.empty() : userRepository.findByEmail(email);
+      String hash = user.map(User::getPassword).orElse(dummyPasswordHash);
+      matches = passwordEncoder.matches(password == null ? "" : password, hash);
+    } catch (RuntimeException e) {
+      loginAttemptLimiter.release(email, client);
+      throw e;
+    }
 
     if (user.isPresent() && matches) {
       loginAttemptLimiter.recordSuccess(email, client);

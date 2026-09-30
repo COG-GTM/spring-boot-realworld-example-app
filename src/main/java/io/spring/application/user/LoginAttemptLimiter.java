@@ -31,7 +31,10 @@ public class LoginAttemptLimiter {
   private final int maxTrackedKeys;
   private final Clock clock;
   private final Map<String, FailureWindow> failures = new HashMap<>();
-  private Instant nextPruneAt = Instant.MIN;
+  // Expiries of the two oldest live windows seen by the last full scan; storage cannot free slots
+  // before them, so no rescan is needed until the first one passes.
+  private Instant firstExpiry = Instant.MIN;
+  private Instant secondExpiry = Instant.MIN;
 
   @Autowired
   public LoginAttemptLimiter(
@@ -85,8 +88,9 @@ public class LoginAttemptLimiter {
     }
     int newKeys =
         (failures.containsKey(account) ? 0 : 1) + (failures.containsKey(clientKey) ? 0 : 1);
-    if (!hasCapacity(newKeys, now)) {
-      return secondsUntil(now, nextPruneAt);
+    int missing = missingCapacity(newKeys, now);
+    if (missing > 0) {
+      return secondsUntil(now, missing == 1 ? firstExpiry : secondExpiry);
     }
     increment(account, now);
     increment(clientKey, now);
@@ -96,34 +100,56 @@ public class LoginAttemptLimiter {
   /** Clears the account's window and refunds the client's attempt after a successful login. */
   public synchronized void recordSuccess(String email, String client) {
     failures.remove(accountKey(email));
-    failures.computeIfPresent(
-        clientKey(client),
-        (k, current) ->
-            current.count <= 1 ? null : new FailureWindow(current.start, current.count - 1));
+    refund(clientKey(client));
+  }
+
+  /** Refunds an attempt whose credentials could not be checked, e.g. because the lookup failed. */
+  public synchronized void release(String email, String client) {
+    refund(accountKey(email));
+    refund(clientKey(client));
   }
 
   synchronized int trackedKeys() {
     return failures.size();
   }
 
-  private boolean hasCapacity(int newKeys, Instant now) {
+  /** Returns how many of {@code newKeys} cannot be stored (0, 1 or 2). */
+  private int missingCapacity(int newKeys, Instant now) {
     if (failures.size() + newKeys <= maxTrackedKeys) {
-      return true;
+      return 0;
     }
-    if (now.isBefore(nextPruneAt)) {
-      return false;
+    if (!now.isBefore(firstExpiry)) {
+      prune(now);
     }
-    Instant oldestLiveStart = null;
+    return Math.max(0, failures.size() + newKeys - maxTrackedKeys);
+  }
+
+  private void prune(Instant now) {
+    Instant first = null;
+    Instant second = null;
     for (Iterator<FailureWindow> it = failures.values().iterator(); it.hasNext(); ) {
       FailureWindow w = it.next();
       if (w.isExpired(now, window)) {
         it.remove();
-      } else if (oldestLiveStart == null || w.start.isBefore(oldestLiveStart)) {
-        oldestLiveStart = w.start;
+        continue;
+      }
+      Instant expiry = w.start.plus(window);
+      if (first == null || expiry.isBefore(first)) {
+        second = first;
+        first = expiry;
+      } else if (second == null || expiry.isBefore(second)) {
+        second = expiry;
       }
     }
-    nextPruneAt = oldestLiveStart == null ? now : oldestLiveStart.plus(window);
-    return failures.size() + newKeys <= maxTrackedKeys;
+    firstExpiry = first == null ? now : first;
+    secondExpiry = second == null ? firstExpiry : second;
+  }
+
+  private void refund(String key) {
+    failures.computeIfPresent(
+        key,
+        (k, current) ->
+            current.count <= 1 ? null : new FailureWindow(current.start, current.count - 1));
   }
 
   private long retryAfter(String key, int limit, Instant now) {
