@@ -38,6 +38,14 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .path(handlerParameters.getPath())
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (handlerParameters.getException() instanceof AuthenticationException) {
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBuilder()
+              .errorType(ErrorType.UNAUTHENTICATED)
+              .message("authentication required")
+              .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
     } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
       List<FieldErrorResource> errors = new ArrayList<>();
       for (ConstraintViolation<?> violation :

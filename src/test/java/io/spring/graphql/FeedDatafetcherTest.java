@@ -79,6 +79,8 @@ public class FeedDatafetcherTest {
     ExecutionResult result = dgsQueryExecutor.execute("{ feed(first: 10) { edges { cursor } } }");
 
     assertFalse(result.getErrors().isEmpty());
+    assertEquals(
+        "UNAUTHENTICATED", result.getErrors().get(0).getExtensions().get("errorType").toString());
     Map<String, Object> data = result.getData();
     assertNull(data.get("feed"));
     verify(articleQueryService, never()).findUserFeedWithCursor(any(), any());
