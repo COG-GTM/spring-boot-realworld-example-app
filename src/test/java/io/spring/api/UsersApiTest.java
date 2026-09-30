@@ -1,6 +1,7 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -8,10 +9,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import io.restassured.module.mockmvc.response.MockMvcResponse;
 import io.spring.JacksonCustomizations;
+import io.spring.api.security.LoginAttemptLimiter;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
+import io.spring.application.user.UserAuthenticator;
 import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
@@ -34,6 +38,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({
   WebSecurityConfig.class,
   UserQueryService.class,
+  UserAuthenticator.class,
+  LoginAttemptLimiter.class,
   BCryptPasswordEncoder.class,
   JacksonCustomizations.class
 })
@@ -267,5 +273,92 @@ public class UsersApiTest {
         .then()
         .statusCode(422)
         .body("message", equalTo("invalid email or password"));
+  }
+
+  @Test
+  public void should_lock_account_after_repeated_failures_from_any_ip() throws Exception {
+    String email = "locked@jacob.com";
+    User user = new User(email, "locked", passwordEncoder.encode("right"), "", defaultAvatar);
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+
+    for (int i = 0; i < 5; i++) {
+      login(email, "wrong", "10.1.0." + i).then().statusCode(422);
+    }
+
+    login(email, "right", "10.1.1.1")
+        .then()
+        .statusCode(429)
+        .header("Retry-After", Integer::parseInt, greaterThan(0))
+        .body("message", equalTo("too many login attempts, try again later"));
+  }
+
+  @Test
+  public void should_lock_unknown_email_the_same_way_as_existing_account() throws Exception {
+    String email = "nobody@jacob.com";
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+
+    for (int i = 0; i < 5; i++) {
+      login(email, "wrong", "10.2.0." + i)
+          .then()
+          .statusCode(422)
+          .body("message", equalTo("invalid email or password"));
+    }
+
+    login(email, "wrong", "10.2.1.1")
+        .then()
+        .statusCode(429)
+        .body("message", equalTo("too many login attempts, try again later"));
+  }
+
+  @Test
+  public void should_block_ip_after_repeated_failures_across_accounts() throws Exception {
+    String ip = "10.3.0.1";
+    for (int i = 0; i < 20; i++) {
+      login("stuffing" + i + "@jacob.com", "wrong", ip).then().statusCode(422);
+    }
+
+    String email = "victim@jacob.com";
+    User user = new User(email, "victim", passwordEncoder.encode("right"), "", defaultAvatar);
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+
+    login(email, "right", ip).then().statusCode(429);
+  }
+
+  @Test
+  public void should_reset_account_failures_after_successful_login() throws Exception {
+    String email = "reset@jacob.com";
+    String username = "reset";
+    User user = new User(email, username, passwordEncoder.encode("right"), "", defaultAvatar);
+    UserData userData = new UserData(user.getId(), email, username, "", defaultAvatar);
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+    when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
+    when(jwtService.toToken(any())).thenReturn("123");
+
+    for (int i = 0; i < 4; i++) {
+      login(email, "wrong", "10.4.0.1").then().statusCode(422);
+    }
+    login(email, "right", "10.4.0.1").then().statusCode(200);
+    for (int i = 0; i < 4; i++) {
+      login(email, "wrong", "10.4.0.2").then().statusCode(422);
+    }
+    login(email, "right", "10.4.0.2").then().statusCode(200);
+  }
+
+  private MockMvcResponse login(String email, String password, String remoteAddr) {
+    Map<String, Object> param = new HashMap<>();
+    Map<String, Object> credentials = new HashMap<>();
+    credentials.put("email", email);
+    credentials.put("password", password);
+    param.put("user", credentials);
+    return given()
+        .contentType("application/json")
+        .body(param)
+        .postProcessors(
+            request -> {
+              request.setRemoteAddr(remoteAddr);
+              return request;
+            })
+        .when()
+        .post("/users/login");
   }
 }
