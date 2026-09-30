@@ -2,6 +2,7 @@ package io.spring.api.exception;
 
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
+import io.spring.application.user.TooManyLoginAttemptsException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,6 +46,19 @@ public class CustomizeExceptionHandler extends ResponseEntityExceptionHandler {
     headers.setContentType(MediaType.APPLICATION_JSON);
 
     return handleExceptionInternal(e, error, headers, UNPROCESSABLE_ENTITY, request);
+  }
+
+  @ExceptionHandler(TooManyLoginAttemptsException.class)
+  public ResponseEntity<Object> handleTooManyLoginAttempts(
+      TooManyLoginAttemptsException e, WebRequest request) {
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+        .header(HttpHeaders.RETRY_AFTER, String.valueOf(e.getRetryAfterSeconds()))
+        .body(
+            new HashMap<String, Object>() {
+              {
+                put("message", e.getMessage());
+              }
+            });
   }
 
   @ExceptionHandler(InvalidAuthenticationException.class)
