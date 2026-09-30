@@ -23,6 +23,7 @@ import io.spring.graphql.DgsConstants.ARTICLEPAYLOAD;
 import io.spring.graphql.DgsConstants.COMMENT;
 import io.spring.graphql.DgsConstants.PROFILE;
 import io.spring.graphql.DgsConstants.QUERY;
+import io.spring.graphql.exception.AuthenticationException;
 import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
@@ -50,7 +51,7 @@ public class ArticleDatafetcher {
       throw new IllegalArgumentException("first 和 last 必须只存在一个");
     }
 
-    User current = SecurityUtil.getCurrentUser().orElse(null);
+    User current = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
 
     CursorPager<ArticleData> articles;
     if (first != null) {
@@ -62,56 +63,6 @@ public class ArticleDatafetcher {
       articles =
           articleQueryService.findUserFeedWithCursor(
               current,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
-    }
-    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
-    ArticlesConnection articlesConnection =
-        ArticlesConnection.newBuilder()
-            .pageInfo(pageInfo)
-            .edges(
-                articles.getData().stream()
-                    .map(
-                        a ->
-                            ArticleEdge.newBuilder()
-                                .cursor(a.getCursor().toString())
-                                .node(buildArticleResult(a))
-                                .build())
-                    .collect(Collectors.toList()))
-            .build();
-    return DataFetcherResult.<ArticlesConnection>newResult()
-        .data(articlesConnection)
-        .localContext(
-            articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
-        .build();
-  }
-
-  @DgsData(parentType = PROFILE.TYPE_NAME, field = PROFILE.Feed)
-  public DataFetcherResult<ArticlesConnection> userFeed(
-      @InputArgument("first") Integer first,
-      @InputArgument("after") String after,
-      @InputArgument("last") Integer last,
-      @InputArgument("before") String before,
-      DgsDataFetchingEnvironment dfe) {
-    if (first == null && last == null) {
-      throw new IllegalArgumentException("first 和 last 必须只存在一个");
-    }
-
-    Profile profile = dfe.getSource();
-    User target =
-        userRepository
-            .findByUsername(profile.getUsername())
-            .orElseThrow(ResourceNotFoundException::new);
-
-    CursorPager<ArticleData> articles;
-    if (first != null) {
-      articles =
-          articleQueryService.findUserFeedWithCursor(
-              target,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT));
-    } else {
-      articles =
-          articleQueryService.findUserFeedWithCursor(
-              target,
               new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
     }
     graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
