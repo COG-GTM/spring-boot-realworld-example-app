@@ -36,7 +36,11 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The secret key is stored in `application.properties`.
+The JWT signing secret is read from the `JWT_SECRET` environment variable (`jwt.secret=${JWT_SECRET}` in `application.properties`); the application fails to start if it is not set. It must be at least 32 bytes (64+ bytes recommended, since tokens are signed with HS512 when the key is long enough).
+
+    export JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')"
+
+For local development only, the `dev` profile (`application-dev.properties`) provides a fallback secret when `JWT_SECRET` is unset. `./gradlew bootRun` activates the `dev` profile automatically unless `SPRING_PROFILES_ACTIVE` is set. Never use the dev fallback outside local development. Tests use a separate test-only secret in `src/test/resources/config/application.properties`.
 
 # Database
 
@@ -44,7 +48,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 21 installed.
 
     ./gradlew bootRun
 
@@ -58,7 +62,7 @@ Alternatively, you can run
 You'll need Docker installed.
 	
     ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+    docker run -p 8081:8080 -e JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')" spring-boot-realworld-example-app
 
 # Try it out with a RealWorld frontend
 
