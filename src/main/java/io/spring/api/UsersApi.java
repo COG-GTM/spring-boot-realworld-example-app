@@ -49,16 +49,15 @@ public class UsersApi {
   public ResponseEntity userLogin(
       @Valid @RequestBody LoginParam loginParam, HttpServletRequest request) {
     String clientIp = request.getRemoteAddr();
-    loginAttemptLimiter.checkAllowed(clientIp, loginParam.getEmail());
+    loginAttemptLimiter.beginAttempt(clientIp, loginParam.getEmail());
     Optional<User> optional =
         userAuthenticator.authenticate(loginParam.getEmail(), loginParam.getPassword());
     if (optional.isPresent()) {
-      loginAttemptLimiter.recordSuccess(loginParam.getEmail());
+      loginAttemptLimiter.recordSuccess(clientIp, loginParam.getEmail());
       UserData userData = userQueryService.findById(optional.get().getId()).get();
       return ResponseEntity.ok(
           userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
     } else {
-      loginAttemptLimiter.recordFailure(clientIp, loginParam.getEmail());
       throw new InvalidAuthenticationException();
     }
   }

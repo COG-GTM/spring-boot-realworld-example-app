@@ -63,16 +63,15 @@ public class UserMutation {
       @InputArgument("email") String email,
       DgsDataFetchingEnvironment dfe) {
     String clientIp = clientIp(dfe);
-    loginAttemptLimiter.checkAllowed(clientIp, email);
+    loginAttemptLimiter.beginAttempt(clientIp, email);
     Optional<User> optional = userAuthenticator.authenticate(email, password);
     if (optional.isPresent()) {
-      loginAttemptLimiter.recordSuccess(email);
+      loginAttemptLimiter.recordSuccess(clientIp, email);
       return DataFetcherResult.<UserPayload>newResult()
           .data(UserPayload.newBuilder().build())
           .localContext(optional.get())
           .build();
     } else {
-      loginAttemptLimiter.recordFailure(clientIp, email);
       throw new InvalidAuthenticationException();
     }
   }
