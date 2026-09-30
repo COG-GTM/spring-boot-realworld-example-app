@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class CursorPageParameter<T> {
-  private static final int MAX_LIMIT = 1000;
-  private int limit = 20;
+  public static final int MAX_LIMIT = 100;
+  public static final int DEFAULT_LIMIT = 20;
+  private int limit = DEFAULT_LIMIT;
   private T cursor;
   private Direction direction;
 
@@ -30,11 +31,14 @@ public class CursorPageParameter<T> {
     this.cursor = cursor;
   }
 
-  private void setLimit(int limit) {
-    if (limit > MAX_LIMIT) {
-      this.limit = MAX_LIMIT;
-    } else if (limit > 0) {
-      this.limit = limit;
+  public static int effectiveLimit(int requested) {
+    if (requested > MAX_LIMIT) {
+      return MAX_LIMIT;
     }
+    return requested > 0 ? requested : DEFAULT_LIMIT;
+  }
+
+  private void setLimit(int limit) {
+    this.limit = effectiveLimit(limit);
   }
 }
