@@ -6,7 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,52 +29,90 @@ public class LoginAttemptLimiterTest {
   }
 
   @Test
-  public void should_block_account_after_max_failures_regardless_of_client() {
+  public void should_block_account_after_max_attempts_regardless_of_client() {
     for (int i = 0; i < 3; i++) {
-      assertEquals(0, limiter.retryAfterSeconds("a@b.com", "10.0.0." + i));
-      limiter.recordFailure("a@b.com", "10.0.0." + i);
+      assertEquals(0, limiter.tryAcquire("a@b.com", "10.0.0." + i));
     }
-    assertEquals(900, limiter.retryAfterSeconds("A@B.com ", "10.0.0.99"));
-    assertEquals(0, limiter.retryAfterSeconds("other@b.com", "10.0.0.99"));
+    assertEquals(900, limiter.tryAcquire("A@B.com ", "10.0.0.99"));
+    assertEquals(0, limiter.tryAcquire("other@b.com", "10.0.0.99"));
   }
 
   @Test
-  public void should_block_client_after_max_failures_across_accounts() {
+  public void should_block_client_after_max_attempts_across_accounts() {
     for (int i = 0; i < 5; i++) {
-      limiter.recordFailure("user" + i + "@b.com", "10.0.0.1");
+      assertEquals(0, limiter.tryAcquire("user" + i + "@b.com", "10.0.0.1"));
     }
-    assertTrue(limiter.retryAfterSeconds("new@b.com", "10.0.0.1") > 0);
-    assertEquals(0, limiter.retryAfterSeconds("new@b.com", "10.0.0.2"));
+    assertTrue(limiter.tryAcquire("new@b.com", "10.0.0.1") > 0);
+    assertEquals(0, limiter.tryAcquire("new@b.com", "10.0.0.2"));
   }
 
   @Test
   public void should_unblock_after_window_expires() {
     for (int i = 0; i < 3; i++) {
-      limiter.recordFailure("a@b.com", "10.0.0.1");
+      limiter.tryAcquire("a@b.com", "10.0.0.1");
     }
     clock.advance(Duration.ofMinutes(10));
-    assertEquals(300, limiter.retryAfterSeconds("a@b.com", "10.0.0.2"));
+    assertEquals(300, limiter.tryAcquire("a@b.com", "10.0.0.2"));
     clock.advance(Duration.ofMinutes(5));
-    assertEquals(0, limiter.retryAfterSeconds("a@b.com", "10.0.0.2"));
+    assertEquals(0, limiter.tryAcquire("a@b.com", "10.0.0.2"));
   }
 
   @Test
-  public void should_reset_account_on_success() {
-    limiter.recordFailure("a@b.com", "10.0.0.1");
-    limiter.recordFailure("a@b.com", "10.0.0.1");
-    limiter.recordSuccess("a@b.com");
-    limiter.recordFailure("a@b.com", "10.0.0.2");
-    limiter.recordFailure("a@b.com", "10.0.0.2");
-    assertEquals(0, limiter.retryAfterSeconds("a@b.com", "10.0.0.3"));
+  public void should_round_retry_after_up() {
+    for (int i = 0; i < 3; i++) {
+      limiter.tryAcquire("a@b.com", "10.0.0.1");
+    }
+    clock.advance(Duration.ofMinutes(10).plusMillis(500));
+    assertEquals(300, limiter.tryAcquire("a@b.com", "10.0.0.2"));
   }
 
   @Test
-  public void should_prune_expired_entries_when_full() {
+  public void should_reset_account_and_refund_client_on_success() {
+    for (int i = 0; i < 10; i++) {
+      assertEquals(0, limiter.tryAcquire("a@b.com", "10.0.0.1"));
+      limiter.recordSuccess("a@b.com", "10.0.0.1");
+    }
+    assertEquals(0, limiter.trackedKeys());
+  }
+
+  @Test
+  public void should_not_allow_concurrent_attempts_beyond_limit() throws Exception {
+    int threads = 32;
+    ExecutorService pool = Executors.newFixedThreadPool(threads);
+    CountDownLatch start = new CountDownLatch(1);
+    List<Future<Long>> results = new ArrayList<>();
+    for (int i = 0; i < threads; i++) {
+      String client = "10.0.1." + i;
+      results.add(
+          pool.submit(
+              () -> {
+                start.await();
+                return limiter.tryAcquire("a@b.com", client);
+              }));
+    }
+    start.countDown();
+    int allowed = 0;
+    for (Future<Long> result : results) {
+      if (result.get() == 0) {
+        allowed++;
+      }
+    }
+    pool.shutdown();
+    assertTrue(pool.awaitTermination(5, TimeUnit.SECONDS));
+    assertEquals(3, allowed);
+  }
+
+  @Test
+  public void should_cap_tracked_keys_and_prune_expired_entries() {
     LoginAttemptLimiter small = new LoginAttemptLimiter(3, 5, Duration.ofMinutes(1), 4, clock);
-    small.recordFailure("a@b.com", "10.0.0.1");
-    small.recordFailure("b@b.com", "10.0.0.2");
-    clock.advance(Duration.ofMinutes(2));
-    small.recordFailure("c@b.com", "10.0.0.3");
+    assertEquals(0, small.tryAcquire("a@b.com", "10.0.0.1"));
+    assertEquals(0, small.tryAcquire("b@b.com", "10.0.0.2"));
+    assertEquals(60, small.tryAcquire("c@b.com", "10.0.0.3"));
+    assertEquals(0, small.tryAcquire("a@b.com", "10.0.0.1"));
+    assertEquals(4, small.trackedKeys());
+
+    clock.advance(Duration.ofMinutes(1));
+    assertEquals(0, small.tryAcquire("c@b.com", "10.0.0.3"));
     assertEquals(2, small.trackedKeys());
   }
 
@@ -87,7 +133,7 @@ public class LoginAttemptLimiterTest {
     }
 
     @Override
-    public Clock withZone(java.time.ZoneId zone) {
+    public Clock withZone(ZoneId zone) {
       return this;
     }
 

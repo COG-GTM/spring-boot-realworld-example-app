@@ -32,7 +32,7 @@ public class LoginService {
    * @throws TooManyLoginAttemptsException when the account or client is currently throttled
    */
   public Optional<User> authenticate(String email, String password, String client) {
-    long retryAfter = loginAttemptLimiter.retryAfterSeconds(email, client);
+    long retryAfter = loginAttemptLimiter.tryAcquire(email, client);
     if (retryAfter > 0) {
       throw new TooManyLoginAttemptsException(retryAfter);
     }
@@ -42,10 +42,9 @@ public class LoginService {
     boolean matches = passwordEncoder.matches(password == null ? "" : password, hash);
 
     if (user.isPresent() && matches) {
-      loginAttemptLimiter.recordSuccess(email);
+      loginAttemptLimiter.recordSuccess(email, client);
       return user;
     }
-    loginAttemptLimiter.recordFailure(email, client);
     return Optional.empty();
   }
 }

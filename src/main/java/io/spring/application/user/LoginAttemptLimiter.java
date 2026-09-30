@@ -3,17 +3,22 @@ package io.spring.application.user;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * Counts failed logins per account (email) and per client (IP) in a fixed window and blocks further
- * attempts once either limit is reached. Unknown emails are tracked exactly like registered ones so
+ * Limits login attempts per account (email) and per client (IP) in a fixed window. An attempt is
+ * counted atomically before the password is checked, so concurrent guesses cannot exceed the
+ * limits; a successful login refunds it. Unknown emails are tracked exactly like registered ones so
  * throttling never reveals whether an account exists.
+ *
+ * <p>At most {@code maxTrackedKeys} windows are stored. When storage is full of live windows,
+ * attempts that would need a new key are rejected until the oldest window expires.
  */
 @Component
 public class LoginAttemptLimiter {
@@ -25,7 +30,8 @@ public class LoginAttemptLimiter {
   private final Duration window;
   private final int maxTrackedKeys;
   private final Clock clock;
-  private final ConcurrentMap<String, FailureWindow> failures = new ConcurrentHashMap<>();
+  private final Map<String, FailureWindow> failures = new HashMap<>();
+  private Instant nextPruneAt = Instant.MIN;
 
   @Autowired
   public LoginAttemptLimiter(
@@ -47,7 +53,11 @@ public class LoginAttemptLimiter {
       Duration window,
       int maxTrackedKeys,
       Clock clock) {
-    if (maxFailuresPerAccount < 1 || maxFailuresPerClient < 1 || window.isNegative()) {
+    if (maxFailuresPerAccount < 1
+        || maxFailuresPerClient < 1
+        || maxTrackedKeys < 2
+        || window.isNegative()
+        || window.isZero()) {
       throw new IllegalArgumentException("login throttling limits must be positive");
     }
     this.maxFailuresPerAccount = maxFailuresPerAccount;
@@ -57,29 +67,63 @@ public class LoginAttemptLimiter {
     this.clock = clock;
   }
 
-  /** Returns 0 when a login attempt is allowed, otherwise the seconds until it will be. */
-  public long retryAfterSeconds(String email, String client) {
+  /**
+   * Counts a login attempt if the account and client are under their limits.
+   *
+   * @return 0 when the attempt is allowed, otherwise the seconds until it will be
+   */
+  public synchronized long tryAcquire(String email, String client) {
     Instant now = clock.instant();
-    return Math.max(
-        retryAfter(accountKey(email), maxFailuresPerAccount, now),
-        retryAfter(clientKey(client), maxFailuresPerClient, now));
-  }
-
-  public void recordFailure(String email, String client) {
-    Instant now = clock.instant();
-    if (failures.size() >= maxTrackedKeys) {
-      failures.values().removeIf(w -> w.isExpired(now, window));
+    String account = accountKey(email);
+    String clientKey = clientKey(client);
+    long wait =
+        Math.max(
+            retryAfter(account, maxFailuresPerAccount, now),
+            retryAfter(clientKey, maxFailuresPerClient, now));
+    if (wait > 0) {
+      return wait;
     }
-    increment(accountKey(email), now);
-    increment(clientKey(client), now);
+    int newKeys =
+        (failures.containsKey(account) ? 0 : 1) + (failures.containsKey(clientKey) ? 0 : 1);
+    if (!hasCapacity(newKeys, now)) {
+      return secondsUntil(now, nextPruneAt);
+    }
+    increment(account, now);
+    increment(clientKey, now);
+    return 0;
   }
 
-  public void recordSuccess(String email) {
+  /** Clears the account's window and refunds the client's attempt after a successful login. */
+  public synchronized void recordSuccess(String email, String client) {
     failures.remove(accountKey(email));
+    failures.computeIfPresent(
+        clientKey(client),
+        (k, current) ->
+            current.count <= 1 ? null : new FailureWindow(current.start, current.count - 1));
   }
 
-  int trackedKeys() {
+  synchronized int trackedKeys() {
     return failures.size();
+  }
+
+  private boolean hasCapacity(int newKeys, Instant now) {
+    if (failures.size() + newKeys <= maxTrackedKeys) {
+      return true;
+    }
+    if (now.isBefore(nextPruneAt)) {
+      return false;
+    }
+    Instant oldestLiveStart = null;
+    for (Iterator<FailureWindow> it = failures.values().iterator(); it.hasNext(); ) {
+      FailureWindow w = it.next();
+      if (w.isExpired(now, window)) {
+        it.remove();
+      } else if (oldestLiveStart == null || w.start.isBefore(oldestLiveStart)) {
+        oldestLiveStart = w.start;
+      }
+    }
+    nextPruneAt = oldestLiveStart == null ? now : oldestLiveStart.plus(window);
+    return failures.size() + newKeys <= maxTrackedKeys;
   }
 
   private long retryAfter(String key, int limit, Instant now) {
@@ -87,7 +131,12 @@ public class LoginAttemptLimiter {
     if (current == null || current.isExpired(now, window) || current.count < limit) {
       return 0;
     }
-    long seconds = Duration.between(now, current.start.plus(window)).getSeconds();
+    return secondsUntil(now, current.start.plus(window));
+  }
+
+  private static long secondsUntil(Instant now, Instant until) {
+    Duration remaining = Duration.between(now, until);
+    long seconds = remaining.getSeconds() + (remaining.getNano() > 0 ? 1 : 0);
     return Math.max(1, seconds);
   }
 
