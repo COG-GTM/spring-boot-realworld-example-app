@@ -18,6 +18,12 @@ public class DateTimeCursor extends PageCursor<DateTime> {
     if (cursor == null) {
       return null;
     }
-    return new DateTime().withMillis(Long.parseLong(cursor)).withZone(DateTimeZone.UTC);
+    long millis;
+    try {
+      millis = Long.parseLong(cursor);
+    } catch (NumberFormatException e) {
+      throw new InvalidCursorException();
+    }
+    return new DateTime().withMillis(millis).withZone(DateTimeZone.UTC);
   }
 }
