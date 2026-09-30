@@ -2,18 +2,25 @@ package io.spring.infrastructure.service;
 
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DefaultJwtServiceTest {
 
+  private static final String SECRET =
+      "1231231231231231231231231231231231231231231231231231231231231231";
+
   private JwtService jwtService;
 
   @BeforeEach
   public void setUp() {
-    jwtService = new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+    jwtService = new DefaultJwtService(SECRET, 3600);
   }
 
   @Test
@@ -37,5 +44,53 @@ public class DefaultJwtServiceTest {
     String token =
         "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhaXNlbnNpeSIsImV4cCI6MTUwMjE2MTIwNH0.SJB-U60WzxLYNomqLo4G3v3LzFxJKuVrIud8D8Lz3-mgpo9pN1i7C8ikU_jQPJGm8HsC1CquGMI-rSuM7j6LDA";
     Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
+  }
+
+  @Test
+  public void should_reject_token_signed_with_another_secret() {
+    JwtService other =
+        new DefaultJwtService(
+            "3213213213213213213213213213213213213213213213213213213213213213", 3600);
+    String token = other.toToken(new User("email@email.com", "username", "123", "", ""));
+    Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
+  }
+
+  @Test
+  public void should_fail_when_secret_missing() {
+    Assertions.assertThrows(IllegalStateException.class, () -> new DefaultJwtService(null, 3600));
+    Assertions.assertThrows(IllegalStateException.class, () -> new DefaultJwtService("  ", 3600));
+  }
+
+  @Test
+  public void should_fail_when_secret_too_short() {
+    Assertions.assertThrows(
+        IllegalStateException.class,
+        () ->
+            new DefaultJwtService(
+                SECRET.substring(0, DefaultJwtService.MINIMUM_SECRET_BYTES - 1), 3600));
+  }
+
+  @Test
+  public void should_fail_with_revoked_secret() {
+    Set<String> revoked =
+        Set.of(DefaultJwtService.sha256Hex(SECRET.getBytes(StandardCharsets.UTF_8)));
+    Assertions.assertThrows(
+        IllegalStateException.class, () -> new DefaultJwtService(SECRET, 3600, revoked));
+  }
+
+  @Test
+  public void should_revoke_previously_committed_secret() {
+    Assertions.assertTrue(
+        DefaultJwtService.REVOKED_SECRET_SHA256.contains(
+            "990b0164cf2b6d7441bf1e7555d93004a915c9b3e9e57cefee56b45cd2291a41"));
+  }
+
+  @Test
+  public void should_not_ship_a_signing_secret_in_application_properties() throws Exception {
+    Properties properties = new Properties();
+    try (InputStream in = getClass().getResourceAsStream("/application.properties")) {
+      properties.load(in);
+    }
+    Assertions.assertEquals("${JWT_SECRET}", properties.getProperty("jwt.secret"));
   }
 }
