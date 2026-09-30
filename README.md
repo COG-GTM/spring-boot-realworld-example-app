@@ -44,7 +44,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need JDK 21 installed (Spring Boot 3.5, Gradle 8.14 wrapper included).
 
     ./gradlew bootRun
 
