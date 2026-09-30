@@ -31,9 +31,19 @@ configurations {
     }
 }
 
+ext['tomcat.version'] = '10.1.60'
+ext['jackson-bom.version'] = '2.21.7'
+ext['commons-lang3.version'] = '3.20.0'
+
 dependencyManagement {
     imports {
         mavenBom 'com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:10.6.0'
+    }
+    dependencies {
+        dependencySet(group: 'org.apache.logging.log4j', version: '2.25.5') {
+            entry 'log4j-api'
+            entry 'log4j-to-slf4j'
+        }
     }
 }
 
