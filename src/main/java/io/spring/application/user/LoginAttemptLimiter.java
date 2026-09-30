@@ -71,11 +71,11 @@ public class LoginAttemptLimiter {
   }
 
   /**
-   * Counts a login attempt if the account and client are under their limits.
-   *
-   * @return 0 when the attempt is allowed, otherwise the seconds until it will be
+   * Counts a login attempt if the account and client are under their limits. Pass the returned
+   * attempt to {@link #recordSuccess} or {@link #release} so only the windows it was counted in are
+   * refunded.
    */
-  public synchronized long tryAcquire(String email, String client) {
+  public synchronized Attempt tryAcquire(String email, String client) {
     Instant now = clock.instant();
     String account = accountKey(email);
     String clientKey = clientKey(client);
@@ -84,29 +84,33 @@ public class LoginAttemptLimiter {
             retryAfter(account, maxFailuresPerAccount, now),
             retryAfter(clientKey, maxFailuresPerClient, now));
     if (wait > 0) {
-      return wait;
+      return Attempt.rejected(wait);
     }
     int newKeys =
         (failures.containsKey(account) ? 0 : 1) + (failures.containsKey(clientKey) ? 0 : 1);
     int missing = missingCapacity(newKeys, now);
     if (missing > 0) {
-      return secondsUntil(now, missing == 1 ? firstExpiry : secondExpiry);
+      return Attempt.rejected(secondsUntil(now, missing == 1 ? firstExpiry : secondExpiry));
     }
-    increment(account, now);
-    increment(clientKey, now);
-    return 0;
+    return new Attempt(0, account, increment(account, now), clientKey, increment(clientKey, now));
   }
 
   /** Clears the account's window and refunds the client's attempt after a successful login. */
-  public synchronized void recordSuccess(String email, String client) {
-    failures.remove(accountKey(email));
-    refund(clientKey(client));
+  public synchronized void recordSuccess(Attempt attempt) {
+    if (attempt.isAllowed()) {
+      failures.computeIfPresent(
+          attempt.accountKey,
+          (k, current) -> current.start.equals(attempt.accountWindowStart) ? null : current);
+      refund(attempt.clientKey, attempt.clientWindowStart);
+    }
   }
 
   /** Refunds an attempt whose credentials could not be checked, e.g. because the lookup failed. */
-  public synchronized void release(String email, String client) {
-    refund(accountKey(email));
-    refund(clientKey(client));
+  public synchronized void release(Attempt attempt) {
+    if (attempt.isAllowed()) {
+      refund(attempt.accountKey, attempt.accountWindowStart);
+      refund(attempt.clientKey, attempt.clientWindowStart);
+    }
   }
 
   synchronized int trackedKeys() {
@@ -145,11 +149,15 @@ public class LoginAttemptLimiter {
     secondExpiry = second == null ? firstExpiry : second;
   }
 
-  private void refund(String key) {
+  private void refund(String key, Instant windowStart) {
     failures.computeIfPresent(
         key,
-        (k, current) ->
-            current.count <= 1 ? null : new FailureWindow(current.start, current.count - 1));
+        (k, current) -> {
+          if (!current.start.equals(windowStart)) {
+            return current;
+          }
+          return current.count <= 1 ? null : new FailureWindow(current.start, current.count - 1);
+        });
   }
 
   private long retryAfter(String key, int limit, Instant now) {
@@ -166,13 +174,14 @@ public class LoginAttemptLimiter {
     return Math.max(1, seconds);
   }
 
-  private void increment(String key, Instant now) {
-    failures.compute(
-        key,
-        (k, current) ->
-            current == null || current.isExpired(now, window)
-                ? new FailureWindow(now, 1)
-                : new FailureWindow(current.start, current.count + 1));
+  private Instant increment(String key, Instant now) {
+    return failures.compute(
+            key,
+            (k, current) ->
+                current == null || current.isExpired(now, window)
+                    ? new FailureWindow(now, 1)
+                    : new FailureWindow(current.start, current.count + 1))
+        .start;
   }
 
   private static String accountKey(String email) {
@@ -181,6 +190,41 @@ public class LoginAttemptLimiter {
 
   private static String clientKey(String client) {
     return CLIENT_PREFIX + (client == null ? "unknown" : client);
+  }
+
+  /** Result of {@link #tryAcquire}; identifies the windows an allowed attempt was counted in. */
+  public static final class Attempt {
+    private final long retryAfterSeconds;
+    private final String accountKey;
+    private final Instant accountWindowStart;
+    private final String clientKey;
+    private final Instant clientWindowStart;
+
+    private Attempt(
+        long retryAfterSeconds,
+        String accountKey,
+        Instant accountWindowStart,
+        String clientKey,
+        Instant clientWindowStart) {
+      this.retryAfterSeconds = retryAfterSeconds;
+      this.accountKey = accountKey;
+      this.accountWindowStart = accountWindowStart;
+      this.clientKey = clientKey;
+      this.clientWindowStart = clientWindowStart;
+    }
+
+    private static Attempt rejected(long retryAfterSeconds) {
+      return new Attempt(retryAfterSeconds, null, null, null, null);
+    }
+
+    public boolean isAllowed() {
+      return retryAfterSeconds == 0;
+    }
+
+    /** 0 when the attempt is allowed, otherwise the seconds until it will be. */
+    public long getRetryAfterSeconds() {
+      return retryAfterSeconds;
+    }
   }
 
   private static final class FailureWindow {
