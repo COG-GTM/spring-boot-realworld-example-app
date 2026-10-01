@@ -20,7 +20,8 @@ spotless {
     }
 }
 
-ext['graphql-java.version'] = '19.2'
+ext['graphql-java.version'] = '19.11'
+ext['tomcat.version'] = '9.0.122'
 ext['rest-assured.version'] = '5.5.7'
 
 repositories {
