@@ -20,6 +20,10 @@ spotless {
     }
 }
 
+// Security patch overrides of Spring Boot managed versions
+ext['jackson-bom.version'] = '2.21.7'
+ext['tomcat.version'] = '10.1.60'
+
 repositories {
     mavenCentral()
 }
