@@ -44,7 +44,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 25 installed (Gradle 9.7.1 runs on JDK 17+ and picks up a JDK 25 toolchain).
 
     ./gradlew bootRun
 
