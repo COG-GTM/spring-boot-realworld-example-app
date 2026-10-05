@@ -1,85 +1,220 @@
-# ![RealWorld Example App using Kotlin and Spring](example-logo.png)
+# ![RealWorld Example App using Spring Boot](example-logo.png)
 
-[![Actions](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
+[![Java CI](https://github.com/ankehao-demo/spring-boot-realworld-example-app/actions/workflows/gradle.yml/badge.svg)](https://github.com/ankehao-demo/spring-boot-realworld-example-app/actions/workflows/gradle.yml)
 
-> ### Spring boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
+> Spring Boot + MyBatis implementation of the [RealWorld](https://github.com/gothinkster/realworld) "Conduit" backend (CRUD, JWT auth, pagination, social features), exposed through **both a REST API and a GraphQL API**, plus a React + TypeScript frontend in [`frontend/`](frontend/README.md).
 
-This codebase was created to demonstrate a fully fledged full-stack application built with Spring boot + Mybatis including CRUD operations, authentication, routing, pagination, and more.
+## Contents
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Configuration](#configuration)
+- [API overview](#api-overview)
+- [Project structure](#project-structure)
+- [Testing and code style](#testing-and-code-style)
+- [Further documentation](#further-documentation)
 
-# *NEW* GraphQL Support  
+## Tech stack
 
-Following some DDD principles. REST or GraphQL is just a kind of adapter. And the domain layer will be consistent all the time. So this repository implement GraphQL and REST at the same time.
+Versions below are taken from [`build.gradle`](build.gradle), [`gradle-wrapper.properties`](gradle/wrapper/gradle-wrapper.properties) and [`frontend/package.json`](frontend/package.json).
 
-The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-example-app/blob/master/src/main/resources/schema/schema.graphqls and the visualization looks like below.
+### Backend
 
-![](graphql-schema.png)
+| Concern | Library / tool | Version |
+| --- | --- | --- |
+| Language | Java | 11 (source/target compatibility) |
+| Build | Gradle wrapper | 7.4 |
+| Framework | Spring Boot (Web, Validation, HATEOAS, Security) | 2.6.3 |
+| Persistence | MyBatis Spring Boot Starter | 2.2.2 |
+| Database | SQLite (`org.xerial:sqlite-jdbc`) | 3.36.0.3 |
+| Migrations | Flyway (version managed by Spring Boot) | — |
+| GraphQL | Netflix DGS (`graphql-dgs-spring-boot-starter`) + DGS codegen plugin | 4.9.21 / 5.0.6 |
+| Auth | JJWT (`jjwt-api`/`impl`/`jackson`) | 0.11.2 |
+| Dates | Joda-Time | 2.10.13 |
+| Boilerplate | Lombok | managed by Spring Boot |
+| Formatting | Spotless (google-java-format) | 6.2.1 |
+| Tests | JUnit 5, Spring Boot Test, REST Assured, MyBatis test starter | REST Assured 4.5.1 |
 
-And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
-# How it works
+### Frontend (`frontend/`)
 
-The application uses Spring Boot (Web, Mybatis).
+React 18, TypeScript 5, Vite 5, React Router 6, Axios, Tailwind CSS 3. See [`frontend/README.md`](frontend/README.md).
 
-* Use the idea of Domain Driven Design to separate the business term and infrastructure term.
-* Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
-* Use [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern to separate the read model and write model.
+## Getting started
 
-And the code is organized as this:
+### Prerequisites
 
-1. `api` is the web layer implemented by Spring MVC
-2. `core` is the business model including entities and services
-3. `application` is the high-level services for querying the data transfer objects
-4. `infrastructure`  contains all the implementation classes as the technique details
+- **JDK 11** for the backend. The build targets Java 11 and uses Gradle 7.4, which does not support running on JDK 18+; if your default JDK is newer, point `JAVA_HOME` at a JDK 11 installation.
+- **Node.js 18+ and npm** only if you want to run the frontend (Vite 5 requires Node 18 or newer).
 
-# Security
+### Run the backend
 
-Integration with Spring Security and add other filter for jwt token process.
+```bash
+./gradlew bootRun
+```
 
-The secret key is stored in `application.properties`.
+The API listens on **http://localhost:8080** (no `/api` prefix). On first start Flyway creates the schema in a local SQLite file, `dev.db`, in the working directory. Data persists across restarts; `./gradlew clean` deletes `dev.db`.
 
-# Database
+Check that it works:
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
+```bash
+curl http://localhost:8080/tags
+# {"tags":[]}
+```
 
-# Getting started
+GraphiQL is available at http://localhost:8080/graphiql and the GraphQL endpoint is `POST http://localhost:8080/graphql`.
 
-You'll need Java 11 installed.
+### Run the frontend
 
-    ./gradlew bootRun
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-To test that it works, open a browser tab at http://localhost:8080/tags .  
-Alternatively, you can run
+The dev server runs at **http://localhost:3000** and calls the backend at `VITE_API_BASE_URL` (default `http://localhost:8080`). See [`frontend/README.md`](frontend/README.md) for details and current known issues.
 
-    curl http://localhost:8080/tags
+### Build a runnable jar
 
-# Try it out with [Docker](https://www.docker.com/)
+```bash
+./gradlew bootJar
+java -jar build/libs/*-0.0.1-SNAPSHOT.jar   # jar name follows the project directory name
+```
 
-You'll need Docker installed.
-	
-    ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+### Run with Docker
 
-# Try it out with a RealWorld frontend
+Requires Docker. Spring Boot's buildpack support builds the image; no `Dockerfile` is needed.
 
-The entry point address of the backend API is at http://localhost:8080, **not** http://localhost:8080/api as some of the frontend documentation suggests.
+```bash
+./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
+docker run -p 8081:8080 spring-boot-realworld-example-app
+```
 
-# Run test
+The API is then available at http://localhost:8081. The SQLite file lives inside the container, so data is lost when the container is removed.
 
-The repository contains a lot of test cases to cover both api test and repository test.
+### Use another RealWorld frontend
 
-    ./gradlew test
+Any RealWorld-compliant frontend can be pointed at `http://localhost:8080` (**not** `http://localhost:8080/api`, as some frontend docs suggest). CORS is open to all origins.
 
-# Code format
+## Configuration
 
-Use spotless for code format.
+Runtime configuration lives in [`src/main/resources/application.properties`](src/main/resources/application.properties). Any property can be overridden the usual Spring Boot way (environment variables, `--property=value` arguments, profile-specific files).
 
-    ./gradlew spotlessJavaApply
+| Property | Default | Purpose |
+| --- | --- | --- |
+| `spring.datasource.url` | `jdbc:sqlite:dev.db` | Database location. |
+| `spring.jackson.deserialization.UNWRAP_ROOT_VALUE` | `true` | Request bodies use RealWorld root wrappers (`{"user": {...}}`, `{"article": {...}}`). |
+| `image.default` | `https://static.productionready.io/images/smiley-cyrus.jpg` | Avatar assigned to newly registered users. |
+| `jwt.secret` | committed sample value | HS512 signing key for JWTs. **Override this outside local development** (e.g. `JWT_SECRET=... ./gradlew bootRun`). |
+| `jwt.sessionTime` | `86400` | Token lifetime in seconds (24 h). |
+| `mybatis.*` | see file | Mapper XML location (`mapper/*.xml`), type handlers, camelCase mapping. |
 
-# Help
+Tests use [`application-test.properties`](src/main/resources/application-test.properties), which switches to an in-memory SQLite database.
 
-Please fork and PR to improve the project.
+## API overview
 
-## Testing Note
+Both APIs share the same application and domain layers. Authenticated requests send the JWT returned by register/login in the header:
 
-This implementation has been verified to work with the standard RealWorld API specification.
+```
+Authorization: Token <jwt>
+```
+
+### REST
+
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| `POST` | `/users` | – | Register |
+| `POST` | `/users/login` | – | Log in |
+| `GET` | `/user` | required | Current user |
+| `PUT` | `/user` | required | Update current user |
+| `GET` | `/profiles/{username}` | optional | Get profile |
+| `POST` / `DELETE` | `/profiles/{username}/follow` | required | Follow / unfollow |
+| `GET` | `/articles` | optional | List articles (`tag`, `author`, `favorited`, `offset`, `limit`) |
+| `GET` | `/articles/feed` | required | Articles by followed users (`offset`, `limit`) |
+| `POST` | `/articles` | required | Create article |
+| `GET` | `/articles/{slug}` | optional | Get article |
+| `PUT` / `DELETE` | `/articles/{slug}` | required (author) | Update / delete article |
+| `POST` / `DELETE` | `/articles/{slug}/favorite` | required | Favorite / unfavorite |
+| `GET` | `/articles/{slug}/comments` | optional | List comments |
+| `POST` | `/articles/{slug}/comments` | required | Add comment |
+| `DELETE` | `/articles/{slug}/comments/{id}` | required (comment or article author) | Delete comment |
+| `GET` | `/tags` | – | List tags |
+
+### GraphQL
+
+Schema: [`src/main/resources/schema/schema.graphqls`](src/main/resources/schema/schema.graphqls).
+
+- **Queries:** `article`, `articles`, `feed`, `me`, `profile`, `tags`
+- **Mutations:** `createUser`, `login`, `updateUser`, `followUser`, `unfollowUser`, `createArticle`, `updateArticle`, `favoriteArticle`, `unfavoriteArticle`, `deleteArticle`, `addComment`, `deleteComment`
+
+List fields (`articles`, `feed`, `Profile.articles`/`favorites`/`feed`, `Article.comments`) are Relay-style connections with cursor pagination. Exactly one of `first` or `last` must be provided.
+
+```bash
+curl -X POST http://localhost:8080/graphql \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"{ articles(first: 5) { edges { node { slug title author { username } } } pageInfo { hasNextPage endCursor } } }"}'
+```
+
+A simplified view of the schema:
+
+![GraphQL schema](graphql-schema.png)
+
+See [`docs/API.md`](docs/API.md) for request/response formats, status codes and pagination details.
+
+## Project structure
+
+```
+.
+├── build.gradle                      # Gradle build (Spring Boot, DGS codegen, Spotless)
+├── src/main/java/io/spring
+│   ├── RealWorldApplication.java     # Spring Boot entry point
+│   ├── JacksonCustomizations.java    # Joda DateTime JSON serialization
+│   ├── MyBatisConfig.java            # @EnableTransactionManagement
+│   ├── Util.java                     # String helper
+│   ├── api/                          # REST controllers (Spring MVC)
+│   │   ├── exception/                # Error types + global exception handler
+│   │   └── security/                 # Spring Security config + JWT filter
+│   ├── graphql/                      # DGS data fetchers and mutations
+│   │   └── exception/                # GraphQL error mapping
+│   ├── application/                  # Use-case layer
+│   │   ├── article/, user/           # Command services, params, custom validators
+│   │   ├── data/                     # Read-model DTOs (ArticleData, ProfileData, ...)
+│   │   └── *QueryService.java        # Read-side services + paging helpers
+│   ├── core/                         # Domain model
+│   │   ├── article/, comment/, favorite/, user/   # Entities + repository interfaces
+│   │   └── service/                  # AuthorizationService, JwtService interface
+│   └── infrastructure/               # Technical implementations
+│       ├── mybatis/mapper/           # Write-side MyBatis mappers
+│       ├── mybatis/readservice/      # Read-side MyBatis query interfaces
+│       ├── repository/               # MyBatis-backed repositories
+│       └── service/                  # DefaultJwtService (JJWT)
+├── src/main/resources
+│   ├── application.properties
+│   ├── db/migration/                 # Flyway migrations
+│   ├── mapper/                       # MyBatis XML mappings
+│   └── schema/schema.graphqls        # GraphQL schema (input for DGS codegen)
+├── src/test/java/io/spring           # API, application, domain and infrastructure tests
+├── frontend/                         # React + Vite single-page app
+└── docs/                             # Architecture notes and API reference
+```
+
+Java types for the GraphQL schema (e.g. `io.spring.graphql.types.*`, `DgsConstants`) are generated at build time by the DGS codegen plugin (`generateJava` task) into `build/generated`.
+
+## Testing and code style
+
+```bash
+./gradlew test               # Run backend tests
+./gradlew spotlessJavaCheck  # Verify formatting (google-java-format)
+./gradlew spotlessJavaApply  # Reformat Java sources
+```
+
+CI ([`.github/workflows/gradle.yml`](.github/workflows/gradle.yml)) runs `./gradlew clean test` on JDK 11 for every push and pull request. The frontend is not built in CI.
+
+## Further documentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) – layers, CQRS read/write split, persistence, security
+- [`docs/API.md`](docs/API.md) – REST and GraphQL reference
+- [`frontend/README.md`](frontend/README.md) – frontend setup and features
+
+## Contributing
+
+Fork the repository and open a pull request. Run `./gradlew spotlessJavaApply test` before submitting.
