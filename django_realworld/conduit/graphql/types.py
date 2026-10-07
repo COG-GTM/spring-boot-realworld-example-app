@@ -125,7 +125,7 @@ class Article(graphene.ObjectType):
 
     @staticmethod
     def resolve_author(root, info):
-        return query_profile(info, root.author.username)
+        return root.author
 
     @staticmethod
     def resolve_comments(root, info, **page):
@@ -163,7 +163,7 @@ class Comment(graphene.ObjectType):
 
     @staticmethod
     def resolve_author(root, info):
-        return query_profile(info, root.author.username)
+        return root.author
 
     @staticmethod
     def resolve_article(root, info):
