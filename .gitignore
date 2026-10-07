@@ -32,3 +32,10 @@ frontend/.env.local
 frontend/.env.development.local
 frontend/.env.test.local
 frontend/.env.production.local
+
+### Python / Django ###
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
