@@ -1,7 +1,11 @@
-"""Port of TagsApi.java. TODO: implement (stubs answer 501)."""
+"""Port of ``TagsApi``."""
 
-from conduit.api.stub import StubView
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from conduit.application import queries
 
 
-class TagsView(StubView):
-    pass
+class TagsView(APIView):
+    def get(self, request):
+        return Response({"tags": queries.all_tags()})

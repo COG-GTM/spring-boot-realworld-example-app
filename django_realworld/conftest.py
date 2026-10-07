@@ -10,6 +10,15 @@ from conduit.models import User
 DEFAULT_PASSWORD = "123"
 
 
+@pytest.fixture(autouse=True)
+def fast_password_hashing(settings):
+    """BCrypt is slow by design; hash new test passwords with MD5 but still verify BCrypt."""
+    settings.PASSWORD_HASHERS = [
+        "django.contrib.auth.hashers.MD5PasswordHasher",
+        *settings.PASSWORD_HASHERS,
+    ]
+
+
 @pytest.fixture
 def api_client() -> APIClient:
     return APIClient()

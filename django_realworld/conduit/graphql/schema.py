@@ -1,13 +1,8 @@
-"""GraphQL schema (port of schema.graphqls). TODO: implement; placeholder keeps /graphql up."""
+"""graphene schema equivalent to ``schema.graphqls`` (kept in sync by ``test_graphql_schema``)."""
 
 import graphene
 
+from conduit.graphql.mutation import Mutation
+from conduit.graphql.query import Query
 
-class Query(graphene.ObjectType):
-    tags = graphene.List(graphene.String)
-
-    def resolve_tags(root, info):
-        return []
-
-
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, mutation=Mutation)

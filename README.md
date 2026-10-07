@@ -78,11 +78,11 @@ You'll need Docker installed.
       --env-file ~/.realworld.env \
       django-realworld-example-app
 
-The container runs `python manage.py migrate` on start and serves the API on port 8080.
+The container runs `python manage.py migrate` on start and serves the API on port 8080. It sets `DJANGO_DEBUG=false`, so `JWT_SECRET` is required (the built-in development key is public).
 
 * The SQLite database is stored in the `realworld-data` named volume, so data survives replacing the container. Without the volume, data lives only in that container. `docker volume rm realworld-data` deletes it.
-* `JWT_SECRET` is generated once into `~/.realworld.env` (readable only by you) and reused by every container, so tokens stay valid when the container is replaced. Without it, tokens are signed with the public default key from `settings.py`, and anyone can forge them. Changing the secret deliberately invalidates every previously issued token.
-* The image runs Django's development server (`runserver`) with `DJANGO_DEBUG=true` and is meant for local demos only. Don't expose it publicly: `-e DJANGO_DEBUG=false` hides debug error pages, but a public deployment still needs a production WSGI server (e.g. gunicorn) behind a reverse proxy.
+* `JWT_SECRET` is generated once into `~/.realworld.env` (readable only by you) and reused by every container, so tokens stay valid when the container is replaced. The container refuses to start without it, because the built-in development key is public. Changing the secret deliberately invalidates every previously issued token.
+* The image still runs Django's development server (`runserver`) and is meant for local demos only. Disabling debug hides debug error pages, but a public deployment still needs a production WSGI server (e.g. gunicorn) behind a reverse proxy.
 
 # Try it out with a RealWorld frontend
 
