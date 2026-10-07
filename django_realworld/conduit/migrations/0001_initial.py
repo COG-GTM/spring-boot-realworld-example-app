@@ -2,7 +2,6 @@
 
 import conduit.models
 import django.db.models.deletion
-import django.utils.timezone
 from django.db import migrations, models
 
 
@@ -30,8 +29,8 @@ class Migration(migrations.Migration):
                 ("title", models.CharField(max_length=255)),
                 ("description", models.TextField()),
                 ("body", models.TextField()),
-                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                ("created_at", models.DateTimeField(default=conduit.models.now_ms)),
+                ("updated_at", models.DateTimeField(default=conduit.models.now_ms)),
             ],
             options={
                 "db_table": "articles",
@@ -164,8 +163,8 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("body", models.TextField()),
-                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                ("created_at", models.DateTimeField(default=conduit.models.now_ms)),
+                ("updated_at", models.DateTimeField(default=conduit.models.now_ms)),
                 (
                     "article",
                     models.ForeignKey(

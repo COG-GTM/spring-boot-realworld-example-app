@@ -74,7 +74,7 @@ You'll need Docker installed.
     docker build -t django-realworld-example-app django_realworld
     docker run -p 8080:8080 -e JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')" django-realworld-example-app
 
-The container runs `python manage.py migrate` on start and serves the API on port 8080. It sets `DJANGO_DEBUG=false`, so `JWT_SECRET` is required (the built-in development key is public).
+The container runs `python manage.py migrate` on start and serves the API with gunicorn on port 8080. It sets `DJANGO_DEBUG=false`, so `JWT_SECRET` is required (the built-in development key is public).
 
 # Try it out with a RealWorld frontend
 

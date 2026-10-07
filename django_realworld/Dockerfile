@@ -17,4 +17,4 @@ RUN chmod +x docker-entrypoint.sh
 EXPOSE 8080
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
+CMD ["gunicorn", "realworld.wsgi", "--bind", "0.0.0.0:8080", "--workers", "2"]

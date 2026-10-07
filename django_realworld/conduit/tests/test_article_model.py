@@ -54,3 +54,9 @@ def test_update_description_and_body_only():
 def test_save_assigns_slug_from_title(user):
     article = Article.objects.create(user=user, title="A Fresh Title", description="d", body="b")
     assert article.slug == "a-fresh-title"
+
+
+def test_default_timestamps_have_millisecond_precision_for_cursors():
+    from conduit.models import now_ms
+
+    assert now_ms().microsecond % 1000 == 0

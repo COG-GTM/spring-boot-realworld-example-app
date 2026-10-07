@@ -21,6 +21,12 @@ def _is_empty(value) -> bool:
     return value is None or value == ""
 
 
+def now_ms():
+    """Millisecond precision like Java ``DateTime``, so epoch-millis cursors are exact."""
+    now = timezone.now()
+    return now.replace(microsecond=now.microsecond // 1000 * 1000)
+
+
 class User(models.Model):
     id = models.CharField(primary_key=True, max_length=255, default=_uuid, editable=False)
     username = models.CharField(max_length=255, unique=True)
@@ -74,8 +80,8 @@ class Article(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     body = models.TextField()
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(default=now_ms)
+    updated_at = models.DateTimeField(default=now_ms)
     tags = models.ManyToManyField(Tag, through="ArticleTag", related_name="articles")
 
     class Meta:
@@ -95,13 +101,13 @@ class Article(models.Model):
         if not _is_empty(title):
             self.title = title
             self.slug = self.to_slug(title)
-            self.updated_at = timezone.now()
+            self.updated_at = now_ms()
         if not _is_empty(description):
             self.description = description
-            self.updated_at = timezone.now()
+            self.updated_at = now_ms()
         if not _is_empty(body):
             self.body = body
-            self.updated_at = timezone.now()
+            self.updated_at = now_ms()
 
     def __str__(self) -> str:
         return self.slug
@@ -145,8 +151,8 @@ class Comment(models.Model):
     body = models.TextField()
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name="comments")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(default=now_ms)
+    updated_at = models.DateTimeField(default=now_ms)
 
     class Meta:
         db_table = "comments"

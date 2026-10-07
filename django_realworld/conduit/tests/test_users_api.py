@@ -129,3 +129,13 @@ def test_should_show_validation_errors_for_login(api_client):
     errors = response.json()["errors"]
     assert errors["email"] == ["should be an email"]
     assert errors["password"] == ["can't be empty"]
+
+
+def test_register_and_login_with_production_bcrypt_hasher(api_client, settings):
+    settings.PASSWORD_HASHERS = [h for h in settings.PASSWORD_HASHERS if "MD5" not in h]
+    body = {"user": {"email": "bcrypt@example.com", "username": "bcrypt", "password": "pw"}}
+    assert api_client.post("/users", body, format="json").status_code == 201
+
+    assert User.objects.get(username="bcrypt").password.startswith("bcrypt")
+    login = {"user": {"email": "bcrypt@example.com", "password": "pw"}}
+    assert api_client.post("/users/login", login, format="json").status_code == 200
