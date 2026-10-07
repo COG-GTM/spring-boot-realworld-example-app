@@ -72,16 +72,17 @@ Django serves on port 8000 by default (`python manage.py runserver`, then http:/
 You'll need Docker installed.
 	
     docker build -t django-realworld-example-app django_realworld
+    [ -f ~/.realworld.env ] || echo "JWT_SECRET=$(openssl rand -hex 64)" > ~/.realworld.env
     docker run -p 8080:8080 \
       -v realworld-data:/data -e DATABASE_NAME=/data/dev.db \
-      -e JWT_SECRET="$(openssl rand -hex 64)" \
+      --env-file ~/.realworld.env \
       django-realworld-example-app
 
 The container runs `python manage.py migrate` on start and serves the API on port 8080.
 
 * The SQLite database is stored in the `realworld-data` named volume, so data survives replacing the container. Without the volume, data lives only in that container. `docker volume rm realworld-data` deletes it.
-* Set `JWT_SECRET` to your own secret. Otherwise tokens are signed with the public default key from `settings.py`, and anyone can forge them. A new secret invalidates previously issued tokens.
-* The image runs Django's development server with `DJANGO_DEBUG=true` by default, which is meant for local demos. Pass `-e DJANGO_DEBUG=false` before exposing it beyond localhost.
+* `JWT_SECRET` is generated once into `~/.realworld.env` and reused by every container, so tokens stay valid when the container is replaced. Without it, tokens are signed with the public default key from `settings.py`, and anyone can forge them. Changing the secret deliberately invalidates every previously issued token.
+* The image runs Django's development server (`runserver`) with `DJANGO_DEBUG=true` and is meant for local demos only. Don't expose it publicly: `-e DJANGO_DEBUG=false` hides debug error pages, but a public deployment still needs a production WSGI server (e.g. gunicorn) behind a reverse proxy.
 
 # Try it out with a RealWorld frontend
 
