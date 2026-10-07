@@ -10,6 +10,8 @@ from conduit.tests.graphql_helpers import (
     make_article,
     make_comment,
     millis,
+    ms,
+    ms_info,
 )
 
 COMMENTS = """
@@ -52,9 +54,9 @@ def comments_of(client, **variables) -> dict:
 def test_comments_forward_pagination(api_client, article_with_comments):
     page = comments_of(api_client, first=2)
     assert bodies(page) == ["comment 4", "comment 3"]
-    assert page["edges"][0]["cursor"] == millis(4)
+    assert ms(page["edges"][0]["cursor"]) == millis(4)
     assert page["edges"][0]["node"]["createdAt"] == "2024-01-01T12:04:00.123Z"
-    assert page["pageInfo"] == {
+    assert ms_info(page["pageInfo"]) == {
         "hasNextPage": True,
         "hasPreviousPage": False,
         "startCursor": millis(4),
@@ -70,7 +72,7 @@ def test_comments_forward_pagination(api_client, article_with_comments):
 def test_comments_backward_pagination(api_client, article_with_comments):
     page = comments_of(api_client, last=2, before=millis(1))
     assert bodies(page) == ["comment 3", "comment 2"]
-    assert page["pageInfo"] == {
+    assert ms_info(page["pageInfo"]) == {
         "hasNextPage": False,
         "hasPreviousPage": True,
         "startCursor": millis(3),

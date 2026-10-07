@@ -9,6 +9,8 @@ from conduit.tests.graphql_helpers import (
     gql,
     make_article,
     millis,
+    ms,
+    ms_info,
 )
 
 ARTICLE_FIELDS = """
@@ -110,8 +112,8 @@ def test_tags(api_client, make_user):
 def test_articles_forward_pagination(api_client, five_articles):
     page1 = gql(api_client, ARTICLES, {"first": 2})["data"]["articles"]
     assert slugs(page1) == ["article-4", "article-3"]
-    assert [e["cursor"] for e in page1["edges"]] == [millis(4), millis(3)]
-    assert page1["pageInfo"] == {
+    assert [ms(e["cursor"]) for e in page1["edges"]] == [millis(4), millis(3)]
+    assert ms_info(page1["pageInfo"]) == {
         "hasNextPage": True,
         "hasPreviousPage": False,
         "startCursor": millis(4),
@@ -129,7 +131,7 @@ def test_articles_forward_pagination(api_client, five_articles):
 def test_articles_backward_pagination(api_client, five_articles):
     page = gql(api_client, ARTICLES, {"last": 2, "before": millis(0)})["data"]["articles"]
     assert slugs(page) == ["article-2", "article-1"]
-    assert page["pageInfo"] == {
+    assert ms_info(page["pageInfo"]) == {
         "hasNextPage": False,
         "hasPreviousPage": True,
         "startCursor": millis(2),
@@ -206,7 +208,7 @@ def test_feed_pagination(auth_client, user, make_user):
 
     page = gql(auth_client, FEED, {"last": 1, "before": millis(0)})["data"]["feed"]
     assert slugs(page) == ["feed-1"]
-    assert page["pageInfo"] == {
+    assert ms_info(page["pageInfo"]) == {
         "hasNextPage": False,
         "hasPreviousPage": True,
         "startCursor": millis(1),
@@ -341,3 +343,20 @@ def test_delete_article_errors(api_client, auth_client, client_for, user, make_u
     other = client_for(make_user("other"))
     assert error_of(gql(other, DELETE, {"slug": "mine"}))["message"] == NO_AUTHORIZATION_MESSAGE
     assert Article.objects.filter(slug="mine").exists()
+
+
+def test_articles_in_the_same_millisecond_are_not_skipped(api_client, make_user):
+    author = make_user("author")
+    for title in ("tie a", "tie b", "tie c"):
+        make_article(author, title, minutes=7)
+    page = gql(api_client, ARTICLES, {"first": 1})["data"]["articles"]
+    seen = slugs(page)
+    while page["pageInfo"]["hasNextPage"]:
+        after = page["pageInfo"]["endCursor"]
+        page = gql(api_client, ARTICLES, {"first": 1, "after": after})["data"]["articles"]
+        seen += slugs(page)
+    assert sorted(seen) == ["tie-a", "tie-b", "tie-c"]
+
+    before = page["pageInfo"]["startCursor"]
+    back = gql(api_client, ARTICLES, {"last": 5, "before": before})["data"]["articles"]
+    assert len(slugs(back)) == 2

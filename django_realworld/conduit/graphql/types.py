@@ -46,7 +46,7 @@ def cursor_page(first=None, after=None, last=None, before=None) -> CursorPagePar
 def to_connection(pager: CursorPager) -> dict:
     return {
         "edges": [
-            {"cursor": cursor_queries.to_cursor(item.created_at), "node": item}
+            {"cursor": cursor_queries.to_cursor(item.created_at, item.id), "node": item}
             for item in pager.data
         ],
         "page_info": {

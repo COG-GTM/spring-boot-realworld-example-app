@@ -59,3 +59,12 @@ def assert_auth_error(result: dict, field: str) -> None:
     assert error["extensions"] == AUTH_ERROR["extensions"]
     assert error["path"] == [field]
     assert result["data"][field] is None
+
+
+def ms(cursor: str | None) -> str | None:
+    """Epoch-millis part of a cursor (drops the ``:<id>`` tie-breaker)."""
+    return cursor.split(":")[0] if cursor else cursor
+
+
+def ms_info(page_info: dict) -> dict:
+    return {**page_info, **{k: ms(page_info[k]) for k in ("startCursor", "endCursor")}}

@@ -2,14 +2,17 @@
 
 Ports ``CursorPageParameter``, ``CursorPager``, ``DateTimeCursor`` and the ``*WithCursor``
 methods of ``ArticleQueryService`` / ``CommentQueryService``. Cursors are the epoch
-milliseconds of ``created_at``; NEXT pages walk towards older rows, PREV pages towards newer
-rows, and both return rows newest first.
+milliseconds of ``created_at`` plus ``:<id>`` as a tie-breaker for rows created in the same
+millisecond (plain epoch-millis cursors from the Java API are still accepted). NEXT pages walk
+towards older rows, PREV pages towards newer rows, and both return rows newest first.
 """
 
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Generic, TypeVar
+
+from django.db.models import Q
 
 from conduit.application import queries
 from conduit.application.data import ArticleData, CommentData
@@ -19,6 +22,7 @@ MAX_LIMIT = 1000
 DEFAULT_LIMIT = 20
 _EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 _ONE_MILLI = timedelta(milliseconds=1)
+_SEP = ":"
 
 T = TypeVar("T", ArticleData, CommentData)
 
@@ -30,12 +34,12 @@ class Direction(Enum):
 
 @dataclass(frozen=True)
 class CursorPageParameter:
-    cursor: datetime | None = None
+    cursor: tuple[datetime, str | None] | None = None
     limit: int = DEFAULT_LIMIT
     direction: Direction = Direction.NEXT
 
     @classmethod
-    def of(cls, cursor: datetime | None, limit: int, direction: Direction):
+    def of(cls, cursor: tuple[datetime, str | None] | None, limit: int, direction: Direction):
         if limit > MAX_LIMIT:
             limit = MAX_LIMIT
         elif limit <= 0:
@@ -51,16 +55,18 @@ class CursorPageParameter:
         return self.limit + 1
 
 
-def to_cursor(value: datetime) -> str:
-    """``DateTimeCursor.toString()``: epoch millis."""
-    return str((value - _EPOCH) // _ONE_MILLI)
+def to_cursor(value: datetime, row_id: str | None = None) -> str:
+    """``DateTimeCursor.toString()`` (epoch millis), suffixed with ``:<id>`` when given."""
+    millis = str((value - _EPOCH) // _ONE_MILLI)
+    return f"{millis}{_SEP}{row_id}" if row_id else millis
 
 
-def parse_cursor(value: str | None) -> datetime | None:
+def parse_cursor(value: str | None) -> tuple[datetime, str | None] | None:
     """``DateTimeCursor.parse()``. Raises ``ValueError`` for non-numeric cursors."""
     if value is None:
         return None
-    return _EPOCH + timedelta(milliseconds=int(value))
+    millis, _, row_id = value.partition(_SEP)
+    return _EPOCH + timedelta(milliseconds=int(millis)), row_id or None
 
 
 @dataclass
@@ -77,25 +83,32 @@ class CursorPager(Generic[T]):  # noqa: UP046
 
     @property
     def start_cursor(self) -> str | None:
-        return to_cursor(self.data[0].created_at) if self.data else None
+        return to_cursor(self.data[0].created_at, self.data[0].id) if self.data else None
 
     @property
     def end_cursor(self) -> str | None:
-        return to_cursor(self.data[-1].created_at) if self.data else None
+        return to_cursor(self.data[-1].created_at, self.data[-1].id) if self.data else None
 
 
 def _page(qs, page: CursorPageParameter) -> tuple[list, bool]:
     """Apply the cursor window, fetch ``limit + 1`` rows and return them newest first.
 
-    Stored timestamps keep microseconds while cursors are truncated to milliseconds, so the
-    PREV bound starts at the next millisecond to exclude the row the cursor came from.
+    Cursors are truncated to milliseconds, so rows inside the cursor's millisecond are ordered
+    and split by ``id``; legacy cursors without an id skip that whole millisecond.
     """
     if page.cursor is not None:
+        at, row_id = page.cursor
+        same_milli = Q(created_at__gte=at, created_at__lt=at + _ONE_MILLI)
         if page.is_next:
-            qs = qs.filter(created_at__lt=page.cursor)
+            window = Q(created_at__lt=at)
+            if row_id:
+                window |= same_milli & Q(id__lt=row_id)
         else:
-            qs = qs.filter(created_at__gte=page.cursor + _ONE_MILLI)
-    qs = qs.order_by("-created_at" if page.is_next else "created_at")
+            window = Q(created_at__gte=at + _ONE_MILLI)
+            if row_id:
+                window |= same_milli & Q(id__gt=row_id)
+        qs = qs.filter(window)
+    qs = qs.order_by(*(("-created_at", "-id") if page.is_next else ("created_at", "id")))
     rows = list(qs[: page.query_limit])
     has_extra = len(rows) > page.limit
     rows = rows[: page.limit]
