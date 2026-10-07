@@ -72,9 +72,16 @@ Django serves on port 8000 by default (`python manage.py runserver`, then http:/
 You'll need Docker installed.
 	
     docker build -t django-realworld-example-app django_realworld
-    docker run -p 8080:8080 django-realworld-example-app
+    docker run -p 8080:8080 \
+      -v realworld-data:/data -e DATABASE_NAME=/data/dev.db \
+      -e JWT_SECRET="$(openssl rand -hex 64)" \
+      django-realworld-example-app
 
 The container runs `python manage.py migrate` on start and serves the API on port 8080.
+
+* The SQLite database is stored in the `realworld-data` named volume, so data survives replacing the container. Without the volume, data lives only in that container. `docker volume rm realworld-data` deletes it.
+* Set `JWT_SECRET` to your own secret. Otherwise tokens are signed with the public default key from `settings.py`, and anyone can forge them. A new secret invalidates previously issued tokens.
+* The image runs Django's development server with `DJANGO_DEBUG=true` by default, which is meant for local demos. Pass `-e DJANGO_DEBUG=false` before exposing it beyond localhost.
 
 # Try it out with a RealWorld frontend
 
