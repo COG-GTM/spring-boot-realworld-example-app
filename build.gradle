@@ -26,7 +26,7 @@ repositories {
 
 // Security floors for managed transitive dependencies (see PR for CVE list).
 ext['spring-framework.version'] = '5.3.39'
-ext['tomcat.version'] = '9.0.121'
+ext['tomcat.version'] = '9.0.122'
 ext['jackson-bom.version'] = '2.18.11'
 ext['spring-security.version'] = '5.8.16'
 ext['logback.version'] = '1.2.13'
