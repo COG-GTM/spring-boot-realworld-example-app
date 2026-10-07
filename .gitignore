@@ -1,15 +1,6 @@
-.gradle
 /build/
-!gradle/wrapper/gradle-wrapper.jar
 *.db
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
 
 ### IntelliJ IDEA ###
 .idea
@@ -23,7 +14,6 @@ build/
 nbbuild/
 dist/
 nbdist/
-.nb-gradle/
 
 ### Frontend ###
 frontend/node_modules/
@@ -32,3 +22,10 @@ frontend/.env.local
 frontend/.env.development.local
 frontend/.env.test.local
 frontend/.env.production.local
+
+### Python / Django ###
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
