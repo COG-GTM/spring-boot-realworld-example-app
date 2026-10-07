@@ -87,3 +87,14 @@ def test_create_article_requires_authentication(api_client):
     )
     assert response.status_code == 401
     assert not Article.objects.exists()
+
+
+def test_nested_article_type_errors_keep_field_names(auth_client):
+    response = auth_client.post(
+        "/articles",
+        {"article": {"title": [], "description": "d", "body": "b"}},
+        format="json",
+    )
+
+    assert response.status_code == 422
+    assert "title" in response.json()["errors"]

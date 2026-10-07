@@ -7,6 +7,8 @@ overridden with an environment variable of the same name.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-realworld-dev-only")
@@ -70,6 +72,10 @@ JWT_SECRET = os.environ.get(
     "JWT_SECRET",
     "nRvyYC4soFxBdZ-F-5Nnzz5USXstR1YylsTd-mA0aKtI9HUlriGrtkf-TiuDapkLiUCogO3JOK7kwZisrHp6wA",
 )
+if not DEBUG and "JWT_SECRET" not in os.environ:
+    raise ImproperlyConfigured(
+        "Set JWT_SECRET when DJANGO_DEBUG is false; the default key is public."
+    )
 JWT_SESSION_TIME = int(os.environ.get("JWT_SESSION_TIME", "86400"))
 
 # image.default

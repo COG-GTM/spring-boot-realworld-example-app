@@ -73,3 +73,19 @@ def test_public_routes(method, path, public):
 def test_protected_endpoint_returns_401_without_token(api_client, db):
     assert api_client.get("/user").status_code == 401
     assert api_client.get("/user", HTTP_AUTHORIZATION="Token garbage").status_code == 401
+
+
+def test_settings_refuse_public_jwt_key_when_not_debug():
+    import os
+    import subprocess
+    import sys
+
+    env = {k: v for k, v in os.environ.items() if k != "JWT_SECRET"}
+    env.update(DJANGO_DEBUG="false", DJANGO_SETTINGS_MODULE="realworld.settings")
+    code = "import django; django.setup()"
+    result = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "JWT_SECRET" in result.stderr
+
+    env["JWT_SECRET"] = "x" * 64
+    assert subprocess.run([sys.executable, "-c", code], env=env).returncode == 0

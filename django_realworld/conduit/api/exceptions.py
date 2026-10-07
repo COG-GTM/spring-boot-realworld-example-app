@@ -16,13 +16,27 @@ from conduit.application.errors import (
     ValidationFailed,
 )
 
+ROOT_WRAPPERS = {"user", "article", "comment"}
+
+
+def _messages(value) -> list[str]:
+    return [str(m) for m in (value if isinstance(value, list) else [value])]
+
 
 def _flatten(detail) -> dict[str, list[str]]:
-    if isinstance(detail, dict):
-        return {k: [str(m) for m in (v if isinstance(v, list) else [v])] for k, v in detail.items()}
-    return {
-        "non_field_errors": [str(m) for m in (detail if isinstance(detail, list) else [detail])]
-    }
+    if not isinstance(detail, dict):
+        return {"non_field_errors": _messages(detail)}
+    errors: dict[str, list[str]] = {}
+    for key, value in detail.items():
+        if isinstance(value, dict):
+            nested = _flatten(value)
+            if key not in ROOT_WRAPPERS:
+                nested = {f"{key}.{k}": v for k, v in nested.items()}
+            for k, v in nested.items():
+                errors.setdefault(k, []).extend(v)
+        else:
+            errors.setdefault(key, []).extend(_messages(value))
+    return errors
 
 
 def realworld_exception_handler(exc, context):
