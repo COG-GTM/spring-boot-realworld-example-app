@@ -11,6 +11,8 @@ import io.spring.application.article.NewArticleParam;
 import io.spring.application.article.UpdateArticleParam;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
+import io.spring.core.bookmark.ArticleBookmark;
+import io.spring.core.bookmark.ArticleBookmarkRepository;
 import io.spring.core.favorite.ArticleFavorite;
 import io.spring.core.favorite.ArticleFavoriteRepository;
 import io.spring.core.service.AuthorizationService;
@@ -31,6 +33,7 @@ public class ArticleMutation {
   private ArticleCommandService articleCommandService;
   private ArticleFavoriteRepository articleFavoriteRepository;
   private ArticleRepository articleRepository;
+  private ArticleBookmarkRepository articleBookmarkRepository;
 
   @DgsMutation(field = MUTATION.CreateArticle)
   public DataFetcherResult<ArticlePayload> createArticle(
@@ -93,6 +96,32 @@ public class ArticleMutation {
             favorite -> {
               articleFavoriteRepository.remove(favorite);
             });
+    return DataFetcherResult.<ArticlePayload>newResult()
+        .data(ArticlePayload.newBuilder().build())
+        .localContext(article)
+        .build();
+  }
+
+  @DgsMutation(field = MUTATION.BookmarkArticle)
+  public DataFetcherResult<ArticlePayload> bookmarkArticle(@InputArgument("slug") String slug) {
+    User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+    Article article =
+        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+    articleBookmarkRepository.save(new ArticleBookmark(article.getId(), user.getId()));
+    return DataFetcherResult.<ArticlePayload>newResult()
+        .data(ArticlePayload.newBuilder().build())
+        .localContext(article)
+        .build();
+  }
+
+  @DgsMutation(field = MUTATION.UnbookmarkArticle)
+  public DataFetcherResult<ArticlePayload> unbookmarkArticle(@InputArgument("slug") String slug) {
+    User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+    Article article =
+        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+    articleBookmarkRepository
+        .find(article.getId(), user.getId())
+        .ifPresent(bookmark -> articleBookmarkRepository.remove(bookmark));
     return DataFetcherResult.<ArticlePayload>newResult()
         .data(ArticlePayload.newBuilder().build())
         .localContext(article)
