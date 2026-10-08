@@ -18,9 +18,7 @@ public class MyBatisArticleBookmarkRepository implements ArticleBookmarkReposito
 
   @Override
   public void save(ArticleBookmark articleBookmark) {
-    if (mapper.find(articleBookmark.getArticleId(), articleBookmark.getUserId()) == null) {
-      mapper.insert(articleBookmark);
-    }
+    mapper.insertIfAbsent(articleBookmark);
   }
 
   @Override

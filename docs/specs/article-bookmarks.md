@@ -165,8 +165,9 @@ Semantics:
   - Ordered most recently bookmarked first.
   - `first` defaults to `20` when omitted; capped by the existing `CursorPageParameter`
     limit (1000).
-  - Edge `cursor` is the bookmark creation time in epoch millis (same encoding as
-    `DateTimeCursor` used elsewhere); `after` returns bookmarks created strictly before it.
+  - Edge `cursor` is `<bookmark created_at epoch millis>_<article id>` (`BookmarkCursor`);
+    `after` returns bookmarks strictly after it in `(created_at desc, article_id desc)` order,
+    so bookmarks sharing a timestamp are neither skipped nor repeated across pages.
   - `pageInfo.hasNextPage` is `true` when more bookmarks exist after the last edge;
     `pageInfo.endCursor` is the last edge's cursor.
 - Errors:

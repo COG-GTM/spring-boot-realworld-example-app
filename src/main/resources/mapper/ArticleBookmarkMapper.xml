@@ -5,6 +5,11 @@
         insert into article_bookmarks (article_id, user_id, created_at)
         values (#{articleBookmark.articleId}, #{articleBookmark.userId}, #{articleBookmark.createdAt})
     </insert>
+    <insert id="insertIfAbsent">
+        insert into article_bookmarks (article_id, user_id, created_at)
+        values (#{articleBookmark.articleId}, #{articleBookmark.userId}, #{articleBookmark.createdAt})
+        on conflict (user_id, article_id) do nothing
+    </insert>
     <delete id="delete">
         delete from article_bookmarks where article_id = #{bookmark.articleId} and user_id = #{bookmark.userId}
     </delete>

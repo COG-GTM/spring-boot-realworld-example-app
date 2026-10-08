@@ -143,7 +143,7 @@ public class ArticleQueryService {
   }
 
   public CursorPager<BookmarkedArticleData> findUserBookmarksWithCursor(
-      User user, CursorPageParameter<DateTime> page) {
+      User user, CursorPageParameter<BookmarkCursor.Position> page) {
     List<ArticleBookmark> bookmarks =
         articleBookmarksReadService.findUserBookmarksWithCursor(user.getId(), page);
     if (bookmarks.isEmpty()) {

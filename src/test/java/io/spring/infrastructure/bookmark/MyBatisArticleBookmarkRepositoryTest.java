@@ -62,6 +62,18 @@ public class MyBatisArticleBookmarkRepositoryTest extends DbTestBase {
     Assertions.assertEquals(1, countRows("123", "456"));
   }
 
+  // AC-2: save is a single atomic insert-if-absent, so a row inserted by a concurrent request
+  // between "check" and "insert" cannot turn an idempotent bookmark into a constraint error.
+  @Test
+  public void ac2_save_is_noop_when_row_already_inserted_concurrently() {
+    articleBookmarkMapper.insert(new ArticleBookmark("123", "456"));
+    Assertions.assertDoesNotThrow(
+        () -> articleBookmarkMapper.insertIfAbsent(new ArticleBookmark("123", "456")));
+    Assertions.assertDoesNotThrow(
+        () -> articleBookmarkRepository.save(new ArticleBookmark("123", "456")));
+    Assertions.assertEquals(1, countRows("123", "456"));
+  }
+
   // AC-3
   @Test
   public void ac3_should_remove_bookmark_success() {

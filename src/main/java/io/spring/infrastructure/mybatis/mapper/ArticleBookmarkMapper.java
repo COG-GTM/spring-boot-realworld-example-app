@@ -10,5 +10,7 @@ public interface ArticleBookmarkMapper {
 
   void insert(@Param("articleBookmark") ArticleBookmark articleBookmark);
 
+  void insertIfAbsent(@Param("articleBookmark") ArticleBookmark articleBookmark);
+
   void delete(@Param("bookmark") ArticleBookmark bookmark);
 }

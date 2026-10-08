@@ -209,7 +209,7 @@ public class ArticleBookmarkGraphQLTest {
     Assertions.assertEquals(true, read(page1, "$.data.me.bookmarks.pageInfo.hasNextPage"));
     String endCursor = read(page1, "$.data.me.bookmarks.pageInfo.endCursor");
     Assertions.assertEquals(
-        String.valueOf(base.plusMinutes(2).getMillis()),
+        base.plusMinutes(2).getMillis() + "_" + second.getId(),
         endCursor,
         "cursor is bookmark time, not article time");
 
@@ -219,6 +219,35 @@ public class ArticleBookmarkGraphQLTest {
     List<String> slugs2 = read(page2, "$.data.me.bookmarks.edges[*].node.slug");
     Assertions.assertEquals(Arrays.asList(article.getSlug()), slugs2);
     Assertions.assertEquals(false, read(page2, "$.data.me.bookmarks.pageInfo.hasNextPage"));
+  }
+
+  // AC-15
+  @Test
+  public void ac15_viewer_bookmarks_with_equal_timestamps_are_not_skipped() {
+    Article second = article("same2 " + reader.getUsername(), new DateTime().minusHours(2));
+    Article third = article("same3 " + reader.getUsername(), new DateTime().minusHours(3));
+    DateTime sameTime = new DateTime().minusMinutes(5);
+    for (Article a : Arrays.asList(article, second, third)) {
+      articleBookmarkRepository.save(new ArticleBookmark(a.getId(), reader.getId(), sameTime));
+    }
+
+    loginAs(reader);
+    Map<String, Object> vars = new HashMap<>();
+    vars.put("first", 2);
+    ExecutionResult page1 = execute(MY_BOOKMARKS, vars);
+    List<String> slugs =
+        new java.util.ArrayList<>(read(page1, "$.data.me.bookmarks.edges[*].node.slug"));
+    Assertions.assertEquals(true, read(page1, "$.data.me.bookmarks.pageInfo.hasNextPage"));
+    vars.put("after", read(page1, "$.data.me.bookmarks.pageInfo.endCursor"));
+    ExecutionResult page2 = execute(MY_BOOKMARKS, vars);
+    Assertions.assertTrue(page2.getErrors().isEmpty(), page2.getErrors().toString());
+    slugs.addAll(read(page2, "$.data.me.bookmarks.edges[*].node.slug"));
+    Assertions.assertEquals(false, read(page2, "$.data.me.bookmarks.pageInfo.hasNextPage"));
+    Assertions.assertEquals(
+        new java.util.HashSet<>(
+            Arrays.asList(article.getSlug(), second.getSlug(), third.getSlug())),
+        new java.util.HashSet<>(slugs));
+    Assertions.assertEquals(3, slugs.size());
   }
 
   // AC-16

@@ -1,6 +1,6 @@
 package io.spring.application.data;
 
-import io.spring.application.DateTimeCursor;
+import io.spring.application.BookmarkCursor;
 import io.spring.application.Node;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +13,7 @@ public class BookmarkedArticleData implements Node {
   private DateTime bookmarkedAt;
 
   @Override
-  public DateTimeCursor getCursor() {
-    return new DateTimeCursor(bookmarkedAt);
+  public BookmarkCursor getCursor() {
+    return new BookmarkCursor(bookmarkedAt, article.getId());
   }
 }

@@ -39,10 +39,16 @@
         <where>
             AB.user_id = #{userId}
             <if test='page.cursor != null and page.direction.name() == "NEXT"'>
-                AND AB.created_at &lt; #{page.cursor}
+                AND (AB.created_at &lt; #{page.cursor.bookmarkedAt}
+                <if test='page.cursor.articleId != null'>
+                    OR (AB.created_at = #{page.cursor.bookmarkedAt} AND AB.article_id &lt; #{page.cursor.articleId})
+                </if>)
             </if>
             <if test='page.cursor != null and page.direction.name() == "PREV"'>
-                AND AB.created_at > #{page.cursor}
+                AND (AB.created_at > #{page.cursor.bookmarkedAt}
+                <if test='page.cursor.articleId != null'>
+                    OR (AB.created_at = #{page.cursor.bookmarkedAt} AND AB.article_id > #{page.cursor.articleId})
+                </if>)
             </if>
         </where>
         <if test='page.direction.name() == "NEXT"'>

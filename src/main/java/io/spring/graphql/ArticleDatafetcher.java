@@ -11,6 +11,7 @@ import graphql.relay.DefaultPageInfo;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
+import io.spring.application.BookmarkCursor;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
@@ -312,7 +313,7 @@ public class ArticleDatafetcher {
         articleQueryService.findUserBookmarksWithCursor(
             current,
             new CursorPageParameter<>(
-                DateTimeCursor.parse(after), first == null ? 20 : first, Direction.NEXT));
+                BookmarkCursor.parse(after), first == null ? 20 : first, Direction.NEXT));
     graphql.relay.PageInfo pageInfo = buildArticlePageInfo(bookmarks);
     ArticlesConnection articlesConnection =
         ArticlesConnection.newBuilder()

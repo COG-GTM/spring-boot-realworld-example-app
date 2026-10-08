@@ -1,6 +1,7 @@
 package io.spring.application.bookmark;
 
 import io.spring.application.ArticleQueryService;
+import io.spring.application.BookmarkCursor;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
@@ -185,13 +186,41 @@ public class ArticleBookmarkQueryServiceTest extends DbTestBase {
     Assertions.assertTrue(page1.hasNext());
     Assertions.assertTrue(page1.getData().get(0).getArticle().isBookmarked());
 
-    DateTime cursor = page1.getData().get(1).getBookmarkedAt();
+    BookmarkCursor.Position cursor = page1.getData().get(1).getCursor().getData();
     CursorPager<BookmarkedArticleData> page2 =
         queryService.findUserBookmarksWithCursor(
             reader, new CursorPageParameter<>(cursor, 2, Direction.NEXT));
     Assertions.assertEquals(1, page2.getData().size());
     Assertions.assertEquals(first.getSlug(), page2.getData().get(0).getArticle().getSlug());
     Assertions.assertFalse(page2.hasNext());
+  }
+
+  // AC-15
+  @Test
+  public void ac15_cursor_pages_through_bookmarks_sharing_the_same_timestamp() {
+    DateTime sameTime = base.plusMinutes(10);
+    bookmark(first, reader, sameTime);
+    bookmark(second, reader, sameTime);
+    bookmark(third, reader, sameTime);
+
+    java.util.Set<String> seen = new java.util.HashSet<>();
+    BookmarkCursor.Position cursor = null;
+    int pages = 0;
+    boolean hasNext = true;
+    while (hasNext) {
+      CursorPager<BookmarkedArticleData> page =
+          queryService.findUserBookmarksWithCursor(
+              reader, new CursorPageParameter<>(cursor, 2, Direction.NEXT));
+      page.getData().forEach(b -> Assertions.assertTrue(seen.add(b.getArticle().getSlug())));
+      hasNext = page.hasNext();
+      if (!page.getData().isEmpty()) {
+        cursor = page.getData().get(page.getData().size() - 1).getCursor().getData();
+      }
+      Assertions.assertTrue(++pages <= 3, "pagination did not terminate");
+    }
+    Assertions.assertEquals(
+        new java.util.HashSet<>(Arrays.asList(first.getSlug(), second.getSlug(), third.getSlug())),
+        seen);
   }
 
   // AC-16
