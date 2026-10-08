@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.readservice.ArticleBookmarksReadService">
+    <select id="isUserBookmark" resultType="java.lang.Boolean">
+        select count(1) from article_bookmarks where user_id = #{userId} and article_id = #{articleId}
+    </select>
+    <select id="userBookmarks" resultType="java.lang.String">
+        select
+          AB.article_id
+        from article_bookmarks AB
+        where AB.article_id in
+        <foreach collection="ids" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        and AB.user_id = #{currentUser.id}
+    </select>
+    <select id="userBookmarkedArticleIds" resultType="java.lang.String">
+        select
+          AB.article_id
+        from article_bookmarks AB
+        join articles A on A.id = AB.article_id
+        where AB.user_id = #{userId}
+        order by AB.created_at desc, AB.article_id desc
+        limit #{page.offset}, #{page.limit}
+    </select>
+    <select id="countUserBookmarks" resultType="java.lang.Integer">
+        select count(1)
+        from article_bookmarks AB
+        join articles A on A.id = AB.article_id
+        where AB.user_id = #{userId}
+    </select>
+    <select id="findUserBookmarksWithCursor" resultMap="articleBookmark">
+        select
+          AB.article_id articleBookmarkArticleId,
+          AB.user_id articleBookmarkUserId,
+          AB.created_at articleBookmarkCreatedAt
+        from article_bookmarks AB
+        join articles A on A.id = AB.article_id
+        <where>
+            AB.user_id = #{userId}
+            <if test='page.cursor != null and page.direction.name() == "NEXT"'>
+                AND AB.created_at &lt; #{page.cursor}
+            </if>
+            <if test='page.cursor != null and page.direction.name() == "PREV"'>
+                AND AB.created_at > #{page.cursor}
+            </if>
+        </where>
+        <if test='page.direction.name() == "NEXT"'>
+            order by AB.created_at desc, AB.article_id desc
+        </if>
+        <if test='page.direction.name() == "PREV"'>
+            order by AB.created_at asc, AB.article_id asc
+        </if>
+        limit #{page.queryLimit}
+    </select>
+    <resultMap id="articleBookmark" type="io.spring.core.bookmark.ArticleBookmark">
+        <result column="articleBookmarkArticleId" property="articleId"/>
+        <result column="articleBookmarkUserId" property="userId"/>
+        <result column="articleBookmarkCreatedAt" property="createdAt"/>
+    </resultMap>
+</mapper>

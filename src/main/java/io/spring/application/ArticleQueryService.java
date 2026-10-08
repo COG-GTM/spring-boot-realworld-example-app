@@ -5,7 +5,10 @@ import static java.util.stream.Collectors.toList;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
 import io.spring.application.data.ArticleFavoriteCount;
+import io.spring.application.data.BookmarkedArticleData;
+import io.spring.core.bookmark.ArticleBookmark;
 import io.spring.core.user.User;
+import io.spring.infrastructure.mybatis.readservice.ArticleBookmarksReadService;
 import io.spring.infrastructure.mybatis.readservice.ArticleFavoritesReadService;
 import io.spring.infrastructure.mybatis.readservice.ArticleReadService;
 import io.spring.infrastructure.mybatis.readservice.UserRelationshipQueryService;
@@ -14,8 +17,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
@@ -26,6 +32,7 @@ public class ArticleQueryService {
   private ArticleReadService articleReadService;
   private UserRelationshipQueryService userRelationshipQueryService;
   private ArticleFavoritesReadService articleFavoritesReadService;
+  private ArticleBookmarksReadService articleBookmarksReadService;
 
   public Optional<ArticleData> findById(String id, User user) {
     ArticleData articleData = articleReadService.findById(id);
@@ -122,10 +129,59 @@ public class ArticleQueryService {
     }
   }
 
+  public ArticleDataList findUserBookmarks(User user, Page page) {
+    List<String> articleIds =
+        articleBookmarksReadService.userBookmarkedArticleIds(user.getId(), page);
+    int count = articleBookmarksReadService.countUserBookmarks(user.getId());
+    if (articleIds.isEmpty()) {
+      return new ArticleDataList(new ArrayList<>(), count);
+    }
+    Map<String, ArticleData> articlesById = findArticlesById(articleIds, user);
+    List<ArticleData> articles =
+        articleIds.stream().map(articlesById::get).filter(Objects::nonNull).collect(toList());
+    return new ArticleDataList(articles, count);
+  }
+
+  public CursorPager<BookmarkedArticleData> findUserBookmarksWithCursor(
+      User user, CursorPageParameter<DateTime> page) {
+    List<ArticleBookmark> bookmarks =
+        articleBookmarksReadService.findUserBookmarksWithCursor(user.getId(), page);
+    if (bookmarks.isEmpty()) {
+      return new CursorPager<>(new ArrayList<>(), page.getDirection(), false);
+    }
+    boolean hasExtra = bookmarks.size() > page.getLimit();
+    if (hasExtra) {
+      bookmarks.remove(page.getLimit());
+    }
+    if (!page.isNext()) {
+      Collections.reverse(bookmarks);
+    }
+    Map<String, ArticleData> articlesById =
+        findArticlesById(
+            bookmarks.stream().map(ArticleBookmark::getArticleId).collect(toList()), user);
+    List<BookmarkedArticleData> data =
+        bookmarks.stream()
+            .filter(bookmark -> articlesById.containsKey(bookmark.getArticleId()))
+            .map(
+                bookmark ->
+                    new BookmarkedArticleData(
+                        articlesById.get(bookmark.getArticleId()), bookmark.getCreatedAt()))
+            .collect(toList());
+    return new CursorPager<>(data, page.getDirection(), hasExtra);
+  }
+
+  private Map<String, ArticleData> findArticlesById(List<String> articleIds, User user) {
+    List<ArticleData> articles = articleReadService.findArticles(articleIds);
+    fillExtraInfo(articles, user);
+    return articles.stream()
+        .collect(Collectors.toMap(ArticleData::getId, Function.identity(), (a, b) -> a));
+  }
+
   private void fillExtraInfo(List<ArticleData> articles, User currentUser) {
     setFavoriteCount(articles);
     if (currentUser != null) {
       setIsFavorite(articles, currentUser);
+      setIsBookmarked(articles, currentUser);
       setIsFollowingAuthor(articles, currentUser);
     }
   }
@@ -172,8 +228,17 @@ public class ArticleQueryService {
         });
   }
 
+  private void setIsBookmarked(List<ArticleData> articles, User currentUser) {
+    Set<String> bookmarkedArticles =
+        articleBookmarksReadService.userBookmarks(
+            articles.stream().map(ArticleData::getId).collect(toList()), currentUser);
+    articles.forEach(
+        articleData -> articleData.setBookmarked(bookmarkedArticles.contains(articleData.getId())));
+  }
+
   private void fillExtraInfo(String id, User user, ArticleData articleData) {
     articleData.setFavorited(articleFavoritesReadService.isUserFavorite(user.getId(), id));
+    articleData.setBookmarked(articleBookmarksReadService.isUserBookmark(user.getId(), id));
     articleData.setFavoritesCount(articleFavoritesReadService.articleFavoriteCount(id));
     articleData
         .getProfileData()
