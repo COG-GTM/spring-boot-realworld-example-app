@@ -1,0 +1,14 @@
+// Optional Maven Central mirror for container builds: set the MAVEN_MIRROR build arg.
+def mirror = System.getenv('MAVEN_MIRROR')
+if (mirror) {
+    settingsEvaluated { settings ->
+        settings.pluginManagement.repositories {
+            maven { url = mirror }
+            gradlePluginPortal()
+        }
+    }
+    allprojects {
+        buildscript { repositories { maven { url = mirror } } }
+        repositories { maven { url = mirror } }
+    }
+}
