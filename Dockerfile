@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/root/.gradle \
 
 # Ubuntu (glibc) runtime: multi-arch, and sqlite-jdbc only ships an x86_64 Alpine native lib.
 FROM eclipse-temurin:11-jre-jammy
-RUN groupadd --system conduit && useradd --system --gid conduit --no-create-home conduit \
+RUN groupadd --system --gid 10001 conduit && useradd --system --uid 10001 --gid conduit --no-create-home conduit \
     && mkdir /data && chown conduit:conduit /data
 WORKDIR /app
 COPY --from=build /app/app.jar app.jar
