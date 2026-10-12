@@ -174,7 +174,7 @@ Example validation error:
 ## GraphQL API
 
 - Endpoint: `POST /graphql` (`{"query": "...", "variables": {...}}`)
-- IDE: `GET /graphiql`
+- IDE: `GET /graphiql`. The page is served but stays blank, because its unpinned unpkg React UMD scripts now 404 (React 19 dropped UMD builds). Use curl or a standalone GraphQL client instead.
 - Schema: [`src/main/resources/schema/schema.graphqls`](../src/main/resources/schema/schema.graphqls)
 - Auth: same `Authorization: Token <jwt>` header.
 

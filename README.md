@@ -43,7 +43,7 @@ The API listens on http://localhost:8080. To check that it works:
     # {"tags":[]}
 
 - GraphQL endpoint: `POST http://localhost:8080/graphql`
-- GraphiQL IDE: http://localhost:8080/graphiql
+- GraphiQL IDE: http://localhost:8080/graphiql — currently renders a blank page: the bundled DGS GraphiQL page loads unpinned `https://unpkg.com/react/umd/...` scripts, which now resolve to React 19 where the UMD builds no longer exist (404). Use `curl` (see [GraphQL](#graphql)) or a standalone GraphQL client instead.
 
 The entry point of the REST API is http://localhost:8080, **not** http://localhost:8080/api as some RealWorld frontend documentation suggests.
 
