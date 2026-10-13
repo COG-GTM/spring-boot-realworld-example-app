@@ -29,6 +29,12 @@ configurations {
 
 ext['rest-assured.version'] = '5.5.7'
 
+// Patch-level CVE fixes on the Boot 3.3 line (OSS 3.3.x is end-of-life).
+ext['tomcat.version'] = '10.1.61'
+ext['logback.version'] = '1.5.38'
+ext['jackson-bom.version'] = '2.18.11'
+ext['commons-lang3.version'] = '3.18.0'
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -54,6 +60,12 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
+
+    constraints {
+        implementation('com.google.protobuf:protobuf-java:3.25.5') {
+            because 'CVE-2024-7254; pulled in by DGS federation support'
+        }
+    }
 }
 
 tasks.named('test') {
