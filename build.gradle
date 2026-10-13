@@ -2,7 +2,7 @@ plugins {
     id 'org.springframework.boot' version '3.3.13'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
-    id "com.netflix.dgs.codegen" version "5.0.6"
+    id "com.netflix.dgs.codegen" version "6.3.0"
     id "com.diffplug.spotless" version "7.2.1"
 }
 
@@ -33,7 +33,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:4.9.21'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:9.2.2'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
@@ -66,4 +66,5 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
+    typeMapping = ["PageInfo": "graphql.relay.PageInfo"]
 }
