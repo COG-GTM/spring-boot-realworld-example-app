@@ -26,6 +26,16 @@ repositories {
 
 // DGS 8.x requires graphql-java 21.x; Spring Boot 3.3 manages 22.x by default
 ext['graphql-java.version'] = '21.5'
+ext['tomcat.version'] = '10.1.60'
+ext['jackson-bom.version'] = '2.18.11'
+ext['logback.version'] = '1.5.37'
+ext['commons-lang3.version'] = '3.18.0'
+
+dependencyManagement {
+    dependencies {
+        dependency 'com.google.protobuf:protobuf-java:3.25.5'
+    }
+}
 
 configurations {
     compileOnly {
