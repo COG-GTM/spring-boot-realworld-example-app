@@ -23,6 +23,7 @@ import io.spring.graphql.DgsConstants.ARTICLEPAYLOAD;
 import io.spring.graphql.DgsConstants.COMMENT;
 import io.spring.graphql.DgsConstants.PROFILE;
 import io.spring.graphql.DgsConstants.QUERY;
+import io.spring.graphql.exception.AuthenticationException;
 import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
@@ -46,11 +47,11 @@ public class ArticleDatafetcher {
       @InputArgument("last") Integer last,
       @InputArgument("before") String before,
       DgsDataFetchingEnvironment dfe) {
+    User current = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+
     if (first == null && last == null) {
       throw new IllegalArgumentException("first 和 last 必须只存在一个");
     }
-
-    User current = SecurityUtil.getCurrentUser().orElse(null);
 
     CursorPager<ArticleData> articles;
     if (first != null) {
