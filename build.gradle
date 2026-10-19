@@ -30,10 +30,12 @@ ext['tomcat.version'] = '9.0.122'
 ext['jackson-bom.version'] = '2.18.11'
 ext['spring-security.version'] = '5.8.16'
 ext['logback.version'] = '1.2.13'
-ext['snakeyaml.version'] = '1.33'
+ext['snakeyaml.version'] = '2.2'
 ext['json-smart.version'] = '2.5.2'
 ext['commons-lang3.version'] = '3.18.0'
 ext['assertj.version'] = '3.27.7'
+ext['xmlunit2.version'] = '2.10.4'
+ext['rest-assured.version'] = '5.5.7'
 
 configurations {
     compileOnly {
@@ -64,10 +66,10 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:4.5.1'
-    testImplementation 'io.rest-assured:json-path:4.5.1'
-    testImplementation 'io.rest-assured:xml-path:4.5.1'
-    testImplementation 'io.rest-assured:spring-mock-mvc:4.5.1'
+    testImplementation 'io.rest-assured:rest-assured:5.5.7'
+    testImplementation 'io.rest-assured:json-path:5.5.7'
+    testImplementation 'io.rest-assured:xml-path:5.5.7'
+    testImplementation 'io.rest-assured:spring-mock-mvc:5.5.7'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
