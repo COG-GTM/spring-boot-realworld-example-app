@@ -32,7 +32,7 @@ configurations {
 }
 
 // Security patches ahead of Boot 4.1.1's managed versions (Snyk).
-ext['tomcat.version'] = '11.0.26'
+ext['tomcat.version'] = '11.0.27'
 ext['jackson-bom.version'] = '3.1.8'
 ext['jackson-2-bom.version'] = '2.21.8'
 ext['logback.version'] = '1.6.5'
