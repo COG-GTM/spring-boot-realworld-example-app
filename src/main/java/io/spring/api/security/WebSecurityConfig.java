@@ -29,6 +29,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Value("${dgs.graphql.graphiql.path:/graphiql}")
   private String graphiqlPath;
 
+  @Value("${dgs.graphql.schema-json.enabled:false}")
+  private boolean schemaJsonEnabled;
+
+  @Value("${dgs.graphql.schema-json.path:/schema.json}")
+  private String schemaJsonPath;
+
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
     return new JwtTokenFilter();
@@ -44,6 +50,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     if (graphiqlEnabled) {
       http.authorizeRequests().antMatchers(graphiqlPath, graphiqlPath + "/**").permitAll();
+    }
+    if (schemaJsonEnabled) {
+      http.authorizeRequests().antMatchers(HttpMethod.GET, schemaJsonPath).permitAll();
     }
 
     http.csrf()

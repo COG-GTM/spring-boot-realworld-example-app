@@ -40,6 +40,11 @@ public class GraphQLSchemaExposureTest {
     }
 
     @Test
+    void schema_json_is_not_served_to_anonymous_users() throws Exception {
+      mvc.perform(get("/schema.json")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void schema_introspection_is_rejected() throws Exception {
       graphql(mvc, INTROSPECTION_QUERY)
           .andExpect(status().isOk())
@@ -78,6 +83,13 @@ public class GraphQLSchemaExposureTest {
       mvc.perform(get("/graphiql/index.html"))
           .andExpect(status().isOk())
           .andExpect(content().string(containsString("graphiql")));
+    }
+
+    @Test
+    void schema_json_is_served_to_anonymous_users() throws Exception {
+      mvc.perform(get("/schema.json"))
+          .andExpect(status().isOk())
+          .andExpect(content().string(containsString("__schema")));
     }
 
     @Test
