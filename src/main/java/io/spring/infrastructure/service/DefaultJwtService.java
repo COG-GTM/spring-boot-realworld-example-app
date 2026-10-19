@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import javax.crypto.SecretKey;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Component;
 public class DefaultJwtService implements JwtService {
   static final int MIN_SECRET_BYTES = 64;
   static final int MIN_DISTINCT_CHARS = 10;
+  private static final int NGRAM = 4;
+  private static final double MIN_DISTINCT_NGRAM_RATIO = 0.75;
 
   // SHA-256 of jwt.secret values that were committed to source control and must never be reused.
   private static final Set<String> REVOKED_SECRET_FINGERPRINTS =
@@ -73,11 +76,11 @@ public class DefaultJwtService implements JwtService {
       throw new IllegalStateException(
           "jwt.secret must be at least " + MIN_SECRET_BYTES + " bytes (512 bits) for HS512");
     }
-    if (secret.chars().distinct().count() < MIN_DISTINCT_CHARS) {
+    if (secret.chars().distinct().count() < MIN_DISTINCT_CHARS || isRepetitive(secret)) {
       throw new IllegalStateException(
           "jwt.secret is too predictable; use at least "
               + MIN_DISTINCT_CHARS
-              + " distinct characters, e.g. a random base64 value");
+              + " distinct characters and no repeated patterns, e.g. a random base64 value");
     }
     if (REVOKED_SECRET_FINGERPRINTS.contains(sha256Hex(bytes))) {
       throw new IllegalStateException(
@@ -85,6 +88,15 @@ public class DefaultJwtService implements JwtService {
               + " one");
     }
     return bytes;
+  }
+
+  private static boolean isRepetitive(String secret) {
+    int total = secret.length() - NGRAM + 1;
+    Set<String> ngrams = new HashSet<>();
+    for (int i = 0; i < total; i++) {
+      ngrams.add(secret.substring(i, i + NGRAM));
+    }
+    return ngrams.size() < total * MIN_DISTINCT_NGRAM_RATIO;
   }
 
   private static String sha256Hex(byte[] bytes) {

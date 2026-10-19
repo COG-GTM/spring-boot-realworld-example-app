@@ -93,7 +93,14 @@ public class DefaultJwtServiceTest {
 
   @Test
   public void should_fail_fast_with_low_entropy_secret() {
-    for (String predictable : new String[] {"a".repeat(64), "ab".repeat(40), "secret".repeat(12)}) {
+    for (String predictable :
+        new String[] {
+          "a".repeat(64),
+          "ab".repeat(40),
+          "secret".repeat(12),
+          "0123456789".repeat(7),
+          "abcdefghijkl".repeat(6) + "xyz"
+        }) {
       Assertions.assertThrows(
           IllegalStateException.class, () -> new DefaultJwtService(predictable, 3600), predictable);
     }
