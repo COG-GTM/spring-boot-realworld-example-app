@@ -53,6 +53,10 @@ Alternatively, you can run
 
     curl http://localhost:8080/tags
 
+GraphiQL, GraphQL schema introspection and `/schema.json` are disabled by default. To enable them for local development, run with the `dev` profile and open http://localhost:8080/graphiql :
+
+    ./gradlew bootRun --args='--spring.profiles.active=dev'
+
 # Try it out with [Docker](https://www.docker.com/)
 
 You'll need Docker installed.

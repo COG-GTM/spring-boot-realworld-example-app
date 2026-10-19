@@ -2,6 +2,7 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +23,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+  @Value("${dgs.graphql.graphiql.enabled:false}")
+  private boolean graphiqlEnabled;
+
+  @Value("${dgs.graphql.graphiql.path:/graphiql}")
+  private String graphiqlPath;
+
   @Bean
   public JwtTokenFilter jwtTokenFilter() {
     return new JwtTokenFilter();
@@ -35,6 +42,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
 
+    if (graphiqlEnabled) {
+      http.authorizeRequests().antMatchers(graphiqlPath, graphiqlPath + "/**").permitAll();
+    }
+
     http.csrf()
         .disable()
         .cors()
@@ -47,8 +58,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .and()
         .authorizeRequests()
         .antMatchers(HttpMethod.OPTIONS)
-        .permitAll()
-        .antMatchers("/graphiql")
         .permitAll()
         .antMatchers("/graphql")
         .permitAll()
