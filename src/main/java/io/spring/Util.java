@@ -7,7 +7,7 @@ import java.time.temporal.ChronoUnit;
 
 public class Util {
   private static final DateTimeFormatter ISO_MILLIS_UTC =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
 
   public static boolean isEmpty(String value) {
     return value == null || value.isEmpty();
