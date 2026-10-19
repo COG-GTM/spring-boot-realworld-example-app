@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultJwtService implements JwtService {
   static final int MIN_SECRET_BYTES = 64;
+  static final int MIN_DISTINCT_CHARS = 10;
 
   // SHA-256 of jwt.secret values that were committed to source control and must never be reused.
   private static final Set<String> REVOKED_SECRET_FINGERPRINTS =
@@ -71,6 +72,12 @@ public class DefaultJwtService implements JwtService {
     if (bytes.length < MIN_SECRET_BYTES) {
       throw new IllegalStateException(
           "jwt.secret must be at least " + MIN_SECRET_BYTES + " bytes (512 bits) for HS512");
+    }
+    if (secret.chars().distinct().count() < MIN_DISTINCT_CHARS) {
+      throw new IllegalStateException(
+          "jwt.secret is too predictable; use at least "
+              + MIN_DISTINCT_CHARS
+              + " distinct characters, e.g. a random base64 value");
     }
     if (REVOKED_SECRET_FINGERPRINTS.contains(sha256Hex(bytes))) {
       throw new IllegalStateException(

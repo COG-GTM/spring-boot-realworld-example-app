@@ -36,7 +36,7 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The JWT signing secret is read from the `JWT_SECRET` environment variable (`jwt.secret=${JWT_SECRET}` in `application.properties`). There is no default: the application refuses to start if it is unset, shorter than 64 bytes (HS512 needs a 512-bit key), or equal to the value that used to be committed to this repository. Generate one per environment and keep it in your secret manager:
+The JWT signing secret is read from the `JWT_SECRET` environment variable (`jwt.secret=${JWT_SECRET}` in `application.properties`). There is no default: the application refuses to start if it is unset, shorter than 64 bytes (HS512 needs a 512-bit key), made of fewer than 10 distinct characters, or equal to the value that used to be committed to this repository. Generate one per environment and keep it in your secret manager:
 
     export JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')"
 

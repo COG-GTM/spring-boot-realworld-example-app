@@ -92,6 +92,25 @@ public class DefaultJwtServiceTest {
   }
 
   @Test
+  public void should_fail_fast_with_low_entropy_secret() {
+    for (String predictable : new String[] {"a".repeat(64), "ab".repeat(40), "secret".repeat(12)}) {
+      Assertions.assertThrows(
+          IllegalStateException.class, () -> new DefaultJwtService(predictable, 3600), predictable);
+    }
+  }
+
+  @Test
+  public void should_accept_random_hex_secret() {
+    byte[] bytes = new byte[32];
+    new SecureRandom().nextBytes(bytes);
+    StringBuilder hex = new StringBuilder();
+    for (byte b : bytes) {
+      hex.append(String.format("%02x", b));
+    }
+    Assertions.assertDoesNotThrow(() -> new DefaultJwtService(hex.toString(), 3600));
+  }
+
+  @Test
   public void should_not_commit_a_jwt_secret_value() throws Exception {
     Properties properties = new Properties();
     try (InputStream in = getClass().getResourceAsStream("/application.properties")) {
