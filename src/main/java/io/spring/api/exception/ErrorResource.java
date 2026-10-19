@@ -2,8 +2,8 @@ package io.spring.api.exception;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(using = ErrorResourceSerializer.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
