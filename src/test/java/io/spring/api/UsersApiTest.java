@@ -1,17 +1,23 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import io.restassured.module.mockmvc.specification.MockMvcRequestSpecification;
 import io.spring.JacksonCustomizations;
+import io.spring.api.security.LoginThrottle;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
+import io.spring.application.user.LoginService;
 import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
@@ -34,6 +40,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({
   WebSecurityConfig.class,
   UserQueryService.class,
+  LoginService.class,
+  LoginThrottle.class,
   BCryptPasswordEncoder.class,
   JacksonCustomizations.class
 })
@@ -267,5 +275,82 @@ public class UsersApiTest {
         .then()
         .statusCode(422)
         .body("message", equalTo("invalid email or password"));
+  }
+
+  private static Map<String, Object> loginParam(String email, String password) {
+    Map<String, Object> user = new HashMap<>();
+    user.put("email", email);
+    user.put("password", password);
+    Map<String, Object> param = new HashMap<>();
+    param.put("user", user);
+    return param;
+  }
+
+  private static MockMvcRequestSpecification loginFrom(String remoteAddr, String email, String pw) {
+    return given()
+        .postProcessors(
+            request -> {
+              request.setRemoteAddr(remoteAddr);
+              return request;
+            })
+        .contentType("application/json")
+        .body(loginParam(email, pw));
+  }
+
+  @Test
+  public void should_check_password_against_dummy_hash_for_unknown_email() throws Exception {
+    when(userRepository.findByEmail(eq("unknown@jacob.com"))).thenReturn(Optional.empty());
+
+    loginFrom("10.0.0.1", "unknown@jacob.com", "123")
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422)
+        .body("message", equalTo("invalid email or password"));
+  }
+
+  @Test
+  public void should_return_429_after_too_many_failed_logins_for_an_email() throws Exception {
+    String email = "throttled@jacob.com";
+    String password = "123";
+    User user = new User(email, "throttled", passwordEncoder.encode(password), "", defaultAvatar);
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+
+    for (int i = 0; i < 5; i++) {
+      loginFrom("10.0.1." + i, email, "wrong").when().post("/users/login").then().statusCode(422);
+    }
+
+    loginFrom("10.0.1.99", email, password)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(429)
+        .header("Retry-After", notNullValue())
+        .body("message", equalTo("too many login attempts, try again later"));
+    verify(jwtService, never()).toToken(any());
+  }
+
+  @Test
+  public void should_return_429_after_too_many_failed_logins_from_a_client() throws Exception {
+    when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+    for (int i = 0; i < 20; i++) {
+      loginFrom("10.0.2.1", "nobody" + i + "@jacob.com", "wrong")
+          .when()
+          .post("/users/login")
+          .then()
+          .statusCode(422);
+    }
+
+    loginFrom("10.0.2.1", "someone@jacob.com", "wrong")
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(429);
+    loginFrom("10.0.2.2", "someone@jacob.com", "wrong")
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422);
   }
 }
