@@ -82,6 +82,7 @@ public class UserMutation {
             .bio(updateUserInput.getBio())
             .password(updateUserInput.getPassword())
             .image(updateUserInput.getImage())
+            .currentPassword(updateUserInput.getCurrentPassword())
             .build();
 
     userService.updateUser(new UpdateUserCommand(currentUser, param));

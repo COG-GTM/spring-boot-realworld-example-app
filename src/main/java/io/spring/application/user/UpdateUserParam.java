@@ -22,4 +22,5 @@ public class UpdateUserParam {
   @Builder.Default private String username = "";
   @Builder.Default private String bio = "";
   @Builder.Default private String image = "";
+  @Builder.Default private String currentPassword = "";
 }

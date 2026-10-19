@@ -11,6 +11,7 @@ import io.spring.infrastructure.mybatis.readservice.UserReadService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 abstract class TestWithCurrentUser {
   @MockBean protected UserRepository userRepository;
@@ -23,6 +24,7 @@ abstract class TestWithCurrentUser {
   protected String email;
   protected String username;
   protected String defaultAvatar;
+  protected String password;
 
   @MockBean protected JwtService jwtService;
 
@@ -31,7 +33,10 @@ abstract class TestWithCurrentUser {
     username = "johnjacob";
     defaultAvatar = "https://static.productionready.io/images/smiley-cyrus.jpg";
 
-    user = new User(email, username, "123", "", defaultAvatar);
+    password = "123";
+
+    user =
+        new User(email, username, new BCryptPasswordEncoder().encode(password), "", defaultAvatar);
     when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(user));
     when(userRepository.findById(eq(user.getId()))).thenReturn(Optional.of(user));
 

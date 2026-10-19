@@ -163,6 +163,7 @@ input UpdateUserInput {
     email: String
     username: String
     password: String
+    currentPassword: String
     image: String
     bio: String
 }
