@@ -72,6 +72,18 @@ public class LoginThrottleTest {
   }
 
   @Test
+  public void should_report_blocked_email_retry_time_even_when_tracking_is_full() {
+    throttle = new LoginThrottle(3, 100, Duration.ofMinutes(15), 2, clock);
+    for (int i = 0; i < 3; i++) {
+      fail("1.1.1.1", "a@b.com");
+    }
+    clock.advance(Duration.ofMinutes(10));
+    TooManyLoginAttemptsException e =
+        assertThrows(TooManyLoginAttemptsException.class, () -> succeed("2.2.2.2", "a@b.com"));
+    assertEquals(300, e.getRetryAfterSeconds());
+  }
+
+  @Test
   public void should_reject_windows_shorter_than_one_millisecond() {
     assertThrows(
         IllegalArgumentException.class,
