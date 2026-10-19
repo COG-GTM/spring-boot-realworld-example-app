@@ -84,6 +84,21 @@ public class LoginThrottleTest {
   }
 
   @Test
+  public void should_report_the_longer_delay_when_email_and_client_are_both_blocked() {
+    for (int i = 0; i < 3; i++) {
+      fail("9.9.9.9", "a@b.com");
+    }
+    clock.advance(Duration.ofMinutes(5));
+    for (int i = 0; i < 5; i++) {
+      fail("1.1.1.1", "user" + i + "@b.com");
+    }
+    clock.advance(Duration.ofMinutes(5));
+    TooManyLoginAttemptsException e =
+        assertThrows(TooManyLoginAttemptsException.class, () -> succeed("1.1.1.1", "a@b.com"));
+    assertEquals(600, e.getRetryAfterSeconds());
+  }
+
+  @Test
   public void should_reject_windows_shorter_than_one_millisecond() {
     assertThrows(
         IllegalArgumentException.class,

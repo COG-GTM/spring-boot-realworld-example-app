@@ -66,7 +66,7 @@ public class LoginThrottle {
     // every such request.
     String clientKey = clientAddress == null ? null : "client:" + clientAddress;
 
-    rejectIfBlocked(emailKey, maxFailuresPerEmail);
+    rejectIfBlocked(emailKey, clientKey);
     long clientWindow = clientKey == null ? 0 : acquire(clientKey, maxFailuresPerClient);
     long emailWindow;
     try {
@@ -112,12 +112,23 @@ public class LoginThrottle {
     return window.start;
   }
 
-  private void rejectIfBlocked(String key, int limit) {
+  private void rejectIfBlocked(String emailKey, String clientKey) {
     long now = clock.millis();
-    Window current = windows.get(key);
-    if (current != null && !current.isExpired(now, windowMillis) && current.count >= limit) {
-      throw new TooManyLoginAttemptsException(toSeconds(current.start + windowMillis - now));
+    long retryAfterMillis =
+        Math.max(
+            remainingBlockMillis(emailKey, maxFailuresPerEmail, now),
+            remainingBlockMillis(clientKey, maxFailuresPerClient, now));
+    if (retryAfterMillis > 0) {
+      throw new TooManyLoginAttemptsException(toSeconds(retryAfterMillis));
     }
+  }
+
+  private long remainingBlockMillis(String key, int limit, long now) {
+    Window current = key == null ? null : windows.get(key);
+    if (current == null || current.isExpired(now, windowMillis) || current.count < limit) {
+      return 0;
+    }
+    return current.start + windowMillis - now;
   }
 
   private void release(String key, long windowStart) {
