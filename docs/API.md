@@ -49,7 +49,7 @@ Validation: on register, `email` (valid format, unique), `username` (unique) and
 | `POST /articles/{slug}/favorite` | required | - | `200` `{"article": Article}` |
 | `DELETE /articles/{slug}/favorite` | required | - | `200` `{"article": Article}` |
 
-`Article` = `{"id", "slug", "title", "description", "body", "favorited", "favoritesCount", "createdAt", "updatedAt", "tagList", "author": Profile}`. Timestamps are ISO-8601 in UTC. Responses also include an internal `"cursor": {"data": "<createdAt>"}` field, which leaks from `ArticleData.getCursor()` (the RealWorld spec doesn't include it).
+`Article` = `{"id", "slug", "title", "description", "body", "favorited", "favoritesCount", "createdAt", "updatedAt", "tagList", "author": Profile}`. Timestamps are ISO-8601 in UTC. Responses also include an internal `"cursor"` field holding the article's `updatedAt`, which leaks from `ArticleData.getCursor()` (the RealWorld spec doesn't include it).
 
 Notes:
 - Lists are ordered by `created_at` descending.
@@ -123,7 +123,7 @@ Nested connections: `Article.comments`, `Profile.articles`, `Profile.favorites`,
 Connections follow the Relay shape (`edges { cursor node }`, `pageInfo { hasNextPage hasPreviousPage startCursor endCursor }`).
 
 - Pass `first` (with an optional `after`) to page forward, or `last` (with an optional `before`) to page backward. If you omit both, the resolver throws `IllegalArgumentException` (its message is in Chinese: "first 和 last 必须只存在一个").
-- A cursor is the item's `createdAt` in epoch milliseconds (`DateTimeCursor`).
+- A cursor is a timestamp in epoch milliseconds (`DateTimeCursor`). Comment cursors use `createdAt` (`CommentData.getCursor`). Article cursors use `updatedAt` (`ArticleData.getCursor`), but the article queries filter and sort on `created_at`, so paging through edited articles can skip or repeat items.
 - When paging forward only `hasNextPage` is computed, and when paging backward only `hasPreviousPage` is computed. The other flag is always `false`.
 
 ### Errors
@@ -136,6 +136,10 @@ Connections follow the Relay shape (`edges { cursor node }`, `pageInfo { hasNext
 ### Example
 
 ```bash
+# register (createUser returns the UserResult union: UserPayload or Error)
+curl -s localhost:8080/graphql -H 'Content-Type: application/json' \
+  -d '{"query":"mutation { createUser(input: {email: \"me@example.com\", username: \"me\", password: \"secret\"}) { ... on UserPayload { user { username } } ... on Error { message errors { key value } } } }"}'
+
 TOKEN=$(curl -s localhost:8080/graphql -H 'Content-Type: application/json' \
   -d '{"query":"mutation { login(email: \"me@example.com\", password: \"secret\") { user { token } } }"}' \
   | sed -E 's/.*"token":"([^"]+)".*/\1/')

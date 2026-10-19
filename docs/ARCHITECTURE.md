@@ -54,7 +54,7 @@ GraphQL mutations call the same command services and repositories. Resolvers han
 ## Pagination
 
 - REST uses offset pagination (`Page`: `offset` ≥ 0, `limit` defaults to 20 and is capped at 100). The SQL uses `limit #{offset}, #{limit}`.
-- GraphQL uses cursor pagination on `created_at`. The cursor is the epoch-millis string from `DateTimeCursor`. The query services fetch `limit + 1` rows to compute `hasNextPage`/`hasPreviousPage`.
+- GraphQL uses cursor pagination, filtering and sorting on `created_at`. The cursor is an epoch-millis string from `DateTimeCursor`: `createdAt` for comments, but `updatedAt` for articles (`ArticleData.getCursor`), which doesn't match the article query. The query services fetch `limit + 1` rows to compute `hasNextPage`/`hasPreviousPage`.
 
 ## Persistence
 
