@@ -7,14 +7,14 @@ import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
 import io.spring.application.data.UserWithToken;
+import io.spring.application.user.LoginService;
 import io.spring.application.user.RegisterParam;
 import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
-import io.spring.core.user.UserRepository;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -22,7 +22,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,11 +29,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 public class UsersApi {
-  private UserRepository userRepository;
   private UserQueryService userQueryService;
-  private PasswordEncoder passwordEncoder;
   private JwtService jwtService;
   private UserService userService;
+  private LoginService loginService;
 
   @RequestMapping(path = "/users", method = POST)
   public ResponseEntity createUser(@Valid @RequestBody RegisterParam registerParam) {
@@ -45,16 +43,14 @@ public class UsersApi {
   }
 
   @RequestMapping(path = "/users/login", method = POST)
-  public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
-    Optional<User> optional = userRepository.findByEmail(loginParam.getEmail());
-    if (optional.isPresent()
-        && passwordEncoder.matches(loginParam.getPassword(), optional.get().getPassword())) {
-      UserData userData = userQueryService.findById(optional.get().getId()).get();
-      return ResponseEntity.ok(
-          userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
-    } else {
-      throw new InvalidAuthenticationException();
-    }
+  public ResponseEntity userLogin(
+      @Valid @RequestBody LoginParam loginParam, HttpServletRequest request) {
+    User user =
+        loginService
+            .authenticate(loginParam.getEmail(), loginParam.getPassword(), request.getRemoteAddr())
+            .orElseThrow(InvalidAuthenticationException::new);
+    UserData userData = userQueryService.findById(user.getId()).get();
+    return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {
