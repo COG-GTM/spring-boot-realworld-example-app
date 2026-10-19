@@ -2,8 +2,12 @@ package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -17,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -98,6 +103,7 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
                     put("email", newEmail);
                     put("bio", newBio);
                     put("username", newUsername);
+                    put("currentPassword", password);
                   }
                 });
           }
@@ -116,6 +122,8 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .put("/user")
         .then()
         .statusCode(200);
+
+    verify(userRepository).save(any());
   }
 
   @Test
@@ -141,7 +149,10 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .prettyPeek()
         .then()
         .statusCode(422)
-        .body("errors.email[0]", equalTo("email already exist"));
+        .body("errors.email[0]", equalTo("email already exist"))
+        .body(
+            "errors.currentPassword[0]",
+            equalTo("current password is required to change email or password"));
   }
 
   private HashMap<String, Object> prepareUpdateParam(
@@ -159,6 +170,108 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
             });
       }
     };
+  }
+
+  @Test
+  public void should_reject_email_change_without_current_password() throws Exception {
+    String newEmail = "newemail@example.com";
+    when(userRepository.findByEmail(eq(newEmail))).thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(userParam(Map.of("email", newEmail)))
+        .when()
+        .put("/user")
+        .then()
+        .statusCode(422)
+        .body(
+            "errors.currentPassword[0]",
+            equalTo("current password is required to change email or password"));
+
+    verify(userRepository, never()).save(any());
+  }
+
+  @Test
+  public void should_reject_password_change_without_current_password() throws Exception {
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(userParam(Map.of("password", "new-password")))
+        .when()
+        .put("/user")
+        .then()
+        .statusCode(422)
+        .body(
+            "errors.currentPassword[0]",
+            equalTo("current password is required to change email or password"));
+
+    verify(userRepository, never()).save(any());
+  }
+
+  @Test
+  public void should_reject_credential_change_with_wrong_current_password() throws Exception {
+    String newEmail = "newemail@example.com";
+    when(userRepository.findByEmail(eq(newEmail))).thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(
+            userParam(
+                Map.of("email", newEmail, "password", "new-password", "currentPassword", "wrong")))
+        .when()
+        .put("/user")
+        .then()
+        .statusCode(422)
+        .body("errors.currentPassword[0]", equalTo("current password is invalid"));
+
+    verify(userRepository, never()).save(any());
+  }
+
+  @Test
+  public void should_change_password_with_current_password_and_store_it_hashed() throws Exception {
+    when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(userData));
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(userParam(Map.of("password", "new-password", "currentPassword", password)))
+        .when()
+        .put("/user")
+        .then()
+        .statusCode(200);
+
+    ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+    verify(userRepository).save(saved.capture());
+    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    assertTrue(encoder.matches("new-password", saved.getValue().getPassword()));
+    assertFalse(encoder.matches(password, saved.getValue().getPassword()));
+  }
+
+  @Test
+  public void should_update_profile_fields_without_current_password() throws Exception {
+    String newUsername = "newusernamee";
+    when(userRepository.findByUsername(eq(newUsername))).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+    when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(userData));
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(userParam(Map.of("email", email, "username", newUsername, "bio", "updated")))
+        .when()
+        .put("/user")
+        .then()
+        .statusCode(200);
+
+    verify(userRepository).save(any());
+  }
+
+  private Map<String, Object> userParam(Map<String, Object> fields) {
+    Map<String, Object> param = new HashMap<>();
+    param.put("user", fields);
+    return param;
   }
 
   @Test

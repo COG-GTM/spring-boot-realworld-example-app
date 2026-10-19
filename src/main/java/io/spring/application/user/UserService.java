@@ -1,5 +1,6 @@
 package io.spring.application.user;
 
+import io.spring.Util;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import java.lang.annotation.Retention;
@@ -46,10 +47,11 @@ public class UserService {
   public void updateUser(@Valid UpdateUserCommand command) {
     User user = command.getTargetUser();
     UpdateUserParam updateUserParam = command.getParam();
+    String newPassword = updateUserParam.getPassword();
     user.update(
         updateUserParam.getEmail(),
         updateUserParam.getUsername(),
-        updateUserParam.getPassword(),
+        Util.isEmpty(newPassword) ? newPassword : passwordEncoder.encode(newPassword),
         updateUserParam.getBio(),
         updateUserParam.getImage());
     userRepository.save(user);
@@ -70,6 +72,7 @@ public class UserService {
 class UpdateUserValidator implements ConstraintValidator<UpdateUserConstraint, UpdateUserCommand> {
 
   @Autowired private UserRepository userRepository;
+  @Autowired private PasswordEncoder passwordEncoder;
 
   @Override
   public boolean isValid(UpdateUserCommand value, ConstraintValidatorContext context) {
@@ -77,6 +80,7 @@ class UpdateUserValidator implements ConstraintValidator<UpdateUserConstraint, U
     String inputUsername = value.getParam().getUsername();
     final User targetUser = value.getTargetUser();
 
+    String currentPasswordError = currentPasswordError(value.getParam(), targetUser);
     boolean isEmailValid =
         userRepository.findByEmail(inputEmail).map(user -> user.equals(targetUser)).orElse(true);
     boolean isUsernameValid =
@@ -84,7 +88,7 @@ class UpdateUserValidator implements ConstraintValidator<UpdateUserConstraint, U
             .findByUsername(inputUsername)
             .map(user -> user.equals(targetUser))
             .orElse(true);
-    if (isEmailValid && isUsernameValid) {
+    if (isEmailValid && isUsernameValid && currentPasswordError == null) {
       return true;
     } else {
       context.disableDefaultConstraintViolation();
@@ -100,7 +104,30 @@ class UpdateUserValidator implements ConstraintValidator<UpdateUserConstraint, U
             .addPropertyNode("username")
             .addConstraintViolation();
       }
+      if (currentPasswordError != null) {
+        context
+            .buildConstraintViolationWithTemplate(currentPasswordError)
+            .addPropertyNode("currentPassword")
+            .addConstraintViolation();
+      }
       return false;
     }
+  }
+
+  private String currentPasswordError(UpdateUserParam param, User targetUser) {
+    String inputEmail = param.getEmail();
+    boolean changesCredentials =
+        (!Util.isEmpty(inputEmail) && !inputEmail.equals(targetUser.getEmail()))
+            || !Util.isEmpty(param.getPassword());
+    if (!changesCredentials) {
+      return null;
+    }
+    if (Util.isEmpty(param.getCurrentPassword())) {
+      return "current password is required to change email or password";
+    }
+    if (!passwordEncoder.matches(param.getCurrentPassword(), targetUser.getPassword())) {
+      return "current password is invalid";
+    }
+    return null;
   }
 }
