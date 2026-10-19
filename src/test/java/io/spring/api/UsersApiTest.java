@@ -1,17 +1,22 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import io.restassured.module.mockmvc.response.MockMvcResponse;
 import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
+import io.spring.application.user.LoginAttemptLimiter;
+import io.spring.application.user.LoginService;
 import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
@@ -35,7 +40,9 @@ import org.springframework.test.web.servlet.MockMvc;
   WebSecurityConfig.class,
   UserQueryService.class,
   BCryptPasswordEncoder.class,
-  JacksonCustomizations.class
+  JacksonCustomizations.class,
+  LoginService.class,
+  LoginAttemptLimiter.class
 })
 public class UsersApiTest {
   @Autowired private MockMvc mvc;
@@ -267,5 +274,68 @@ public class UsersApiTest {
         .then()
         .statusCode(422)
         .body("message", equalTo("invalid email or password"));
+  }
+
+  @Test
+  public void should_throttle_login_after_repeated_failures_for_an_account() throws Exception {
+    String email = "throttled@jacob.com";
+    String username = "throttled";
+    User user = new User(email, username, passwordEncoder.encode("right"), "", defaultAvatar);
+    UserData userData = new UserData(user.getId(), email, username, "", defaultAvatar);
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+    when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
+    when(jwtService.toToken(any())).thenReturn("123");
+
+    for (int i = 0; i < 5; i++) {
+      login(email, "wrong-" + i, "10.0.0." + i).then().statusCode(422);
+    }
+
+    login(email, "right", "10.0.1.1")
+        .then()
+        .statusCode(429)
+        .header("Retry-After", matchesPattern("[1-9][0-9]*"))
+        .body("message", equalTo("too many login attempts, try again later"));
+    verify(userRepository, times(5)).findByEmail(eq(email));
+  }
+
+  @Test
+  public void should_not_count_successful_logins_against_the_client() throws Exception {
+    String email = "frequent@jacob.com";
+    String username = "frequent";
+    User user = new User(email, username, passwordEncoder.encode("right"), "", defaultAvatar);
+    UserData userData = new UserData(user.getId(), email, username, "", defaultAvatar);
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+    when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
+    when(jwtService.toToken(any())).thenReturn("123");
+
+    for (int i = 0; i < 25; i++) {
+      login(email, "right", "10.0.2.1").then().statusCode(200);
+    }
+  }
+
+  private MockMvcResponse login(String email, String password, String clientAddress) {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", email);
+                    put("password", password);
+                  }
+                });
+          }
+        };
+    return given()
+        .contentType("application/json")
+        .body(param)
+        .postProcessors(
+            request -> {
+              request.setRemoteAddr(clientAddress);
+              return request;
+            })
+        .when()
+        .post("/users/login");
   }
 }
