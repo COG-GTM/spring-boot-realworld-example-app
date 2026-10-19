@@ -7,11 +7,11 @@ import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
 import graphql.relay.DefaultConnectionCursor;
 import graphql.relay.DefaultPageInfo;
+import io.spring.application.CommentCursor;
 import io.spring.application.CommentQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
-import io.spring.application.DateTimeCursor;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.CommentData;
 import io.spring.core.user.User;
@@ -70,13 +70,13 @@ public class CommentDatafetcher {
           commentQueryService.findByArticleIdWithCursor(
               articleData.getId(),
               current,
-              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT));
+              new CursorPageParameter<>(CommentCursor.parse(after), first, Direction.NEXT));
     } else {
       comments =
           commentQueryService.findByArticleIdWithCursor(
               articleData.getId(),
               current,
-              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
+              new CursorPageParameter<>(CommentCursor.parse(before), last, Direction.PREV));
     }
     graphql.relay.PageInfo pageInfo = buildCommentPageInfo(comments);
     CommentsConnection result =

@@ -2,7 +2,7 @@ package io.spring.application.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.spring.application.DateTimeCursor;
+import io.spring.application.CommentCursor;
 import io.spring.application.Node;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,7 +23,7 @@ public class CommentData implements Node {
   private ProfileData profileData;
 
   @Override
-  public DateTimeCursor getCursor() {
-    return new DateTimeCursor(createdAt);
+  public CommentCursor getCursor() {
+    return new CommentCursor(createdAt, id);
   }
 }

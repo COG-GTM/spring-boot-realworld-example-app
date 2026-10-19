@@ -26,17 +26,34 @@
         <where>
         C.article_id = #{articleId}
         <if test='page.cursor != null and page.direction.name() == "NEXT"'>
-            AND C.created_at &lt; #{page.cursor}
+            <choose>
+                <when test='page.cursor.id != null'>
+                    AND (C.created_at &lt; #{page.cursor.data}
+                    OR (C.created_at = #{page.cursor.data} AND C.id &lt; #{page.cursor.id}))
+                </when>
+                <otherwise>
+                    AND C.created_at &lt; #{page.cursor.data}
+                </otherwise>
+            </choose>
         </if>
         <if test='page.cursor != null and page.direction.name() == "PREV"'>
-            AND C.created_at > #{page.cursor}
+            <choose>
+                <when test='page.cursor.id != null'>
+                    AND (C.created_at > #{page.cursor.data}
+                    OR (C.created_at = #{page.cursor.data} AND C.id > #{page.cursor.id}))
+                </when>
+                <otherwise>
+                    AND C.created_at > #{page.cursor.data}
+                </otherwise>
+            </choose>
         </if>
         </where>
         <if test='page.direction.name() == "NEXT"'>
-            order by C.created_at desc
+            order by C.created_at desc, C.id desc
         </if>
         <if test='page.direction.name() == "PREV"'>
-            order by C.created_at asc
+            order by C.created_at asc, C.id asc
         </if>
+        limit #{page.queryLimit}
     </select>
 </mapper>
