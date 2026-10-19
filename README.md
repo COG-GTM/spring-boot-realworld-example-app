@@ -53,6 +53,12 @@ Alternatively, you can run
 
     curl http://localhost:8080/tags
 
+To log MyBatis SQL statements and their bound parameters locally, run with the `dev` profile:
+
+    ./gradlew bootRun --args='--spring.profiles.active=dev'
+
+The `dev` profile logs user emails and password hashes, so never enable it in a shared environment.
+
 # Try it out with [Docker](https://www.docker.com/)
 
 You'll need Docker installed.
