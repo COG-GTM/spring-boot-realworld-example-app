@@ -31,6 +31,16 @@ configurations {
 }
 
 dependencies {
+    constraints {
+        implementation('com.graphql-java:graphql-java') {
+            version {
+                require '17.6'
+                reject '[0,17.5['
+            }
+            because 'DGS 4.9.21 brings graphql-java 17.3: CVE-2022-37734 (fixed 17.4) and CVE-2023-28867 (fixed 17.5)'
+        }
+    }
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
