@@ -17,13 +17,21 @@ public class GraphQLQueryLimits {
   @Bean
   public Instrumentation maxQueryDepthInstrumentation(
       @Value("${graphql.limits.max-depth:10}") int maxDepth) {
+    requirePositive("graphql.limits.max-depth", maxDepth);
     return new MaxQueryDepthInstrumentation(maxDepth);
   }
 
   @Bean
   public Instrumentation maxQueryComplexityInstrumentation(
       @Value("${graphql.limits.max-complexity:5000}") int maxComplexity) {
+    requirePositive("graphql.limits.max-complexity", maxComplexity);
     return new MaxQueryComplexityInstrumentation(maxComplexity, new PageSizeComplexity());
+  }
+
+  private static void requirePositive(String property, int value) {
+    if (value <= 0) {
+      throw new IllegalArgumentException(property + " must be positive but was " + value);
+    }
   }
 
   /** Each field costs 1; paginated fields multiply their selection by the requested page size. */
@@ -42,7 +50,9 @@ public class GraphQLQueryLimits {
         return 1;
       }
       int size = ((Number) requested).intValue();
-      return Math.max(1, Math.min(size, CursorPageParameter.MAX_LIMIT));
+      return size <= 0
+          ? CursorPageParameter.DEFAULT_LIMIT
+          : Math.min(size, CursorPageParameter.MAX_LIMIT);
     }
   }
 }

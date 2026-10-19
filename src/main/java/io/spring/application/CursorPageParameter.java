@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CursorPageParameter<T> {
   public static final int MAX_LIMIT = 100;
-  private int limit = 20;
+  public static final int DEFAULT_LIMIT = 20;
+  private int limit = DEFAULT_LIMIT;
   private T cursor;
   private Direction direction;
 

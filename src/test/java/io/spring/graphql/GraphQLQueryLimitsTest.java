@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import graphql.ExecutionInput;
@@ -27,21 +28,25 @@ public class GraphQLQueryLimitsTest {
 
   @BeforeEach
   public void setUp() throws Exception {
+    graphQL = buildGraphQL(5000);
+  }
+
+  private static GraphQL buildGraphQL(int maxComplexity) throws Exception {
     GraphQLSchema schema;
     try (Reader reader =
         new InputStreamReader(
-            getClass().getResourceAsStream("/schema/schema.graphqls"), StandardCharsets.UTF_8)) {
+            GraphQLQueryLimitsTest.class.getResourceAsStream("/schema/schema.graphqls"),
+            StandardCharsets.UTF_8)) {
       schema = UnExecutableSchemaGenerator.makeUnExecutableSchema(new SchemaParser().parse(reader));
     }
     GraphQLQueryLimits limits = new GraphQLQueryLimits();
-    graphQL =
-        GraphQL.newGraphQL(schema)
-            .instrumentation(
-                new ChainedInstrumentation(
-                    Arrays.asList(
-                        limits.maxQueryDepthInstrumentation(10),
-                        limits.maxQueryComplexityInstrumentation(5000))))
-            .build();
+    return GraphQL.newGraphQL(schema)
+        .instrumentation(
+            new ChainedInstrumentation(
+                Arrays.asList(
+                    limits.maxQueryDepthInstrumentation(10),
+                    limits.maxQueryComplexityInstrumentation(maxComplexity))))
+        .build();
   }
 
   @Test
@@ -96,6 +101,28 @@ public class GraphQLQueryLimitsTest {
   @Test
   public void page_size_above_limit_is_costed_at_clamped_limit() {
     assertWithinLimits(execute("{ articles(first: 1000000) { edges { node { slug } } } }"));
+  }
+
+  @Test
+  public void nonpositive_page_size_is_costed_at_default_limit() throws Exception {
+    graphQL = buildGraphQL(1000);
+    String query =
+        "query($n: Int) { articles(first: $n) { edges { node {"
+            + " comments(first: $n) { edges { node { body } } } } } } }";
+
+    assertWithinLimits(execute(query, 10));
+    assertLimitError(execute(query, 20), "maximum query complexity exceeded");
+    assertLimitError(execute(query, 0), "maximum query complexity exceeded");
+    assertLimitError(execute(query, -1), "maximum query complexity exceeded");
+  }
+
+  @Test
+  public void rejects_nonpositive_limit_configuration() {
+    GraphQLQueryLimits limits = new GraphQLQueryLimits();
+
+    assertThrows(IllegalArgumentException.class, () -> limits.maxQueryDepthInstrumentation(0));
+    assertThrows(
+        IllegalArgumentException.class, () -> limits.maxQueryComplexityInstrumentation(-1));
   }
 
   private ExecutionResult execute(String query) {
