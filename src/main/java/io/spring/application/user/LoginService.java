@@ -34,6 +34,8 @@ public class LoginService {
     }
     if (user.isPresent()) {
       loginAttemptLimiter.succeeded(attempt);
+    } else {
+      loginAttemptLimiter.failed(attempt);
     }
     return user;
   }

@@ -2,21 +2,23 @@ package io.spring.application.user;
 
 import java.time.Clock;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * Fixed-window limiter for login attempts, keyed both by account (normalised email, whether or not
- * it is registered) and by client address.
+ * Fixed-window limiter for login attempts, keyed both by account (the submitted email exactly as
+ * the repository looks it up, whether or not it is registered) and by client address.
  *
  * <p>An attempt is counted when it starts, so concurrent requests cannot overshoot a limit. A
- * successful login refunds the client and clears the account window; an attempt aborted by a
- * backend error is refunded on both. State is per application instance and bounded by {@code
- * maxTrackedKeys}.
+ * successful login resets the account window to the attempts still in flight and refunds the
+ * client; an attempt aborted by a backend error is refunded on both.
+ *
+ * <p>State is per application instance and holds at most {@code maxTrackedKeys} windows. Windows
+ * are kept in creation order, so expired ones are dropped from the head and, if a flood of distinct
+ * keys fills the table, the oldest windows are forgotten rather than refusing everyone else.
  */
 @Component
 public class LoginAttemptLimiter {
@@ -25,8 +27,7 @@ public class LoginAttemptLimiter {
   private final long windowMillis;
   private final int maxTrackedKeys;
   private final Clock clock;
-  private final Map<String, Window> windows = new HashMap<>();
-  private long nextPruneAt;
+  private final LinkedHashMap<String, Window> windows = new LinkedHashMap<>();
 
   @Autowired
   public LoginAttemptLimiter(
@@ -57,13 +58,15 @@ public class LoginAttemptLimiter {
   }
 
   /**
-   * Counts a login attempt for {@code email} from {@code clientAddress}.
+   * Counts a login attempt for {@code email} from {@code clientAddress}. The caller must report the
+   * outcome through exactly one of {@link #succeeded}, {@link #failed} or {@link #aborted}.
    *
    * @throws TooManyLoginAttemptsException if either key has used up its window
    */
   public synchronized Attempt acquire(String email, String clientAddress) {
     long now = clock.millis();
-    String accountKey = "account:" + normalise(email);
+    dropExpired(now);
+    String accountKey = "account:" + (email == null ? "" : email);
     String clientKey = "client:" + (clientAddress == null ? "unknown" : clientAddress);
     Window account = live(accountKey, now);
     Window client = live(clientKey, now);
@@ -76,16 +79,10 @@ public class LoginAttemptLimiter {
       retryAfter = Math.max(retryAfter, client.end - now);
     }
     if (retryAfter > 0) {
-      throw new TooManyLoginAttemptsException(toSeconds(retryAfter));
+      throw new TooManyLoginAttemptsException(Math.max(1, (retryAfter + 999) / 1000));
     }
 
-    int newKeys = (account == null ? 1 : 0) + (client == null ? 1 : 0);
-    if (windows.size() + newKeys > maxTrackedKeys) {
-      prune(now);
-      if (windows.size() + newKeys > maxTrackedKeys) {
-        throw new TooManyLoginAttemptsException(toSeconds(nextPruneAt - now));
-      }
-    }
+    makeRoom((account == null ? 1 : 0) + (client == null ? 1 : 0), account, client);
     if (account == null) {
       account = new Window(now + windowMillis);
       windows.put(accountKey, account);
@@ -94,14 +91,23 @@ public class LoginAttemptLimiter {
       client = new Window(now + windowMillis);
       windows.put(clientKey, client);
     }
-    account.count++;
-    client.count++;
+    account.start();
+    client.start();
     return new Attempt(accountKey, account, clientKey, client);
   }
 
   public synchronized void succeeded(Attempt attempt) {
-    windows.remove(attempt.accountKey, attempt.account);
+    attempt.account.pending--;
+    if (windows.get(attempt.accountKey) == attempt.account) {
+      attempt.account.count = attempt.account.pending;
+      removeIfEmpty(attempt.accountKey, attempt.account);
+    }
     refund(attempt.clientKey, attempt.client);
+  }
+
+  public synchronized void failed(Attempt attempt) {
+    attempt.account.pending--;
+    attempt.client.pending--;
   }
 
   public synchronized void aborted(Attempt attempt) {
@@ -111,6 +117,23 @@ public class LoginAttemptLimiter {
 
   synchronized int trackedKeys() {
     return windows.size();
+  }
+
+  private void dropExpired(long now) {
+    Iterator<Window> it = windows.values().iterator();
+    while (it.hasNext() && it.next().end <= now) {
+      it.remove();
+    }
+  }
+
+  private void makeRoom(int newKeys, Window keepAccount, Window keepClient) {
+    Iterator<Window> it = windows.values().iterator();
+    while (windows.size() + newKeys > maxTrackedKeys && it.hasNext()) {
+      Window oldest = it.next();
+      if (oldest != keepAccount && oldest != keepClient) {
+        it.remove();
+      }
+    }
   }
 
   private Window live(String key, long now) {
@@ -123,33 +146,31 @@ public class LoginAttemptLimiter {
   }
 
   private void refund(String key, Window window) {
-    if (windows.get(key) == window && --window.count <= 0) {
+    window.pending--;
+    if (windows.get(key) == window) {
+      window.count--;
+      removeIfEmpty(key, window);
+    }
+  }
+
+  private void removeIfEmpty(String key, Window window) {
+    if (window.count <= 0) {
       windows.remove(key);
     }
-  }
-
-  private void prune(long now) {
-    if (now < nextPruneAt) {
-      return;
-    }
-    windows.values().removeIf(w -> w.end <= now);
-    nextPruneAt = windows.values().stream().mapToLong(w -> w.end).min().orElse(now);
-  }
-
-  private static String normalise(String email) {
-    return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
-  }
-
-  private static long toSeconds(long millis) {
-    return Math.max(1, (millis + 999) / 1000);
   }
 
   private static final class Window {
     private final long end;
     private int count;
+    private int pending;
 
     private Window(long end) {
       this.end = end;
+    }
+
+    private void start() {
+      count++;
+      pending++;
     }
   }
 

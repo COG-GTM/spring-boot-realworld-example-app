@@ -37,12 +37,13 @@ public class LoginAttemptLimiterTest {
   }
 
   @Test
-  public void should_treat_email_case_and_whitespace_as_the_same_account() {
+  public void should_key_accounts_by_the_exact_email_the_repository_looks_up() {
     LoginAttemptLimiter limiter = limiter(2, 100, 1000);
     limiter.acquire("a@b.com", "10.0.0.1");
-    limiter.acquire(" A@B.com ", "10.0.0.2");
+    limiter.acquire("a@b.com", "10.0.0.2");
 
-    assertThrows(TooManyLoginAttemptsException.class, () -> limiter.acquire("a@B.COM", "10.0.0.3"));
+    assertThrows(TooManyLoginAttemptsException.class, () -> limiter.acquire("a@b.com", "10.0.0.3"));
+    limiter.acquire("A@b.com", "10.0.0.3");
   }
 
   @Test
@@ -76,11 +77,23 @@ public class LoginAttemptLimiterTest {
   @Test
   public void should_clear_account_and_refund_client_on_success() {
     LoginAttemptLimiter limiter = limiter(2, 2, 1000);
-    limiter.acquire("a@b.com", "10.0.0.1");
+    limiter.failed(limiter.acquire("a@b.com", "10.0.0.1"));
     limiter.succeeded(limiter.acquire("a@b.com", "10.0.0.1"));
+    assertEquals(1, limiter.trackedKeys());
 
     limiter.acquire("a@b.com", "10.0.0.1");
     assertThrows(TooManyLoginAttemptsException.class, () -> limiter.acquire("a@b.com", "10.0.0.1"));
+  }
+
+  @Test
+  public void should_keep_in_flight_attempts_counted_when_another_attempt_succeeds() {
+    LoginAttemptLimiter limiter = limiter(3, 100, 1000);
+    limiter.acquire("a@b.com", "10.6.6.1");
+    limiter.acquire("a@b.com", "10.6.6.2");
+    limiter.succeeded(limiter.acquire("a@b.com", "10.0.0.1"));
+
+    limiter.acquire("a@b.com", "10.6.6.3");
+    assertThrows(TooManyLoginAttemptsException.class, () -> limiter.acquire("a@b.com", "10.6.6.4"));
   }
 
   @Test
@@ -106,21 +119,23 @@ public class LoginAttemptLimiterTest {
   }
 
   @Test
-  public void should_bound_tracked_keys_and_prune_expired_windows() {
-    LoginAttemptLimiter limiter = limiter(5, 100, 4);
+  public void should_bound_tracked_keys_by_forgetting_the_oldest_windows() {
+    LoginAttemptLimiter limiter = limiter(1, 100, 4);
     limiter.acquire("a@b.com", "10.0.0.1");
     clock.advance(Duration.ofMinutes(10));
     limiter.acquire("b@b.com", "10.0.0.1");
     assertEquals(3, limiter.trackedKeys());
 
-    TooManyLoginAttemptsException e =
-        assertThrows(
-            TooManyLoginAttemptsException.class, () -> limiter.acquire("c@b.com", "10.0.0.2"));
-    assertEquals(300, e.getRetryAfterSeconds());
-
-    clock.advance(Duration.ofMinutes(5));
     limiter.acquire("c@b.com", "10.0.0.2");
-    assertEquals(3, limiter.trackedKeys());
+    assertEquals(4, limiter.trackedKeys());
+    limiter.acquire("a@b.com", "10.0.0.2");
+
+    assertThrows(TooManyLoginAttemptsException.class, () -> limiter.acquire("c@b.com", "10.0.0.9"));
+    assertEquals(4, limiter.trackedKeys());
+
+    clock.advance(Duration.ofMinutes(15));
+    limiter.acquire("c@b.com", "10.0.0.9");
+    assertEquals(2, limiter.trackedKeys());
   }
 
   @Test
