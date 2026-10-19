@@ -2,15 +2,19 @@ package io.spring.graphql;
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.InputArgument;
+import com.netflix.graphql.dgs.context.DgsContext;
+import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData;
 import graphql.execution.DataFetcherResult;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.api.security.LoginThrottle;
+import io.spring.application.user.LoginService;
 import io.spring.application.user.RegisterParam;
 import io.spring.application.user.UpdateUserCommand;
 import io.spring.application.user.UpdateUserParam;
 import io.spring.application.user.UserService;
 import io.spring.core.user.User;
-import io.spring.core.user.UserRepository;
 import io.spring.graphql.DgsConstants.MUTATION;
 import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import io.spring.graphql.types.CreateUserInput;
@@ -23,14 +27,15 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
 
 @DgsComponent
 @AllArgsConstructor
 public class UserMutation {
 
-  private UserRepository userRepository;
-  private PasswordEncoder encryptService;
+  private LoginService loginService;
+  private LoginThrottle loginThrottle;
   private UserService userService;
 
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.CreateUser)
@@ -54,9 +59,13 @@ public class UserMutation {
 
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.Login)
   public DataFetcherResult<UserPayload> login(
-      @InputArgument("password") String password, @InputArgument("email") String email) {
-    Optional<User> optional = userRepository.findByEmail(email);
-    if (optional.isPresent() && encryptService.matches(password, optional.get().getPassword())) {
+      @InputArgument("password") String password,
+      @InputArgument("email") String email,
+      DgsDataFetchingEnvironment dfe) {
+    Optional<User> optional =
+        loginThrottle.attempt(
+            clientAddress(dfe), email, () -> loginService.authenticate(email, password));
+    if (optional.isPresent()) {
       return DataFetcherResult.<UserPayload>newResult()
           .data(UserPayload.newBuilder().build())
           .localContext(optional.get())
@@ -89,5 +98,20 @@ public class UserMutation {
         .data(UserPayload.newBuilder().build())
         .localContext(currentUser)
         .build();
+  }
+
+  private static String clientAddress(DgsDataFetchingEnvironment dfe) {
+    if (dfe == null || !(dfe.getContext() instanceof DgsContext)) {
+      return null;
+    }
+    Object requestData = ((DgsContext) dfe.getContext()).getRequestData();
+    if (!(requestData instanceof DgsWebMvcRequestData)) {
+      return null;
+    }
+    WebRequest webRequest = ((DgsWebMvcRequestData) requestData).getWebRequest();
+    if (!(webRequest instanceof ServletWebRequest)) {
+      return null;
+    }
+    return ((ServletWebRequest) webRequest).getRequest().getRemoteAddr();
   }
 }
