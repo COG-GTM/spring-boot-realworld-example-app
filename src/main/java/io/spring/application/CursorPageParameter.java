@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class CursorPageParameter<T> {
-  private static final int MAX_LIMIT = 1000;
+  public static final int MAX_LIMIT = 100;
   private int limit = 20;
   private T cursor;
   private Direction direction;
