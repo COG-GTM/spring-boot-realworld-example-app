@@ -3,7 +3,6 @@ package io.spring.api.security;
 import io.spring.api.exception.TooManyLoginAttemptsException;
 import java.time.Clock;
 import java.time.Duration;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -44,8 +43,8 @@ public class LoginThrottle {
     if (maxFailuresPerEmail < 1 || maxFailuresPerClient < 1 || maxTrackedKeys < 2) {
       throw new IllegalArgumentException("login throttle limits must be positive");
     }
-    if (window == null || window.isNegative() || window.isZero()) {
-      throw new IllegalArgumentException("login throttle window must be positive");
+    if (window == null || window.toMillis() < 1) {
+      throw new IllegalArgumentException("login throttle window must be at least 1ms");
     }
     this.maxFailuresPerEmail = maxFailuresPerEmail;
     this.maxFailuresPerClient = maxFailuresPerClient;
@@ -61,15 +60,18 @@ public class LoginThrottle {
    */
   public <T> Optional<T> attempt(
       String clientAddress, String email, Supplier<Optional<T>> authenticator) {
-    String emailKey = "email:" + (email == null ? "" : email.trim().toLowerCase(Locale.ROOT));
-    String clientKey = "client:" + (clientAddress == null ? "unknown" : clientAddress);
+    // Emails are matched exactly, like the user lookup, so distinct accounts never share a limit.
+    String emailKey = "email:" + (email == null ? "" : email);
+    // Without a client address only the per-email limit applies, rather than one limit shared by
+    // every such request.
+    String clientKey = clientAddress == null ? null : "client:" + clientAddress;
 
-    long emailWindow = acquire(emailKey, maxFailuresPerEmail);
-    long clientWindow;
+    long clientWindow = clientKey == null ? 0 : acquire(clientKey, maxFailuresPerClient);
+    long emailWindow;
     try {
-      clientWindow = acquire(clientKey, maxFailuresPerClient);
+      emailWindow = acquire(emailKey, maxFailuresPerEmail);
     } catch (RuntimeException e) {
-      release(emailKey, emailWindow);
+      release(clientKey, clientWindow);
       throw e;
     }
 
@@ -110,6 +112,9 @@ public class LoginThrottle {
   }
 
   private void release(String key, long windowStart) {
+    if (key == null) {
+      return;
+    }
     windows.computeIfPresent(
         key,
         (k, current) -> {

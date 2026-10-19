@@ -48,7 +48,34 @@ public class LoginThrottleTest {
     TooManyLoginAttemptsException e =
         assertThrows(TooManyLoginAttemptsException.class, () -> succeed("2.2.2.2", "a@b.com"));
     assertEquals(900, e.getRetryAfterSeconds());
-    assertThrows(TooManyLoginAttemptsException.class, () -> fail("3.3.3.3", " A@B.COM "));
+    assertThrows(TooManyLoginAttemptsException.class, () -> fail("3.3.3.3", "a@b.com"));
+  }
+
+  @Test
+  public void should_track_emails_that_differ_only_by_case_separately() {
+    for (int i = 0; i < 3; i++) {
+      fail("1.1.1.1", "alice@b.com");
+    }
+    assertThrows(TooManyLoginAttemptsException.class, () -> succeed("2.2.2.2", "alice@b.com"));
+    assertTrue(succeed("2.2.2.2", "Alice@b.com").isPresent());
+  }
+
+  @Test
+  public void should_only_apply_email_limit_when_client_address_is_unknown() {
+    for (int i = 0; i < 10; i++) {
+      assertFalse(fail(null, "user" + i + "@b.com").isPresent());
+    }
+    for (int i = 0; i < 3; i++) {
+      fail(null, "a@b.com");
+    }
+    assertThrows(TooManyLoginAttemptsException.class, () -> succeed(null, "a@b.com"));
+  }
+
+  @Test
+  public void should_reject_windows_shorter_than_one_millisecond() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> new LoginThrottle(3, 5, Duration.ofNanos(500_000), 1000, clock));
   }
 
   @Test
