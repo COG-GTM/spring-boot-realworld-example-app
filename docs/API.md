@@ -49,7 +49,7 @@ Validation: on register, `email` (valid format, unique), `username` (unique) and
 | `POST /articles/{slug}/favorite` | required | - | `200` `{"article": Article}` |
 | `DELETE /articles/{slug}/favorite` | required | - | `200` `{"article": Article}` |
 
-`Article` = `{"id", "slug", "title", "description", "body", "favorited", "favoritesCount", "createdAt", "updatedAt", "tagList", "author": Profile}`. Timestamps are ISO-8601 in UTC. Responses also include an internal `"cursor"` field holding the article's `updatedAt`, which leaks from `ArticleData.getCursor()` (the RealWorld spec doesn't include it).
+`Article` = `{"id", "slug", "title", "description", "body", "favorited", "favoritesCount", "createdAt", "updatedAt", "tagList", "author": Profile}`. Timestamps are ISO-8601 in UTC. Responses also include an internal `"cursor": {"data": "<updatedAt, ISO-8601>"}` object, which leaks from `ArticleData.getCursor()` (the RealWorld spec doesn't include it).
 
 Notes:
 - Lists are ordered by `created_at` descending.
