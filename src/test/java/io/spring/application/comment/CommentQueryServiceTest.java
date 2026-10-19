@@ -1,10 +1,10 @@
 package io.spring.application.comment;
 
+import io.spring.application.CommentCursor;
 import io.spring.application.CommentQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
-import io.spring.application.DateTimeCursor;
 import io.spring.application.data.CommentData;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
@@ -19,6 +19,7 @@ import io.spring.infrastructure.repository.MyBatisCommentRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -111,7 +112,7 @@ public class CommentQueryServiceTest extends DbTestBase {
             article.getId(),
             user,
             new CursorPageParameter<>(
-                DateTimeCursor.parse(first.getEndCursor().toString()), 2, Direction.NEXT));
+                CommentCursor.parse(first.getEndCursor().toString()), 2, Direction.NEXT));
     Assertions.assertEquals(newestFirst.subList(2, 4), ids(second));
     Assertions.assertTrue(second.hasNext());
 
@@ -120,7 +121,7 @@ public class CommentQueryServiceTest extends DbTestBase {
             article.getId(),
             user,
             new CursorPageParameter<>(
-                DateTimeCursor.parse(second.getEndCursor().toString()), 2, Direction.NEXT));
+                CommentCursor.parse(second.getEndCursor().toString()), 2, Direction.NEXT));
     Assertions.assertEquals(newestFirst.subList(4, 5), ids(third));
     Assertions.assertFalse(third.hasNext());
 
@@ -129,6 +130,50 @@ public class CommentQueryServiceTest extends DbTestBase {
             article.getId(), user, new CursorPageParameter<>(null, 2, Direction.PREV));
     Assertions.assertEquals(newestFirst.subList(3, 5), ids(last));
     Assertions.assertTrue(last.hasPrevious());
+  }
+
+  @Test
+  public void should_page_through_comments_sharing_the_same_timestamp() {
+    Article article = new Article("title", "desc", "body", Arrays.asList("java"), user.getId());
+    articleRepository.save(article);
+
+    List<String> created = new ArrayList<>();
+    try {
+      DateTimeUtils.setCurrentMillisFixed(new DateTime().minusHours(1).getMillis());
+      for (int i = 0; i < 4; i++) {
+        Comment comment = new Comment("content" + i, user.getId(), article.getId());
+        commentRepository.save(comment);
+        created.add(comment.getId());
+      }
+    } finally {
+      DateTimeUtils.setCurrentMillisSystem();
+    }
+    List<String> idsDesc =
+        created.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+
+    CursorPager<CommentData> first =
+        commentQueryService.findByArticleIdWithCursor(
+            article.getId(), user, new CursorPageParameter<>(null, 2, Direction.NEXT));
+    Assertions.assertEquals(idsDesc.subList(0, 2), ids(first));
+    Assertions.assertTrue(first.hasNext());
+
+    CursorPager<CommentData> second =
+        commentQueryService.findByArticleIdWithCursor(
+            article.getId(),
+            user,
+            new CursorPageParameter<>(
+                CommentCursor.parse(first.getEndCursor().toString()), 2, Direction.NEXT));
+    Assertions.assertEquals(idsDesc.subList(2, 4), ids(second));
+    Assertions.assertFalse(second.hasNext());
+
+    CursorPager<CommentData> before =
+        commentQueryService.findByArticleIdWithCursor(
+            article.getId(),
+            user,
+            new CursorPageParameter<>(
+                CommentCursor.parse(second.getStartCursor().toString()), 2, Direction.PREV));
+    Assertions.assertEquals(idsDesc.subList(0, 2), ids(before));
+    Assertions.assertFalse(before.hasPrevious());
   }
 
   private static List<String> ids(CursorPager<CommentData> pager) {
