@@ -34,6 +34,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
                 .antMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                 .antMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .antMatchers("/api/margin-calls/*/dispute").hasAnyRole("OPS", "RISK")
                 .antMatchers("/api/margin-calls/**").hasRole("OPS")
                 .antMatchers("/api/agreements/**").hasAnyRole("OPS", "RISK", "TREASURY")
                 .anyRequest().authenticated()

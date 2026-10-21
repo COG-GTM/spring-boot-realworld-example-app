@@ -28,6 +28,9 @@ public class MarginCall {
     @JoinColumn(name = "agreement_id")
     private Agreement agreement;
 
+    @Column(name = "dispute_reason", length = 500)
+    private String disputeReason;
+
     @Column(name = "call_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal callAmount;
 
@@ -56,6 +59,21 @@ public class MarginCall {
             throw new IllegalStateException("Margin call " + id + " is " + status + ", cannot be agreed");
         }
         status = Status.AGREED;
+    }
+
+    public void dispute(String reason) {
+        if (status != Status.ISSUED) {
+            throw new IllegalStateException("Margin call " + id + " is " + status + ", cannot be disputed");
+        }
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("Dispute reason is required");
+        }
+        status = Status.DISPUTED;
+        disputeReason = reason;
+    }
+
+    public String getDisputeReason() {
+        return disputeReason;
     }
 
     public Long getId() {

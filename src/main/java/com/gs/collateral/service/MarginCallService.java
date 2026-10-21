@@ -72,6 +72,15 @@ public class MarginCallService {
         return call;
     }
 
+    @Transactional
+    public MarginCall dispute(long id, String reason) {
+        MarginCall call = marginCalls.findById(id)
+                .orElseThrow(() -> new NotFoundException("Margin call " + id + " not found"));
+        call.dispute(reason);
+        log.info("{}: margin call {} disputed: {}", call.getAgreement().getReference(), id, reason);
+        return call;
+    }
+
     static BigDecimal roundUp(BigDecimal amount, long unit) {
         BigDecimal step = BigDecimal.valueOf(unit);
         return amount.divide(step, 0, RoundingMode.CEILING).multiply(step).setScale(2, RoundingMode.UNNECESSARY);
