@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,6 +50,15 @@ class MarginCallApiTest {
 
         mockMvc.perform(get("/api/margin-calls/1/notice").header("X-Desk-Token", token("RISK")))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void opsDeskExportsCsv() throws Exception {
+        mockMvc.perform(post("/api/margin-calls/run").header("X-Desk-Token", token("COLL-OPS")));
+        mockMvc.perform(get("/api/margin-calls/export").header("X-Desk-Token", token("COLL-OPS")))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/csv"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("CSA-ACME-2019-01")));
     }
 
     @Test
