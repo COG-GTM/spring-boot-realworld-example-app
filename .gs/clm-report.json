@@ -1,0 +1,70 @@
+{
+  "application": "CLT-COLLATERAL-SVC",
+  "scanner": "CLM (Sonatype IQ policy evaluation)",
+  "stage": "build",
+  "evaluatedAt": "2026-10-24T02:14:09Z",
+  "policyAction": "FAIL",
+  "summary": { "critical": 2, "severe": 2, "moderate": 1, "waived": 1 },
+  "violations": [
+    {
+      "id": "CLM-9031",
+      "component": "org.apache.commons:commons-text:1.9",
+      "policy": "Security-Critical",
+      "threatLevel": 10,
+      "cve": "CVE-2022-42889",
+      "summary": "StringSubstitutor script/dns/url interpolation allows remote code execution",
+      "remediation": "Upgrade to 1.10.0 or later",
+      "action": "FAIL"
+    },
+    {
+      "id": "CLM-9032",
+      "component": "org.yaml:snakeyaml:1.30",
+      "policy": "Security-Critical",
+      "threatLevel": 9,
+      "cve": "CVE-2022-1471",
+      "summary": "Yaml.load() of untrusted input allows arbitrary object construction",
+      "remediation": "Upgrade to 2.x (override snakeyaml.version; verify Yaml usage is SafeConstructor-compatible)",
+      "action": "FAIL"
+    },
+    {
+      "id": "CLM-9044",
+      "component": "org.springframework:spring-web:5.3.31",
+      "policy": "Security-High",
+      "threatLevel": 8,
+      "cve": "CVE-2024-22262",
+      "summary": "UriComponentsBuilder open redirect / SSRF with user-supplied URLs",
+      "remediation": "Upgrade to 5.3.34 or later (override spring-framework.version)",
+      "action": "FAIL"
+    },
+    {
+      "id": "CLM-9045",
+      "component": "org.apache.tomcat.embed:tomcat-embed-core:9.0.83",
+      "policy": "Security-High",
+      "threatLevel": 7,
+      "cve": "CVE-2024-24549",
+      "summary": "HTTP/2 header size validation performed too late (DoS)",
+      "remediation": "Upgrade to 9.0.86 or later (override tomcat.version)",
+      "action": "FAIL"
+    },
+    {
+      "id": "CLM-9050",
+      "component": "org.springdoc:springdoc-openapi-ui:1.6.15",
+      "policy": "Security-Medium",
+      "threatLevel": 5,
+      "cve": "CVE-2024-45801",
+      "summary": "Bundled swagger-ui DOMPurify bypass",
+      "remediation": "Upgrade to 1.8.0 (last 1.x) or move to springdoc 2.x with Spring Boot 3",
+      "action": "WARN"
+    },
+    {
+      "id": "CLM-8810",
+      "component": "org.springframework.boot:spring-boot:2.7.18",
+      "policy": "Architecture-EndOfLife",
+      "threatLevel": 6,
+      "summary": "Spring Boot 2.7 OSS support ended 2023-11-24; GS commercial support waiver expires 2026-12-31",
+      "remediation": "Migrate to Spring Boot 3.x (tracked by platform upgrade programme)",
+      "action": "WAIVED",
+      "waiverExpires": "2026-12-31"
+    }
+  ]
+}
