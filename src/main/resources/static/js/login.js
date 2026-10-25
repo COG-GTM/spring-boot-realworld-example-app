@@ -73,12 +73,18 @@
       })
       .then(function (result) {
         if (result.ok && result.body && result.body.user && result.body.user.token) {
-          localStorage.setItem(TOKEN_KEY, result.body.user.token);
-          showMessage(
-            "Signed in as " + (result.body.user.username || email) + ". Token saved.",
-            "success"
-          );
+          var name = result.body.user.username || email;
           passwordInput.value = "";
+          try {
+            localStorage.setItem(TOKEN_KEY, result.body.user.token);
+          } catch (storageError) {
+            showMessage(
+              "Signed in as " + name + ", but the token could not be saved in this browser.",
+              "error"
+            );
+            return;
+          }
+          showMessage("Signed in as " + name + ". Token saved.", "success");
         } else {
           emailInput.setAttribute("aria-invalid", "true");
           passwordInput.setAttribute("aria-invalid", "true");
