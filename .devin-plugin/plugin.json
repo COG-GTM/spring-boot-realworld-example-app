@@ -1,0 +1,8 @@
+{
+  "name": "gs-platform-upgrades",
+  "version": "0.1.0",
+  "description": "Goldman Sachs platform upgrade playbooks for Java/Spring services (CLM remediation, Managed Pipelines v2, JDK, Spring Boot 2->3->4, GS Auth) plus the dynamic workflow that sequences them into incremental, reviewable PRs without disrupting in-flight feature branches.",
+  "author": { "name": "Collateral Platform Engineering" },
+  "repository": "https://github.com/COG-GTM/gs-platform-upgrades",
+  "keywords": ["spring-boot", "jdk", "managed-pipelines", "clm", "gs-auth", "upgrade", "workflow"]
+}
