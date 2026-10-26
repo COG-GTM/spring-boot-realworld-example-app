@@ -16,10 +16,7 @@ java {
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            exclude 'build/generated/**/*.*', 'build/generated-examples/**/*.*'
-        }
+        target 'src/**/*.java'
         googleJavaFormat()
     }
 }
@@ -37,6 +34,12 @@ configurations {
 dependencyManagement {
     imports {
         mavenBom 'com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2'
+    }
+    dependencies {
+        // Spring for GraphQL 1.4 (managed by Boot 3.5) requires graphql-java 24 / java-dataloader 5;
+        // the DGS 9.2.2 BOM would otherwise pin graphql-java 22.3 / java-dataloader 3.3.0.
+        dependency 'com.graphql-java:graphql-java:24.1'
+        dependency 'com.graphql-java:java-dataloader:5.0.0'
     }
 }
 
