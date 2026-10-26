@@ -1,79 +1,99 @@
 # RealWorld Frontend
 
-A modern React frontend application that consumes the Spring Boot RealWorld API.
+A React + TypeScript client for the Spring Boot RealWorld REST API in the parent directory.
 
 ## Features
 
-- **User Authentication** - Registration, login, JWT token management
-- **Article Management** - Create, view, edit, delete articles with markdown support
-- **Article Feed** - Global feed displaying all articles with pagination
-- **User Profiles** - User information and article listings
-- **Comments System** - Add and view comments on articles
-- **Social Features** - Following users, favoriting articles
-- **Tag System** - Article categorization and filtering
-- **Responsive Design** - Modern UI built with Tailwind CSS
+- **Authentication** – register, log in, JWT stored in `localStorage`, settings page to update the profile
+- **Articles** – create, view, edit and delete articles (the body is shown as plain text; markdown is not rendered)
+- **Home** – "Global Feed" (all articles) and, when logged in, "Your Feed" (followed authors); first 20 articles, no pagination controls
+- **Profiles** – user info and their articles
+- **Comments** – add, list and delete comments
+- **Social** – follow users, favorite articles
+- **Tags** – popular tags list and tag filtering
+- **Styling** – Tailwind CSS
 
-## Technology Stack
+## Technology stack
 
-- **React 18** with TypeScript for type safety
-- **Vite** for fast development and building
-- **Tailwind CSS** for modern, responsive styling
-- **React Router** for navigation
-- **Axios** for API communication with JWT authentication
+- React 18 with TypeScript
+- Vite 5 (dev server and build)
+- Tailwind CSS
+- React Router 6
+- Axios
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Node.js 16+ and npm
-- Spring Boot backend running on http://localhost:8080
+- Node.js 18+ (required by Vite 5) and npm
+- The backend running on http://localhost:8080 (`./gradlew bootRun` from the repository root)
 
-### Installation
+### Install and run
 
 ```bash
 cd frontend
 npm install
-```
-
-### Development
-
-```bash
 npm run dev
 ```
 
-The application will be available at http://localhost:3000
+The app is served at http://localhost:3000 (`vite.config.ts` also binds to all interfaces).
 
-### Build for Production
+### Backend URL
 
-```bash
-npm run build
+The API base URL defaults to `http://localhost:8080`. Override it with `VITE_API_BASE_URL`, e.g. in `frontend/.env.local`:
+
+```
+VITE_API_BASE_URL=http://localhost:8081
 ```
 
-## API Integration
+### Other scripts
 
-The frontend integrates with the Spring Boot RealWorld API running on localhost:8080:
+```bash
+npm run build     # tsc && vite build (output in dist/)
+npm run preview   # serve the production build
+npm run lint      # eslint
+```
 
-- **Authentication**: POST /users/login, POST /users
-- **Articles**: GET/POST/PUT/DELETE /articles
-- **Profiles**: GET /profiles/{username}
-- **Comments**: GET/POST/DELETE /articles/{slug}/comments
-- **Tags**: GET /tags
+Known issues: `npm run build` currently fails the `tsc` step on unused `React` imports (TS6133) in several components, and `npm run lint` fails because no ESLint config file is checked in. `npm run dev` is unaffected.
 
-All API calls include proper JWT authentication headers in the format: `Authorization: Token {jwt}`
+## Routes
 
-## Project Structure
+| Path | Page |
+| --- | --- |
+| `/` | Home (global feed / your feed, tags) |
+| `/login`, `/register` | Auth |
+| `/article/:slug` | Article with comments |
+| `/profile/:username` | Profile |
+| `/editor`, `/editor/:slug` | New / edit article (login required) |
+| `/settings` | User settings (login required) |
+
+## API integration
+
+All calls go through `src/services/api.ts` and send `Authorization: Token <jwt>` when logged in:
+
+- **Auth**: `POST /users/login`, `POST /users`, `GET /user`, `PUT /user`
+- **Articles**: `GET /articles`, `GET /articles/feed`, `GET/PUT/DELETE /articles/{slug}`, `POST /articles`
+- **Favorites**: `POST/DELETE /articles/{slug}/favorite`
+- **Comments**: `GET/POST /articles/{slug}/comments`, `DELETE /articles/{slug}/comments/{id}`
+- **Profiles**: `GET /profiles/{username}`, `POST/DELETE /profiles/{username}/follow`
+- **Tags**: `GET /tags`
+
+## Project structure
 
 ```
 frontend/
 ├── src/
-│   ├── components/     # Reusable UI components
-│   ├── pages/         # Page components (Home, Login, Register, etc.)
-│   ├── services/      # API integration layer
-│   ├── hooks/         # Authentication context and hooks
+│   ├── components/    # ArticleCard, CommentForm, CommentList, Header, TagList
+│   ├── pages/         # Home, Login, Register, ArticleView, ArticleEditor, Profile, Settings
+│   ├── services/      # api.ts (Axios client)
+│   ├── hooks/         # useAuth (auth context)
 │   ├── types/         # TypeScript interfaces
-│   └── App.tsx        # Main application component
-├── package.json       # Dependencies and scripts
-├── vite.config.ts     # Vite configuration
-├── tailwind.config.js # Tailwind CSS configuration
-└── tsconfig.json      # TypeScript configuration
+│   ├── App.tsx        # routes
+│   └── main.tsx       # entry point
+├── index.html
+├── package.json
+├── vite.config.ts
+├── tailwind.config.js
+├── postcss.config.js
+└── tsconfig.json
 ```
