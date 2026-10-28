@@ -141,6 +141,7 @@ public class ArticleApiTest extends TestWithCurrentUser {
             article.getBody(),
             false,
             0,
+            false,
             time,
             time,
             Arrays.asList("joda"),

@@ -45,6 +45,15 @@ public class ArticlesApi {
     return ResponseEntity.ok(articleQueryService.findUserFeed(user, new Page(offset, limit)));
   }
 
+  @GetMapping(path = "bookmarked")
+  public ResponseEntity getBookmarked(
+      @RequestParam(value = "offset", defaultValue = "0") int offset,
+      @RequestParam(value = "limit", defaultValue = "20") int limit,
+      @AuthenticationPrincipal User user) {
+    return ResponseEntity.ok(
+        articleQueryService.findBookmarkedArticles(user, new Page(offset, limit)));
+  }
+
   @GetMapping
   public ResponseEntity getArticles(
       @RequestParam(value = "offset", defaultValue = "0") int offset,

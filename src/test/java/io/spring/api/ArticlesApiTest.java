@@ -5,17 +5,22 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.spring.JacksonCustomizations;
+import io.spring.TestHelper;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.ArticleQueryService;
+import io.spring.application.Page;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleData;
+import io.spring.application.data.ArticleDataList;
 import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +68,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             body,
             false,
             0,
+            false,
             new DateTime(),
             new DateTime(),
             tagList,
@@ -132,6 +138,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             body,
             false,
             0,
+            false,
             new DateTime(),
             new DateTime(),
             asList(tagList),
@@ -151,6 +158,31 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .prettyPeek()
         .then()
         .statusCode(422);
+  }
+
+  @Test
+  public void should_get_bookmarked_articles_with_token() throws Exception {
+    ArticleData bookmarked = TestHelper.articleDataFixture("1", user);
+    bookmarked.setBookmarked(true);
+    when(articleQueryService.findBookmarkedArticles(eq(user), eq(new Page(0, 20))))
+        .thenReturn(new ArticleDataList(Arrays.asList(bookmarked), 1));
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .get("/articles/bookmarked?limit=20&offset=0")
+        .prettyPeek()
+        .then()
+        .statusCode(200)
+        .body("articlesCount", equalTo(1))
+        .body("articles[0].slug", equalTo(bookmarked.getSlug()))
+        .body("articles[0].bookmarked", equalTo(true));
+  }
+
+  @Test
+  public void should_get_401_for_bookmarked_articles_without_token() throws Exception {
+    given().when().get("/articles/bookmarked").then().statusCode(401);
+    verify(articleQueryService, never()).findBookmarkedArticles(any(), any());
   }
 
   private HashMap<String, Object> prepareParam(

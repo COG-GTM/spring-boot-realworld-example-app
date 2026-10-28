@@ -6,11 +6,13 @@ import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
 import io.spring.application.data.ArticleFavoriteCount;
 import io.spring.core.user.User;
+import io.spring.infrastructure.mybatis.readservice.ArticleBookmarksReadService;
 import io.spring.infrastructure.mybatis.readservice.ArticleFavoritesReadService;
 import io.spring.infrastructure.mybatis.readservice.ArticleReadService;
 import io.spring.infrastructure.mybatis.readservice.UserRelationshipQueryService;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,7 @@ public class ArticleQueryService {
   private ArticleReadService articleReadService;
   private UserRelationshipQueryService userRelationshipQueryService;
   private ArticleFavoritesReadService articleFavoritesReadService;
+  private ArticleBookmarksReadService articleBookmarksReadService;
 
   public Optional<ArticleData> findById(String id, User user) {
     ArticleData articleData = articleReadService.findById(id);
@@ -122,10 +125,26 @@ public class ArticleQueryService {
     }
   }
 
+  public ArticleDataList findBookmarkedArticles(User user, Page page) {
+    List<String> articleIds =
+        articleBookmarksReadService.userBookmarkedArticleIds(user.getId(), page);
+    int count = articleBookmarksReadService.countUserBookmarks(user.getId());
+    if (articleIds.size() == 0) {
+      return new ArticleDataList(new ArrayList<>(), count);
+    } else {
+      List<ArticleData> articles = articleReadService.findArticles(articleIds);
+      articles.sort(
+          Comparator.comparingInt(articleData -> articleIds.indexOf(articleData.getId())));
+      fillExtraInfo(articles, user);
+      return new ArticleDataList(articles, count);
+    }
+  }
+
   private void fillExtraInfo(List<ArticleData> articles, User currentUser) {
     setFavoriteCount(articles);
     if (currentUser != null) {
       setIsFavorite(articles, currentUser);
+      setIsBookmarked(articles, currentUser);
       setIsFollowingAuthor(articles, currentUser);
     }
   }
@@ -172,8 +191,17 @@ public class ArticleQueryService {
         });
   }
 
+  private void setIsBookmarked(List<ArticleData> articles, User currentUser) {
+    Set<String> bookmarkedArticles =
+        articleBookmarksReadService.userBookmarks(
+            articles.stream().map(ArticleData::getId).collect(toList()), currentUser);
+    articles.forEach(
+        articleData -> articleData.setBookmarked(bookmarkedArticles.contains(articleData.getId())));
+  }
+
   private void fillExtraInfo(String id, User user, ArticleData articleData) {
     articleData.setFavorited(articleFavoritesReadService.isUserFavorite(user.getId(), id));
+    articleData.setBookmarked(articleBookmarksReadService.isUserBookmark(user.getId(), id));
     articleData.setFavoritesCount(articleFavoritesReadService.articleFavoriteCount(id));
     articleData
         .getProfileData()
