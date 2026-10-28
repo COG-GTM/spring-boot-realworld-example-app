@@ -3,7 +3,10 @@ package io.spring.api;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.spring.TestHelper.articleDataFixture;
 import static java.util.Arrays.asList;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -48,7 +51,40 @@ public class ListArticleApiTest extends TestWithCurrentUser {
     when(articleQueryService.findRecentArticles(
             eq(null), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
         .thenReturn(articleDataList);
-    RestAssuredMockMvc.when().get("/articles").prettyPeek().then().statusCode(200);
+    RestAssuredMockMvc.when()
+        .get("/articles")
+        .prettyPeek()
+        .then()
+        .statusCode(200)
+        .body("articles[0].bookmarked", equalTo(false));
+  }
+
+  @Test
+  public void should_get_bookmarked_articles_success() throws Exception {
+    ArticleDataList articleDataList =
+        new ArticleDataList(
+            asList(articleDataFixture("1", user), articleDataFixture("2", user)), 2);
+    when(articleQueryService.findBookmarkedArticles(eq(user), eq(new Page(1, 2))))
+        .thenReturn(articleDataList);
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .get("/articles/bookmarked?offset=1&limit=2")
+        .prettyPeek()
+        .then()
+        .statusCode(200)
+        .body("articles.size()", equalTo(2))
+        .body("articlesCount", equalTo(2));
+
+    verify(articleQueryService).findBookmarkedArticles(eq(user), eq(new Page(1, 2)));
+  }
+
+  @Test
+  public void should_get_bookmarked_articles_401_without_login() throws Exception {
+    RestAssuredMockMvc.when().get("/articles/bookmarked").prettyPeek().then().statusCode(401);
+
+    verifyNoInteractions(articleQueryService);
   }
 
   @Test

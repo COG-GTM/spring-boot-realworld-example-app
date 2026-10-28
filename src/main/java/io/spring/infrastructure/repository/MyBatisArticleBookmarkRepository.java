@@ -1,0 +1,31 @@
+package io.spring.infrastructure.repository;
+
+import io.spring.core.bookmark.ArticleBookmark;
+import io.spring.core.bookmark.ArticleBookmarkRepository;
+import io.spring.infrastructure.mybatis.mapper.ArticleBookmarkMapper;
+import java.util.Optional;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class MyBatisArticleBookmarkRepository implements ArticleBookmarkRepository {
+  private ArticleBookmarkMapper mapper;
+
+  public MyBatisArticleBookmarkRepository(ArticleBookmarkMapper mapper) {
+    this.mapper = mapper;
+  }
+
+  @Override
+  public void save(ArticleBookmark articleBookmark) {
+    mapper.insert(articleBookmark);
+  }
+
+  @Override
+  public Optional<ArticleBookmark> find(String articleId, String userId) {
+    return Optional.ofNullable(mapper.find(articleId, userId));
+  }
+
+  @Override
+  public void remove(ArticleBookmark articleBookmark) {
+    mapper.delete(articleBookmark);
+  }
+}
