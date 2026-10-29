@@ -20,7 +20,8 @@ Configuration is via environment variables (all optional):
                          stack  -> open the next PR stacked on the previous branch     (demo / fast-follow)
                        (default wait)
   GS_MAX_STAGES        cap the number of stages executed in this run (wave size)      (default 6)
-  GS_FEATURE_GLOB      branch pattern treated as developer work      (default feature/*)
+  GS_FEATURE_GLOB      branch pattern treated as developer work      (default feature/CLT-*)
+  Any of these may also be set in a `run.json` next to this file (run_workflow passes no env).
   GS_PLUGIN_ROOT       plugin checkout, used to embed SKILL.md text into child prompts
 """
 import asyncio
@@ -30,17 +31,36 @@ import os
 from pathlib import Path
 
 # ----------------------------------------------------------------------------- configuration
-TARGET_REPO = os.environ.get("GS_TARGET_REPO", "COG-GTM/spring-boot-realworld-example-app")
-BASE_BRANCH = os.environ.get("GS_BASE_BRANCH", "gs/main")
-TARGET_BOOT = int(os.environ.get("GS_TARGET_BOOT", "4"))
-TARGET_JDK = int(os.environ.get("GS_TARGET_JDK", "17"))
-GATE_POLICY = os.environ.get("GS_GATE_POLICY", "wait")
-MAX_STAGES = int(os.environ.get("GS_MAX_STAGES", "6"))
-FEATURE_GLOB = os.environ.get("GS_FEATURE_GLOB", "feature/CLT-*")
+def _run_config():
+    try:
+        p = Path(__file__).resolve().parent / "run.json"
+        return json.loads(p.read_text()) if p.exists() else {}
+    except (NameError, ValueError):
+        return {}
+
+_RUN_CFG = _run_config()
+
+def _cfg(key, default):
+    return os.environ.get(key, _RUN_CFG.get(key, default))
+
+TARGET_REPO = _cfg("GS_TARGET_REPO", "COG-GTM/spring-boot-realworld-example-app")
+BASE_BRANCH = _cfg("GS_BASE_BRANCH", "gs/main")
+TARGET_BOOT = int(_cfg("GS_TARGET_BOOT", "4"))
+TARGET_JDK = int(_cfg("GS_TARGET_JDK", "17"))
+GATE_POLICY = _cfg("GS_GATE_POLICY", "wait")
+MAX_STAGES = int(_cfg("GS_MAX_STAGES", "6"))
+FEATURE_GLOB = _cfg("GS_FEATURE_GLOB", "feature/CLT-*")
+
+ENV_NOTE = f"""
+Environment notes: the repository's default branch is an unrelated project; the service lives on `{BASE_BRANCH}`
+and its `feature/*`/`platform/*` branches, so always `git fetch origin` and `git checkout` the branch named above
+before doing anything. The service is a Maven build: if `mvn` is missing run `sudo apt-get install -y maven`; if the
+JDK named in `.java-version` (or the target JDK) is missing install it with `sudo apt-get install -y openjdk-<N>-jdk`
+and point JAVA_HOME at it (`/usr/lib/jvm/java-<N>-openjdk-amd64`). Use `gh` for all GitHub reads/writes."""
 
 def _plugin_root():
-    if os.environ.get("GS_PLUGIN_ROOT"):
-        return Path(os.environ["GS_PLUGIN_ROOT"])
+    if _cfg("GS_PLUGIN_ROOT", None):
+        return Path(_cfg("GS_PLUGIN_ROOT", None))
     try:
         return Path(__file__).resolve().parents[2]
     except NameError:
@@ -221,7 +241,8 @@ Determine and report:
   name, pr_url (open PR for that head branch via `gh pr list --head <branch> --json url`, or "" if none),
   ahead (commit count), and files (paths changed vs merge-base: `git diff --name-only $(git merge-base
   origin/{BASE_BRANCH} origin/<branch>) origin/<branch>`).
-Report anything unusual (multi-module, Gradle, Kotlin, extra auth mechanisms) in notes.""",
+Report anything unusual (multi-module, Gradle, Kotlin, extra auth mechanisms) in notes.
+{ENV_NOTE}""",
         phase="assess", schema=ASSESS_SCHEMA, label="assess-platform-state", repos=[TARGET_REPO],
         mode="lite", soft_time_limit_minutes=15,
     )
@@ -248,7 +269,7 @@ booted, /actuator/health 200"), and files_changed.
 
 ===== PLAYBOOK: {stage['skill']} =====
 {skill_text(stage['skill'])}
-""",
+{ENV_NOTE}""",
         phase="upgrade", schema=UPGRADE_SCHEMA, label=f"upgrade-{stage['id']}", repos=[TARGET_REPO],
         soft_time_limit_minutes=stage["minutes"],
     )
@@ -284,7 +305,8 @@ For EVERY developer branch:
      platform team.
    If there is no PR, skip the comment and just report.
 Never force-push; never push to feature/* or main. Report one result per developer branch (comment_url and
-preview_branch may be "").""",
+preview_branch may be "").
+{ENV_NOTE}""",
         phase="branch-care", schema=CARE_SCHEMA, label=f"branch-care-{stage['id']}", repos=[TARGET_REPO],
         mode="lite", soft_time_limit_minutes=25,
     )

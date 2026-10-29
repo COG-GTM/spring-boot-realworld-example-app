@@ -1,0 +1,5 @@
+{
+  "GS_GATE_POLICY": "stack",
+  "GS_TARGET_BOOT": "4",
+  "GS_TARGET_JDK": "17"
+}

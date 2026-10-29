@@ -13,7 +13,9 @@ Use this instead of running the individual playbooks by hand whenever more than 
    `GS_TARGET_REPO`, `GS_BASE_BRANCH`, `GS_TARGET_BOOT` (3|4), `GS_TARGET_JDK`,
    `GS_GATE_POLICY` (`wait` = stop after each PR until it is merged, then resume; `stack` = open the
    next PR on top of the previous branch), `GS_MAX_STAGES` (wave size), `GS_PLUGIN_ROOT`.
-3. `run_workflow` with `workflow_name="gs-platform-upgrades"` and
+3. Settings: `run_workflow` passes no environment, so copy `run.example.json` to `run.json` next to
+   `workflow.py` and edit it (keys = the `GS_*` names in the workflow header; env vars still win).
+4. `run_workflow` with `workflow_name="gs-platform-upgrades"` and
    `script_path=<plugin>/skills/orchestrate-platform-upgrades/workflow.py`.
 4. When the run stops at a review gate (policy `wait`), tell the owner which PR needs review. After it
    is merged, re-run `run_workflow` with the same `run_id`; finished stages replay, the gate re-checks.
