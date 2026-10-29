@@ -6,7 +6,7 @@ metadata:
   team: collateral-platform
 build:
   tool: maven
-  jdk: "11"
+  jdk: "17"
   goals: clean verify
   cache: maven
 gates:
