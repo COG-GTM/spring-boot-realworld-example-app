@@ -1,4 +1,4 @@
-# Mirror of the GS managed pipeline build gate, so pull requests get a status check on GitHub.
+# GitHub mirror of the `pullRequest` gate in .gs/pipeline.yml (GS Managed Pipelines v2), so pull requests get a status check on GitHub.
 name: ci
 on:
   push:
