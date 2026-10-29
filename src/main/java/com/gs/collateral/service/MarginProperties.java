@@ -5,7 +5,6 @@ import java.time.ZoneId;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.format.annotation.DateTimeFormat;
 
-
 @ConfigurationProperties(prefix = "collateral.margin")
 public class MarginProperties {
 
