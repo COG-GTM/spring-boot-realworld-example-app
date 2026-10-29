@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EligibilityService {
 
-    private static final Set<AssetClass> ELIGIBLE = EnumSet.of(AssetClass.CASH, AssetClass.GOVT, AssetClass.AGENCY);
+    private static final Set<AssetClass> ELIGIBLE = EnumSet.of(AssetClass.CASH, AssetClass.GOVT, AssetClass.AGENCY, AssetClass.CORP);
 
     public boolean isEligible(AssetClass assetClass, int haircutBps) {
         return ELIGIBLE.contains(assetClass) && haircutBps >= minimumHaircutBps(assetClass);
@@ -23,6 +23,8 @@ public class EligibilityService {
                 return 100;
             case AGENCY:
                 return 300;
+            case CORP:
+                return 800; // IG corporates only; HY handled by counterparty schedule (CLT-4822)
             default:
                 return 10_000;
         }
