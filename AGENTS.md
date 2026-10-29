@@ -9,7 +9,7 @@ These rules exist so platform work never disrupts developers who have feature br
 3. **Never touch developer branches.** Do not push to, rebase, or force-push any `feature/*`,
    `bugfix/*`, or `hotfix/*` branch. Offer help by pushing a `preview/*` branch and commenting on
    the developer's PR with exact conflict files and the preview branch name.
-4. **Never force-push. Never push to `main`.** All changes land via PR with the pipeline green.
+4. **Never force-push. Never push to the integration branch (`main` / `gs/main`).** All changes land via PR with the pipeline green.
 5. **Validate like the pipeline does.** `mvn -B -ntp clean verify` with the JDK declared in
    `.java-version` must pass before you open a PR. Also boot the app once and hit
    `/actuator/health` when the change touches runtime configuration (framework, auth, JDK).

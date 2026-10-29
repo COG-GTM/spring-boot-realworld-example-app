@@ -34,7 +34,7 @@ Upload this repo as a plugin (org scope) so child sessions can invoke the skills
 works where the plugin is not installed.
 
 ## Demo target
-`COG-GTM/gs-collateral-service`: Spring Boot 2.7.18 / JDK 11 collateral management service with a v1
+`gs-collateral-service` (branch `gs/main` of `COG-GTM/spring-boot-realworld-example-app`): Spring Boot 2.7.18 / JDK 11 collateral management service with a v1
 Jenkinsfile, legacy `X-Desk-Token` auth, a failing CLM report and three open feature branches:
 
 | branch | footprint | expected branch-care result |

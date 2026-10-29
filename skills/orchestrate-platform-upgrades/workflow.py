@@ -11,8 +11,8 @@ repository WITHOUT disrupting developers:
 Run with the `run_workflow` tool:  script_path=<this file>, workflow_name="gs-platform-upgrades".
 Configuration is via environment variables (all optional):
 
-  GS_TARGET_REPO       github.com/<org>/<repo> of the service        (default COG-GTM/gs-collateral-service)
-  GS_BASE_BRANCH       integration branch                            (default main)
+  GS_TARGET_REPO       github.com/<org>/<repo> of the service        (default COG-GTM/spring-boot-realworld-example-app)
+  GS_BASE_BRANCH       integration branch                            (default gs/main)
   GS_TARGET_BOOT       highest Spring Boot major to reach (3 or 4)   (default 4)
   GS_TARGET_JDK        JDK to upgrade to                             (default 17)
   GS_GATE_POLICY       what to do when a stage PR is not merged yet:
@@ -30,13 +30,13 @@ import os
 from pathlib import Path
 
 # ----------------------------------------------------------------------------- configuration
-TARGET_REPO = os.environ.get("GS_TARGET_REPO", "COG-GTM/gs-collateral-service")
-BASE_BRANCH = os.environ.get("GS_BASE_BRANCH", "main")
+TARGET_REPO = os.environ.get("GS_TARGET_REPO", "COG-GTM/spring-boot-realworld-example-app")
+BASE_BRANCH = os.environ.get("GS_BASE_BRANCH", "gs/main")
 TARGET_BOOT = int(os.environ.get("GS_TARGET_BOOT", "4"))
 TARGET_JDK = int(os.environ.get("GS_TARGET_JDK", "17"))
 GATE_POLICY = os.environ.get("GS_GATE_POLICY", "wait")
 MAX_STAGES = int(os.environ.get("GS_MAX_STAGES", "6"))
-FEATURE_GLOB = os.environ.get("GS_FEATURE_GLOB", "feature/*")
+FEATURE_GLOB = os.environ.get("GS_FEATURE_GLOB", "feature/CLT-*")
 
 def _plugin_root():
     if os.environ.get("GS_PLUGIN_ROOT"):
