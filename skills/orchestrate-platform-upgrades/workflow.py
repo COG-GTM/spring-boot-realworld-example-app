@@ -31,11 +31,38 @@ import os
 from pathlib import Path
 
 # ----------------------------------------------------------------------------- configuration
-def _run_config():
+# `run_workflow` copies this file into a temporary directory before executing it, so `__file__` does not
+# point at the plugin checkout. Locate the checkout explicitly (GS_PLUGIN_ROOT, then well-known places) and
+# read run.json / the SKILL.md files relative to it.
+SKILL_DIR = "skills/orchestrate-platform-upgrades"
+
+def _discover_plugin_root():
+    if os.environ.get("GS_PLUGIN_ROOT"):
+        return Path(os.environ["GS_PLUGIN_ROOT"])
+    candidates = []
     try:
-        p = Path(__file__).resolve().parent / "run.json"
+        candidates.append(Path(__file__).resolve().parents[2])
+    except (NameError, IndexError):
+        pass
+    home = Path.home()
+    candidates.append(home / "gs-platform-upgrades")
+    for pattern in (f"*/{SKILL_DIR}/workflow.py", f"repos/*/{SKILL_DIR}/workflow.py"):
+        candidates.extend(p.parents[2] for p in sorted(home.glob(pattern)))
+    candidates.extend(p.parents[2] for p in sorted(Path("/opt/.devin/plugins/cache").glob(f"*/*/{SKILL_DIR}/workflow.py")))
+    for root in candidates:
+        if (root / SKILL_DIR / "SKILL.md").exists():
+            return root
+    return None
+
+PLUGIN_ROOT = _discover_plugin_root()
+
+def _run_config():
+    if PLUGIN_ROOT is None:
+        return {}
+    try:
+        p = PLUGIN_ROOT / SKILL_DIR / "run.json"
         return json.loads(p.read_text()) if p.exists() else {}
-    except (NameError, ValueError):
+    except (OSError, ValueError):
         return {}
 
 _RUN_CFG = _run_config()
@@ -57,16 +84,6 @@ and its `feature/*`/`platform/*` branches, so always `git fetch origin` and `git
 before doing anything. The service is a Maven build: if `mvn` is missing run `sudo apt-get install -y maven`; if the
 JDK named in `.java-version` (or the target JDK) is missing install it with `sudo apt-get install -y openjdk-<N>-jdk`
 and point JAVA_HOME at it (`/usr/lib/jvm/java-<N>-openjdk-amd64`). Use `gh` for all GitHub reads/writes."""
-
-def _plugin_root():
-    if _cfg("GS_PLUGIN_ROOT", None):
-        return Path(_cfg("GS_PLUGIN_ROOT", None))
-    try:
-        return Path(__file__).resolve().parents[2]
-    except NameError:
-        return None
-
-PLUGIN_ROOT = _plugin_root()
 
 # ----------------------------------------------------------------------------- upgrade catalog
 # Order is the GS canonical sequence; `depends_on` is enforced, `needed` is evaluated against the
@@ -263,6 +280,9 @@ request with base `{pr_base}` titled `[platform {index}/{total}] {stage['title']
 {GUARDRAILS}
 If the playbook's preconditions are not met, or the upgrade is already in place, do not improvise: report status
 "blocked" or "not-needed" with an explanation in summary (branch/pr_url may be "").
+If `origin/{stage['branch']}` ALREADY EXISTS (an earlier run of this workflow created it), do not recreate it or open a
+second PR: check it out, confirm it implements the playbook, re-run the validation, and report status "done" with the
+URL of its existing open PR (`gh pr view {stage['branch']} --json url`); open a PR only if none exists.
 
 Report: status, branch, pr_url, a 2-3 sentence summary, validation (e.g. "mvn verify: 15 tests, 0 failures; app
 booted, /actuator/health 200"), and files_changed.
@@ -344,6 +364,7 @@ async def main():
         ],
     })
 
+    log(f"plugin root: {PLUGIN_ROOT}; gate policy: {GATE_POLICY}; target boot {TARGET_BOOT} / jdk {TARGET_JDK}")
     log(f"assessing {TARGET_REPO}@{BASE_BRANCH}")
     state = await assess()
     log("detected state: " + json.dumps({k: v for k, v in state.items() if k != "feature_branches"}, sort_keys=True))
