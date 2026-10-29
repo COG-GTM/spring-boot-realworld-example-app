@@ -5,7 +5,7 @@ exposure and the daily margin-call cycle.
 
 | | |
 |---|---|
-| Runtime | Java 17, Spring Boot 3.5 |
+| Runtime | Java 17, Spring Boot 4.0 |
 | Build | Maven (`mvn clean verify`) |
 | Pipeline | GS Managed Pipelines **v2** (`.gs/pipeline.yml`) |
 | Auth | GS Auth (GS SSO JWT, entitlements -> roles); legacy desk tokens disabled (`collateral.auth.legacy-desk-token.enabled`, off) |
