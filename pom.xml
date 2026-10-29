@@ -18,13 +18,17 @@
   <description>Collateral management: CSA agreements, exposure, margin calls (app id CLT-COLLATERAL-SVC)</description>
 
   <properties>
-    <java.version>11</java.version>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
+    <java.version>17</java.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <springdoc.version>1.6.15</springdoc.version>
-    <commons-text.version>1.9</commons-text.version>
+    <commons-text.version>1.10.0</commons-text.version>
     <commons-csv.version>1.10.0</commons-csv.version>
+    <!-- CLM remediation (.gs/clm-report.json): CLM-9032, CLM-9044, CLM-9045 -->
+    <snakeyaml.version>2.0</snakeyaml.version>
+    <spring-framework.version>5.3.34</spring-framework.version>
+    <tomcat.version>9.0.86</tomcat.version>
   </properties>
 
   <dependencies>
