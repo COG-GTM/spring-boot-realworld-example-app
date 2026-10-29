@@ -15,12 +15,13 @@ import org.springframework.stereotype.Component;
 public class MarginCallNoticeFormatter {
 
     static final String TEMPLATE =
-            "MARGIN CALL NOTICE\n"
-            + "Agreement: ${reference}\n"
-            + "Counterparty: ${counterparty}\n"
-            + "Call amount: ${currency} ${amount}\n"
-            + "Issued: ${issuedAt}\n"
-            + "Please confirm by the cut-off stated in the CSA.";
+            """
+            MARGIN CALL NOTICE
+            Agreement: ${reference}
+            Counterparty: ${counterparty}
+            Call amount: ${currency} ${amount}
+            Issued: ${issuedAt}
+            Please confirm by the cut-off stated in the CSA.""";
 
     public String format(MarginCall call) {
         Map<String, String> values = new HashMap<>();

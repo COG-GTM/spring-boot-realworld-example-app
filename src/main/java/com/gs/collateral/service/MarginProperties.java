@@ -3,10 +3,9 @@ package com.gs.collateral.service;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.format.annotation.DateTimeFormat;
 
-@ConstructorBinding
+
 @ConfigurationProperties(prefix = "collateral.margin")
 public class MarginProperties {
 
