@@ -1,4 +1,4 @@
 *                    @COG-GTM/collateral-platform
-/Jenkinsfile         @COG-GTM/collateral-platform @COG-GTM/managed-pipelines
+/.gs/pipeline.yml    @COG-GTM/collateral-platform @COG-GTM/managed-pipelines
 /.gs/                @COG-GTM/collateral-platform @COG-GTM/managed-pipelines
 /src/main/java/com/gs/collateral/security/  @COG-GTM/collateral-platform @COG-GTM/app-security

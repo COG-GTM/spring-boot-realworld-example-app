@@ -7,7 +7,7 @@ import com.gs.collateral.service.MarginCallNoticeFormatter;
 import com.gs.collateral.service.MarginCallService;
 import com.gs.collateral.service.NotFoundException;
 import java.util.List;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.stream.Collectors;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;

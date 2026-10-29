@@ -15,6 +15,11 @@ spring:
   h2:
     console:
       enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${gs.auth.issuer-uri}
 
 server:
   port: 8080
@@ -46,6 +51,9 @@ collateral:
     call-cutoff: "16:30"
     timezone: America/New_York
   auth:
+    # Kill-switch for the pre-GS-Auth desk-token filter; remove next release.
+    legacy-desk-token:
+      enabled: false
     desk-token:
       header: X-Desk-Token
       shared-secret: ${DESK_TOKEN_SECRET:local-dev-only-secret}
@@ -54,3 +62,13 @@ collateral:
         COLL-OPS: OPS
         RISK: RISK,OPS
         TREASURY: TREASURY
+
+gs:
+  auth:
+    issuer-uri: ${GS_SSO_ISSUER:https://sso.gs.com/realms/firmwide}
+    audience: CLT-COLLATERAL-SVC
+    entitlements-claim: gs_entitlements
+    entitlement-roles:            # entitlement -> role
+      CLT_OPS: OPS
+      CLT_RISK_RO: RISK
+      TSY_RO: TREASURY
