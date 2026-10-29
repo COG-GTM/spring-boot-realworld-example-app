@@ -8,7 +8,7 @@ exposure and the daily margin-call cycle.
 | Runtime | Java 17, Spring Boot 3.5 |
 | Build | Maven (`mvn clean verify`) |
 | Pipeline | GS Managed Pipelines **v2** (`.gs/pipeline.yml`) |
-| Auth | Legacy desk tokens (`X-Desk-Token`, HMAC shared secret per desk) |
+| Auth | GS Auth (GS SSO JWT, entitlements -> roles); legacy desk tokens disabled (`collateral.auth.legacy-desk-token.enabled`, removed next release) |
 | CLM | Latest scan report in `.gs/clm-report.json` |
 
 ## Run locally
@@ -17,10 +17,15 @@ exposure and the daily margin-call cycle.
 mvn spring-boot:run
 # health
 curl localhost:8080/collateral/actuator/health
-# issue a desk token for the COLL-OPS desk (dev secret) and run the margin cycle
-TOKEN=$(./scripts/desk-token.sh COLL-OPS)
-curl -X POST -H "X-Desk-Token: $TOKEN" localhost:8080/collateral/api/margin-calls/run
+# obtain a GS SSO JWT with the CLT_OPS entitlement (see ./scripts/gs-token.sh) and run the margin cycle
+TOKEN=$(./scripts/gs-token.sh CLT_OPS)
+curl -X POST -H "Authorization: Bearer $TOKEN" localhost:8080/collateral/api/margin-calls/run
 ```
+
+Entitlement -> role mapping (`gs.auth.entitlement-roles`): `CLT_OPS` -> OPS, `CLT_RISK_RO` -> RISK,
+`TSY_RO` -> TREASURY. Outside the GS network there is no issuer to call; run the tests, which mock the
+`JwtDecoder`, or set `collateral.auth.legacy-desk-token.enabled=true` to fall back to desk tokens for
+one more release.
 
 Swagger UI: `http://localhost:8080/collateral/swagger-ui.html`
 

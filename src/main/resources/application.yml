@@ -31,6 +31,18 @@ management:
       probes:
         enabled: true
 
+spring.security.oauth2.resourceserver.jwt.issuer-uri: ${gs.auth.issuer-uri}
+
+gs:
+  auth:
+    issuer-uri: ${GS_SSO_ISSUER:https://sso.gs.com/realms/firmwide}
+    audience: CLT-COLLATERAL-SVC
+    entitlements-claim: gs_entitlements
+    entitlement-roles:            # entitlement -> role
+      CLT_OPS: OPS
+      CLT_RISK_RO: RISK
+      TSY_RO: TREASURY
+
 springdoc:
   api-docs:
     path: /api-docs
@@ -46,6 +58,8 @@ collateral:
     call-cutoff: "16:30"
     timezone: America/New_York
   auth:
+    legacy-desk-token:
+      enabled: false   # kill-switch, remove next release
     desk-token:
       header: X-Desk-Token
       shared-secret: ${DESK_TOKEN_SECRET:local-dev-only-secret}

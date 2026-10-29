@@ -14,14 +14,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+/** Legacy desk-token path, run with the kill-switch on; see {@link GsAuthApiTest} for GS Auth. */
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(properties = "collateral.auth.legacy-desk-token.enabled=true")
 class MarginCallApiTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
     @Autowired
     private DeskTokenProperties deskTokenProperties;
     @Autowired
