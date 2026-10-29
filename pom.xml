@@ -24,6 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <springdoc.version>1.6.15</springdoc.version>
     <commons-text.version>1.9</commons-text.version>
+    <commons-csv.version>1.10.0</commons-csv.version>
   </properties>
 
   <dependencies>
@@ -56,6 +57,11 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
       <version>${commons-text.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>${commons-csv.version}</version>
     </dependency>
     <dependency>
       <groupId>org.yaml</groupId>
