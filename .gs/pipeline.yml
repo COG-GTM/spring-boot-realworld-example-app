@@ -1,0 +1,20 @@
+# GS Managed Pipelines v2 (declarative). See https://go/managed-pipelines (internal).
+# Replaces the v1 scripted Jenkinsfile; the CLM policy gate now runs at PR time.
+apiVersion: gs.pipelines/v2
+kind: ServicePipeline
+metadata:
+  appId: CLT-COLLATERAL-SVC
+  team: collateral-platform
+build:
+  tool: maven
+  jdk: "11"
+  goals: clean verify
+  cache: maven
+gates:
+  pullRequest: [build, unit-tests, clm-policy]
+  main: [build, unit-tests, clm-policy, sbom]
+deploy:
+  environments: [dev, qa]
+  strategy: rolling
+notifications:
+  slack: "#collateral-platform-builds"
