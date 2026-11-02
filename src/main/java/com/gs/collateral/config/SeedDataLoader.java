@@ -16,7 +16,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 /** Loads CSA agreements from a YAML file in non-production environments. */
 @Configuration
@@ -34,7 +36,7 @@ public class SeedDataLoader {
             }
             Resource resource = resourceLoader.getResource(env.getProperty("collateral.seed.file"));
             try (InputStream in = resource.getInputStream()) {
-                Map<String, Object> root = new Yaml().load(in);
+                Map<String, Object> root = new Yaml(new SafeConstructor(new LoaderOptions())).load(in);
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> agreements = (List<Map<String, Object>>) root.get("agreements");
                 for (Map<String, Object> raw : agreements) {
