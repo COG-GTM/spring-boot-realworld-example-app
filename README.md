@@ -44,7 +44,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 14 installed. The build uses a Gradle Java toolchain, so Gradle will use a locally installed JDK 14 (or try to download one) even if your default `java` is a different version.
 
     ./gradlew bootRun
 
