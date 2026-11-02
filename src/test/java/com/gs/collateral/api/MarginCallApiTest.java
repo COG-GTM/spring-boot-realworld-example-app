@@ -2,6 +2,7 @@ package com.gs.collateral.api;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -15,11 +16,20 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.oauth2.jwt.BadJwtException;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+/** Legacy desk-token path, exercised with the kill-switch ON. Remove together with the legacy filter. */
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(properties = "collateral.auth.legacy-desk-token.enabled=true")
 class MarginCallApiTest {
+
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
 
     @Autowired
     private MockMvc mockMvc;
@@ -31,6 +41,15 @@ class MarginCallApiTest {
     @Test
     void rejectsAnonymousCallers() throws Exception {
         mockMvc.perform(get("/api/margin-calls")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void invalidBearerTokenIsRejectedEvenWithValidDeskToken() throws Exception {
+        when(jwtDecoder.decode("bad")).thenThrow(new BadJwtException("bad token"));
+        mockMvc.perform(get("/api/agreements/CSA-NORTHWIND-2021-07")
+                        .header("X-Desk-Token", token("COLL-OPS"))
+                        .header("Authorization", "Bearer bad"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
