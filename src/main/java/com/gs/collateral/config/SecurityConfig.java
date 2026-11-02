@@ -79,6 +79,5 @@ public class SecurityConfig {
                 aud -> aud != null && aud.contains(audience));
         return new DelegatingOAuth2TokenValidator<>(
                 JwtValidators.createDefaultWithIssuer(gsAuthProperties.getIssuerUri()), audienceValidator);
->>>>>>> origin/platform/06-spring-boot-4
     }
 }
