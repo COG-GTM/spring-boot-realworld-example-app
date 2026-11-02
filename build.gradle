@@ -63,6 +63,11 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+tasks.named('bootBuildImage') {
+    // Paketo's BellSoft Liberica buildpack has no Java 14 JRE/JDK; run the Java 14 bytecode on the Java 17 LTS JRE.
+    environment = ['BP_JVM_VERSION': '17']
+}
+
 tasks.named('clean') {
     doFirst {
         delete './dev.db'

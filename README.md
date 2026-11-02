@@ -45,6 +45,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 # Getting started
 
 You'll need Java 14 installed. The build uses a Gradle Java toolchain, so Gradle will use a locally installed JDK 14 (or try to download one) even if your default `java` is a different version.
+If you use [SDKMAN!](https://sdkman.io/), run `sdk env install` in the project root to install the JDK pinned in `.sdkmanrc`.
 
     ./gradlew bootRun
 
@@ -55,7 +56,7 @@ Alternatively, you can run
 
 # Try it out with [Docker](https://www.docker.com/)
 
-You'll need Docker installed.
+You'll need Docker installed. The Paketo buildpacks don't ship a Java 14 runtime, so `build.gradle` sets `BP_JVM_VERSION=17` and the image runs the app on a Java 17 JRE.
 	
     ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
     docker run -p 8081:8080 spring-boot-realworld-example-app
