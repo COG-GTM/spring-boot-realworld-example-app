@@ -7,7 +7,7 @@ exposure and the daily margin-call cycle.
 |---|---|
 | Runtime | Java 11, Spring Boot 2.7 |
 | Build | Maven (`mvn clean verify`) |
-| Pipeline | GS Managed Pipelines **v1** (`Jenkinsfile`) |
+| Pipeline | GS Managed Pipelines **v2** (`.gs/pipeline.yml`) |
 | Auth | Legacy desk tokens (`X-Desk-Token`, HMAC shared secret per desk) |
 | CLM | Latest scan report in `.gs/clm-report.json` |
 
