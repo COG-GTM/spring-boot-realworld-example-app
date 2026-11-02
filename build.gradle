@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '4.1.1'
+    id 'org.springframework.boot' version '4.1.2'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
     id "com.netflix.dgs.codegen" version "8.7.0"
@@ -31,8 +31,7 @@ configurations {
     }
 }
 
-// Security patches ahead of Boot 4.1.1's managed versions (Snyk).
-ext['tomcat.version'] = '11.0.27'
+// Security patches ahead of Boot 4.1.2's managed versions (Snyk).
 ext['jackson-bom.version'] = '3.1.8'
 ext['jackson-2-bom.version'] = '2.21.8'
 ext['logback.version'] = '1.6.5'
@@ -43,7 +42,10 @@ dependencyManagement {
     }
     dependencies {
         // The DGS BOM pins reactor-core 3.8.0, downgrading Boot's managed version.
-        dependency 'io.projectreactor:reactor-core:3.8.7'
+        dependency 'io.projectreactor:reactor-core:3.8.8'
+        // Snyk: transitive asm (via json-smart) and objenesis (via mockito) patches.
+        dependency 'org.ow2.asm:asm:9.11.1'
+        dependency 'org.objenesis:objenesis:3.6'
     }
 }
 
