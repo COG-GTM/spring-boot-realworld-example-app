@@ -153,7 +153,7 @@ Authorization: Token <jwt>
 | --- | --- |
 | `article(slug)`, `articles(first, after, last, before, authoredBy, favoritedBy, withTag)`, `feed(first, after, last, before)`, `me`, `profile(username)`, `tags` | `createUser`, `login`, `updateUser`, `followUser`, `unfollowUser`, `createArticle`, `updateArticle`, `favoriteArticle`, `unfavoriteArticle`, `deleteArticle`, `addComment`, `deleteComment` |
 
-List fields (`articles`, `feed`, `Profile.articles/favorites/feed`, `Article.comments`) use Relay-style cursor connections; pass either `first`/`after` or `last`/`before`. Cursors are epoch-millisecond timestamps, and omitting both `first` and `last` is an error. `me` must be sent with an `Authorization` header. `createUser` returns the `UserResult` union (`UserPayload` or `Error` with per-field messages).
+List fields (`articles`, `feed`, `Profile.articles/favorites/feed`, `Article.comments`) use Relay-style cursor connections; pass either `first`/`after` or `last`/`before`. Cursors are epoch-millisecond timestamps, and omitting both `first` and `last` is an error. `me` and `feed` must be sent with an `Authorization` header. Connection page size is capped at 1000. `createUser` returns the `UserResult` union (`UserPayload` or `Error` with per-field messages).
 
 Example:
 

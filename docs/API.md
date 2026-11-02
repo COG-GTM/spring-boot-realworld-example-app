@@ -16,7 +16,7 @@ Access rules come from `WebSecurityConfig`:
 | Public | `OPTIONS *`, `/graphql`, `/graphiql`, `POST /users`, `POST /users/login`, `GET /articles/**` (except `/articles/feed`), `GET /profiles/**`, `GET /tags` |
 | Authenticated | `GET /articles/feed` and everything else |
 
-GraphQL is public at the HTTP level; each mutation checks for a current user itself.
+GraphQL is public at the HTTP level; each mutation checks for a current user itself. The `me` and `feed` queries also need a token: without one, `me` fails on the missing header and `feed` fails because it passes a null user to the feed query.
 
 ## REST
 
@@ -104,8 +104,8 @@ Notes from the code:
 | --- | --- | --- | --- |
 | `article` | `slug: String!` | `Article` | `ArticleDatafetcher.findArticleBySlug` |
 | `articles` | `first, after, last, before, authoredBy, favoritedBy, withTag` | `ArticlesConnection` | `ArticleDatafetcher.getArticles` |
-| `feed` | `first, after, last, before` | `ArticlesConnection` | `ArticleDatafetcher.getFeed` |
-| `me` | – | `User` | `MeDatafetcher.getMe` |
+| `feed` | `first, after, last, before` | `ArticlesConnection` | `ArticleDatafetcher.getFeed` (needs a token; anonymous calls fail) |
+| `me` | – | `User` | `MeDatafetcher.getMe` (needs an `Authorization` header) |
 | `profile` | `username: String!` | `ProfilePayload` | `ProfileDatafetcher.queryProfile` |
 | `tags` | – | `[String]` | `TagDatafetcher.getTags` |
 
@@ -132,7 +132,7 @@ Nested resolvers: `Article.author`, `Comment.author`, `User.profile` (`ProfileDa
 
 Connection fields follow the Relay shape (`edges { cursor node }`, `pageInfo { startCursor endCursor hasNextPage hasPreviousPage }`):
 
-- Pass `first` (optionally with `after`) to page forward, or `last` (optionally with `before`) to page backward. Supplying neither is rejected with an error. Page size is capped at 100.
+- Pass `first` (optionally with `after`) to page forward, or `last` (optionally with `before`) to page backward. Supplying neither is rejected with an error. Page size is capped at 1000 (`CursorPageParameter.MAX_LIMIT`); REST's offset paging is capped at 100.
 - Cursors are the epoch-millisecond string of a timestamp (`DateTimeCursor`).
 - Only the direction you are paging in is reported: `hasNextPage` when using `first`, `hasPreviousPage` when using `last`.
 
