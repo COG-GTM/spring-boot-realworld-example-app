@@ -29,6 +29,11 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    all {
+        // Snyk SNYK-JAVA-NETMINIDEV-21715438 has no fix; json-smart only backs
+        // json-path's default provider, which the app and tests never call.
+        exclude group: 'net.minidev', module: 'json-smart'
+    }
 }
 
 // Security patches ahead of Boot 4.1.2's managed versions (Snyk).
