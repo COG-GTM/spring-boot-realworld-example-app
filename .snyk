@@ -1,0 +1,11 @@
+# Snyk (https://snyk.io) policy file
+version: v1.25.0
+# java/DisablesCSRFProtection (Snyk Code, High) is accepted: this is a stateless REST/GraphQL API
+# authenticated with a JWT in the Authorization header (no cookies, SessionCreationPolicy.STATELESS),
+# so browsers never attach credentials automatically and CSRF does not apply.
+# Snyk Code ignores neither inline `deepcode ignore` comments nor `.snyk` `ignore:` rules from the CLI,
+# so the only policy-file option is a file-scoped exclude. Remove this once the finding is ignored in
+# the Snyk UI, or if WebSecurityConfig gains logic that should be scanned.
+exclude:
+  code:
+    - src/main/java/io/spring/api/security/WebSecurityConfig.java
