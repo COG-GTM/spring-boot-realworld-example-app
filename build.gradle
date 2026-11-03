@@ -7,8 +7,12 @@ plugins {
 }
 
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
-targetCompatibility = '11'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(14)
+    }
+}
 
 spotless {
     java {
@@ -64,6 +68,11 @@ tasks.named('clean') {
     doFirst {
         delete './dev.db'
     }
+}
+
+tasks.named('bootBuildImage') {
+    // Paketo has no Java 14 JRE; Java 14 bytecode runs unchanged on the 17 runtime.
+    environment = ['BP_JVM_VERSION': '17']
 }
 
 tasks.named('generateJava') {
