@@ -13,7 +13,12 @@
         )
     </insert>
     <update id="update">
-        update golf_picks set golfer_id = #{pick.golferId} where id = #{pick.id}
+        update golf_picks set
+          contest_id = #{pick.contestId},
+          tournament_id = #{pick.tournamentId},
+          user_id = #{pick.userId},
+          golfer_id = #{pick.golferId}
+        where id = #{pick.id}
     </update>
     <sql id="selectPick">
         select

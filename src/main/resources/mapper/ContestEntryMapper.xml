@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.spring.infrastructure.mybatis.mapper.ContestEntryMapper">
     <insert id="insert">
-        insert into golf_contest_entries (contest_id, user_id, created_at)
+        insert or ignore into golf_contest_entries (contest_id, user_id, created_at)
         values (#{entry.contestId}, #{entry.userId}, #{entry.createdAt})
     </insert>
     <sql id="selectEntry">

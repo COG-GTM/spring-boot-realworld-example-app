@@ -16,9 +16,7 @@ public class MyBatisContestEntryRepository implements ContestEntryRepository {
 
   @Override
   public void save(ContestEntry entry) {
-    if (!exists(entry.getContestId(), entry.getUserId())) {
-      mapper.insert(entry);
-    }
+    mapper.insert(entry);
   }
 
   @Override

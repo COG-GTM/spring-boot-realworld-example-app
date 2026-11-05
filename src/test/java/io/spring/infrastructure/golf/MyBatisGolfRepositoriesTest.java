@@ -167,6 +167,26 @@ public class MyBatisGolfRepositoriesTest extends DbTestBase {
   }
 
   @Test
+  public void should_update_existing_pick() {
+    Pick pick = new Pick(contest.getId(), first.getId(), "user-1", golferA.getId());
+    pickRepository.save(pick);
+    pickRepository.save(
+        new Pick(
+            pick.getId(),
+            contest.getId(),
+            second.getId(),
+            "user-1",
+            golferB.getId(),
+            pick.getCreatedAt()));
+
+    Pick found = pickRepository.findById(pick.getId()).get();
+    Assertions.assertEquals(second.getId(), found.getTournamentId());
+    Assertions.assertEquals(golferB.getId(), found.getGolferId());
+    Assertions.assertEquals(
+        1, pickRepository.findByContestAndUser(contest.getId(), "user-1").size());
+  }
+
+  @Test
   public void should_reject_second_pick_for_same_tournament() {
     pickRepository.save(new Pick(contest.getId(), first.getId(), "user-1", golferA.getId()));
     Assertions.assertThrows(
