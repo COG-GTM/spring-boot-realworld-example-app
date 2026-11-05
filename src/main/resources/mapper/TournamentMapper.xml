@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.TournamentMapper">
+    <insert id="insert">
+        insert into golf_tournaments (id, contest_id, name, course, starts_at, ends_at)
+        values (
+          #{tournament.id},
+          #{tournament.contestId},
+          #{tournament.name},
+          #{tournament.course},
+          #{tournament.startsAt},
+          #{tournament.endsAt}
+        )
+    </insert>
+    <update id="update">
+        update golf_tournaments set
+          contest_id = #{tournament.contestId},
+          name = #{tournament.name},
+          course = #{tournament.course},
+          starts_at = #{tournament.startsAt},
+          ends_at = #{tournament.endsAt}
+        where id = #{tournament.id}
+    </update>
+    <insert id="insertResult">
+        insert into golf_tournament_results (tournament_id, golfer_id, finish_position, prize_money)
+        values (#{result.tournamentId}, #{result.golferId}, #{result.finishPosition}, #{result.prizeMoney})
+    </insert>
+    <update id="updateResult">
+        update golf_tournament_results set
+          finish_position = #{result.finishPosition},
+          prize_money = #{result.prizeMoney}
+        where tournament_id = #{result.tournamentId} and golfer_id = #{result.golferId}
+    </update>
+    <sql id="selectTournament">
+        select
+          GT.id tournamentId,
+          GT.contest_id tournamentContestId,
+          GT.name tournamentName,
+          GT.course tournamentCourse,
+          GT.starts_at tournamentStartsAt,
+          GT.ends_at tournamentEndsAt
+        from golf_tournaments GT
+    </sql>
+    <sql id="selectResult">
+        select
+          TR.tournament_id resultTournamentId,
+          TR.golfer_id resultGolferId,
+          TR.finish_position resultFinishPosition,
+          TR.prize_money resultPrizeMoney
+        from golf_tournament_results TR
+    </sql>
+    <select id="findById" resultMap="tournament">
+        <include refid="selectTournament"/>
+        where GT.id = #{id}
+    </select>
+    <select id="findByContestId" resultMap="tournament">
+        <include refid="selectTournament"/>
+        where GT.contest_id = #{contestId}
+        order by GT.starts_at, GT.id
+    </select>
+    <select id="findResult" resultMap="tournamentResult">
+        <include refid="selectResult"/>
+        where TR.tournament_id = #{tournamentId} and TR.golfer_id = #{golferId}
+    </select>
+    <select id="findResultsByTournamentId" resultMap="tournamentResult">
+        <include refid="selectResult"/>
+        where TR.tournament_id = #{tournamentId}
+        order by TR.finish_position is null, TR.finish_position, TR.golfer_id
+    </select>
+    <resultMap id="tournament" type="io.spring.core.golf.Tournament">
+        <id column="tournamentId" property="id"/>
+        <result column="tournamentContestId" property="contestId"/>
+        <result column="tournamentName" property="name"/>
+        <result column="tournamentCourse" property="course"/>
+        <result column="tournamentStartsAt" property="startsAt"/>
+        <result column="tournamentEndsAt" property="endsAt"/>
+    </resultMap>
+    <resultMap id="tournamentResult" type="io.spring.core.golf.TournamentResult">
+        <result column="resultTournamentId" property="tournamentId"/>
+        <result column="resultGolferId" property="golferId"/>
+        <result column="resultFinishPosition" property="finishPosition"/>
+        <result column="resultPrizeMoney" property="prizeMoney"/>
+    </resultMap>
+</mapper>

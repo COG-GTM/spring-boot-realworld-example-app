@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.PickMapper">
+    <insert id="insert">
+        insert into golf_picks (id, contest_id, tournament_id, user_id, golfer_id, created_at)
+        values (
+          #{pick.id},
+          #{pick.contestId},
+          #{pick.tournamentId},
+          #{pick.userId},
+          #{pick.golferId},
+          #{pick.createdAt}
+        )
+    </insert>
+    <update id="update">
+        update golf_picks set
+          contest_id = #{pick.contestId},
+          tournament_id = #{pick.tournamentId},
+          user_id = #{pick.userId},
+          golfer_id = #{pick.golferId}
+        where id = #{pick.id}
+    </update>
+    <sql id="selectPick">
+        select
+          GP.id pickId,
+          GP.contest_id pickContestId,
+          GP.tournament_id pickTournamentId,
+          GP.user_id pickUserId,
+          GP.golfer_id pickGolferId,
+          GP.created_at pickCreatedAt
+        from golf_picks GP
+    </sql>
+    <select id="findById" resultMap="pick">
+        <include refid="selectPick"/>
+        where GP.id = #{id}
+    </select>
+    <select id="findByContestAndUser" resultMap="pick">
+        <include refid="selectPick"/>
+        left join golf_tournaments GT on GT.id = GP.tournament_id
+        where GP.contest_id = #{contestId} and GP.user_id = #{userId}
+        order by GT.starts_at, GP.created_at
+    </select>
+    <select id="findByContestUserAndTournament" resultMap="pick">
+        <include refid="selectPick"/>
+        where GP.contest_id = #{contestId} and GP.user_id = #{userId} and GP.tournament_id = #{tournamentId}
+    </select>
+    <select id="countByContestUserAndGolfer" resultType="java.lang.Integer">
+        select count(1) from golf_picks
+        where contest_id = #{contestId} and user_id = #{userId} and golfer_id = #{golferId}
+    </select>
+    <select id="findByContest" resultMap="pick">
+        <include refid="selectPick"/>
+        left join golf_tournaments GT on GT.id = GP.tournament_id
+        where GP.contest_id = #{contestId}
+        order by GP.user_id, GT.starts_at, GP.created_at
+    </select>
+    <resultMap id="pick" type="io.spring.core.golf.Pick">
+        <id column="pickId" property="id"/>
+        <result column="pickContestId" property="contestId"/>
+        <result column="pickTournamentId" property="tournamentId"/>
+        <result column="pickUserId" property="userId"/>
+        <result column="pickGolferId" property="golferId"/>
+        <result column="pickCreatedAt" property="createdAt"/>
+    </resultMap>
+</mapper>
