@@ -7,20 +7,23 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-/** Users listed in {@code golf.admin-usernames} (comma separated) may manage golf results. */
+/**
+ * Users whose ids are listed in {@code golf.admin-user-ids} (comma separated) may manage golf
+ * results.
+ */
 @Component
 public class GolfAdminPolicy {
-  private final Set<String> adminUsernames;
+  private final Set<String> adminUserIds;
 
-  public GolfAdminPolicy(@Value("${golf.admin-usernames:}") String adminUsernames) {
-    this.adminUsernames =
-        Arrays.stream(adminUsernames.split(","))
+  public GolfAdminPolicy(@Value("${golf.admin-user-ids:}") String adminUserIds) {
+    this.adminUserIds =
+        Arrays.stream(adminUserIds.split(","))
             .map(String::trim)
             .filter(s -> !s.isEmpty())
             .collect(Collectors.toSet());
   }
 
   public boolean isAdmin(User user) {
-    return user != null && adminUsernames.contains(user.getUsername());
+    return user != null && adminUserIds.contains(user.getId());
   }
 }

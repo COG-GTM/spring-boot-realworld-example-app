@@ -1,6 +1,7 @@
 package io.spring.application.golf;
 
 import io.spring.core.golf.Tournament;
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,5 +10,5 @@ import lombok.Getter;
 @ValidTournamentResults
 public class RecordResultsCommand {
   private Tournament tournament;
-  private TournamentResultsParam param;
+  @Valid private TournamentResultsParam param;
 }

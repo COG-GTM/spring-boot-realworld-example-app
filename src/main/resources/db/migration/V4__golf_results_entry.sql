@@ -9,6 +9,6 @@ set prize_money = coalesce(
 where exists (
   select 1 from golf_tournament_results R where R.tournament_id = golf_picks.tournament_id);
 
--- Demo admin allowed to record tournament results (see golf.admin-usernames), password: password.
+-- Demo admin allowed to record tournament results (see golf.admin-user-ids), password: password.
 insert or ignore into users (id, username, password, email, bio, image) values
   ('user-golfadmin', 'golfadmin', '$2a$10$/4JwdrtxLbXmx1rngB2CNuCLomOkoUqFeQgGit.NLnJjpnmvTsiBO', 'golfadmin@example.com', 'Golf one-and-done results admin', 'https://static.productionready.io/images/smiley-cyrus.jpg');

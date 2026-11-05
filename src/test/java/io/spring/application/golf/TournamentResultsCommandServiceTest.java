@@ -165,6 +165,48 @@ public class TournamentResultsCommandServiceTest extends DbTestBase {
     Assertions.assertNull(pickRepository.findById(pickA.getId()).get().getPrizeMoney());
   }
 
+  @Test
+  public void should_reject_empty_results_without_erasing_existing_ones() {
+    service.recordResults(command(finished, result(golferA, 1, 1000000L)));
+
+    Assertions.assertThrows(
+        ConstraintViolationException.class,
+        () ->
+            service.recordResults(
+                new RecordResultsCommand(
+                    finished, new TournamentResultsParam(new java.util.ArrayList<>()))));
+
+    Assertions.assertEquals(
+        1, tournamentRepository.findResultsByTournamentId(finished.getId()).size());
+    Assertions.assertEquals(1000000L, prizeOf(pickA));
+  }
+
+  @Test
+  public void should_credit_picks_saved_or_changed_after_results() {
+    service.recordResults(command(finished, result(golferA, 1, 1000000L), result(golferC, 2, 4L)));
+    entryRepository.save(new ContestEntry(pickA.getContestId(), "results-user-3"));
+    Pick late = new Pick(pickA.getContestId(), finished.getId(), "results-user-3", golferA.getId());
+    pickRepository.save(late);
+    Assertions.assertEquals(1000000L, prizeOf(late));
+
+    Pick changed = pickRepository.findById(pickB.getId()).get();
+    Pick moved =
+        new Pick(
+            changed.getId(),
+            changed.getContestId(),
+            changed.getTournamentId(),
+            changed.getUserId(),
+            golferC.getId(),
+            changed.getCreatedAt());
+    pickRepository.save(moved);
+    Assertions.assertEquals(4L, prizeOf(moved));
+
+    Pick pending =
+        new Pick(pickA.getContestId(), upcoming.getId(), "results-user-3", golferB.getId());
+    pickRepository.save(pending);
+    Assertions.assertNull(pickRepository.findById(pending.getId()).get().getPrizeMoney());
+  }
+
   private long prizeOf(Pick pick) {
     return pickRepository.findById(pick.getId()).get().getPrizeMoney();
   }

@@ -159,6 +159,21 @@ public class TournamentResultsApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_422_for_null_entry() {
+    when(golfAdminPolicy.isAdmin(eq(user))).thenReturn(true);
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body("{\"tournamentResults\":{\"results\":[null]}}")
+        .when()
+        .put("/golf/tournaments/{id}/results", tournament.getId())
+        .then()
+        .statusCode(422);
+    verify(commandService, never()).recordResults(any());
+  }
+
+  @Test
   public void should_read_results_without_auth() {
     RestAssuredMockMvc.when()
         .get("/golf/tournaments/{id}/results", tournament.getId())

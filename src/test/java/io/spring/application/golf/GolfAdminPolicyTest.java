@@ -10,11 +10,13 @@ public class GolfAdminPolicyTest {
   }
 
   @Test
-  public void should_allow_only_configured_usernames() {
-    GolfAdminPolicy policy = new GolfAdminPolicy(" golfadmin , other ");
-    Assertions.assertTrue(policy.isAdmin(user("golfadmin")));
-    Assertions.assertTrue(policy.isAdmin(user("other")));
-    Assertions.assertFalse(policy.isAdmin(user("golfdemo1")));
+  public void should_allow_only_configured_user_ids() {
+    User admin = user("golfadmin");
+    User other = user("other");
+    GolfAdminPolicy policy = new GolfAdminPolicy(" " + admin.getId() + " , " + other.getId() + " ");
+    Assertions.assertTrue(policy.isAdmin(admin));
+    Assertions.assertTrue(policy.isAdmin(other));
+    Assertions.assertFalse(policy.isAdmin(user("golfadmin")));
     Assertions.assertFalse(policy.isAdmin(null));
   }
 

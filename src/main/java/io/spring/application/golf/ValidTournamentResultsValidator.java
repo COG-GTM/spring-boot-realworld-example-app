@@ -31,7 +31,7 @@ public class ValidTournamentResultsValidator
     }
     Set<String> seen = new HashSet<>();
     for (GolferResultParam result : command.getParam().getResults()) {
-      String golferId = result.getGolferId();
+      String golferId = result == null ? null : result.getGolferId();
       if (golferId == null) {
         continue;
       }
