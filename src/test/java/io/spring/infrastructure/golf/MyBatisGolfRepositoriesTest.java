@@ -135,6 +135,14 @@ public class MyBatisGolfRepositoriesTest extends DbTestBase {
   }
 
   @Test
+  public void should_reject_invalid_contest_entry() {
+    Assertions.assertThrows(
+        DataAccessException.class,
+        () -> entryRepository.save(new ContestEntry(contest.getId(), "user-1", null)));
+    Assertions.assertFalse(entryRepository.exists(contest.getId(), "user-1"));
+  }
+
+  @Test
   public void should_save_and_find_picks() {
     Pick pick = new Pick(contest.getId(), first.getId(), "user-1", golferA.getId());
     pickRepository.save(pick);

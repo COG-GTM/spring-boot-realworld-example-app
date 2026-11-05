@@ -77,7 +77,7 @@ insert into golf_tournament_results (tournament_id, golfer_id, finish_position, 
   ('tourney-open-2026', 'golfer-cantlay', 12, 437000);
 
 -- Demo users golfdemo1..3, password: password (BCrypt, same encoder the app uses).
--- Skipped if the username/email is already taken; entries and picks below only attach to demo users that exist.
+-- Skipped if the id/username/email is already taken; entries and picks below only attach to rows matching the full demo identity.
 insert or ignore into users (id, username, password, email, bio, image) values
   ('user-golfdemo1', 'golfdemo1', '$2a$10$/4JwdrtxLbXmx1rngB2CNuCLomOkoUqFeQgGit.NLnJjpnmvTsiBO', 'golfdemo1@example.com', 'Golf one-and-done demo player 1', 'https://static.productionready.io/images/smiley-cyrus.jpg'),
   ('user-golfdemo2', 'golfdemo2', '$2a$10$/4JwdrtxLbXmx1rngB2CNuCLomOkoUqFeQgGit.NLnJjpnmvTsiBO', 'golfdemo2@example.com', 'Golf one-and-done demo player 2', 'https://static.productionready.io/images/smiley-cyrus.jpg'),
@@ -88,7 +88,7 @@ select v.column1, v.column2, v.column3 from (values
   ('golf-contest-2026', 'user-golfdemo1', strftime('%s', '2026-03-01 12:00:00') * 1000),
   ('golf-contest-2026', 'user-golfdemo2', strftime('%s', '2026-03-02 12:00:00') * 1000),
   ('golf-contest-2026', 'user-golfdemo3', strftime('%s', '2026-03-03 12:00:00') * 1000)
-) v join users u on u.id = v.column2;
+) v join users u on u.id = v.column2 and u.username = substr(v.column2, 6) and u.email = substr(v.column2, 6) || '@example.com';
 
 insert into golf_picks (id, contest_id, tournament_id, user_id, golfer_id, created_at)
 select v.column1, v.column2, v.column3, v.column4, v.column5, v.column6 from (values
@@ -104,4 +104,4 @@ select v.column1, v.column2, v.column3, v.column4, v.column5, v.column6 from (va
   ('pick-golfdemo3-pga-2026', 'golf-contest-2026', 'tourney-pga-2026', 'user-golfdemo3', 'golfer-hovland', strftime('%s', '2026-05-14 09:00:00') * 1000),
   ('pick-golfdemo3-usopen-2026', 'golf-contest-2026', 'tourney-usopen-2026', 'user-golfdemo3', 'golfer-cantlay', strftime('%s', '2026-06-18 09:00:00') * 1000),
   ('pick-golfdemo3-open-2026', 'golf-contest-2026', 'tourney-open-2026', 'user-golfdemo3', 'golfer-thomas', strftime('%s', '2026-07-16 09:00:00') * 1000)
-) v join users u on u.id = v.column4;
+) v join users u on u.id = v.column4 and u.username = substr(v.column4, 6) and u.email = substr(v.column4, 6) || '@example.com';
