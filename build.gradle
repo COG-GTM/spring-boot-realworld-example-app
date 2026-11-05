@@ -20,6 +20,13 @@ spotless {
     }
 }
 
+// Boot 3.4.x OSS is EOL; pin patched transitive versions flagged by Snyk/OSV.
+ext['spring-framework.version'] = '6.2.19'
+ext['tomcat.version'] = '10.1.59'
+ext['jackson-bom.version'] = '2.18.11'
+ext['logback.version'] = '1.5.34'
+ext['commons-lang3.version'] = '3.18.0'
+
 repositories {
     mavenCentral()
 }
@@ -37,6 +44,10 @@ configurations {
 }
 
 dependencies {
+    constraints {
+        implementation 'com.google.protobuf:protobuf-java:3.25.5'
+        implementation 'org.apache.logging.log4j:log4j-api:2.25.5'
+    }
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
