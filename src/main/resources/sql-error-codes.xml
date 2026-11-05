@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN 2.0//EN" "https://www.springframework.org/dtd/spring-beans-2.0.dtd">
+
+<!-- Adds SQLite to Spring's default error code table so constraint failures translate to
+     DuplicateKeyException / DataIntegrityViolationException instead of UncategorizedSQLException. -->
+<beans>
+  <bean id="SQLite" class="org.springframework.jdbc.support.SQLErrorCodes">
+    <property name="databaseProductName">
+      <value>SQLite</value>
+    </property>
+    <property name="duplicateKeyCodes">
+      <value>1555,2067</value>
+    </property>
+    <property name="dataIntegrityViolationCodes">
+      <value>19,275,787,1299,1811,2323,2579</value>
+    </property>
+  </bean>
+</beans>

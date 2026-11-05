@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.readservice.GolfReadService">
+    <sql id="selectContest">
+        select
+          C.id,
+          C.name,
+          C.season,
+          C.created_at createdAt
+        from golf_contests C
+    </sql>
+    <sql id="selectPick">
+        select
+          P.id pickId,
+          P.contest_id pickContestId,
+          P.created_at pickCreatedAt,
+          T.id tournamentId,
+          T.name tournamentName,
+          T.starts_at tournamentStartsAt,
+          T.ends_at tournamentEndsAt,
+          exists(select 1 from golf_tournament_results TR where TR.tournament_id = T.id) hasResults,
+          G.id golferId,
+          G.name golferName,
+          G.country golferCountry,
+          R.finish_position finishPosition,
+          R.prize_money prizeMoney
+        from golf_picks P
+        join golf_tournaments T on T.id = P.tournament_id
+        join golf_golfers G on G.id = P.golfer_id
+        left join golf_tournament_results R on R.tournament_id = P.tournament_id and R.golfer_id = P.golfer_id
+    </sql>
+
+    <select id="allContests" resultType="io.spring.application.data.GolfContestData">
+        <include refid="selectContest"/>
+        order by C.created_at desc, C.id
+    </select>
+    <select id="findContestById" resultType="io.spring.application.data.GolfContestData">
+        <include refid="selectContest"/>
+        where C.id = #{id}
+    </select>
+    <select id="findTournamentsByContest" resultType="io.spring.application.data.GolfTournamentData">
+        select
+          T.id,
+          T.contest_id contestId,
+          T.name,
+          T.course,
+          T.starts_at startsAt,
+          T.ends_at endsAt,
+          exists(select 1 from golf_tournament_results TR where TR.tournament_id = T.id) hasResults
+        from golf_tournaments T
+        where T.contest_id = #{contestId}
+        order by T.starts_at, T.id
+    </select>
+    <select id="allGolfers" resultType="io.spring.application.data.GolferData">
+        select id, name, country from golf_golfers order by name
+    </select>
+    <select id="isEntered" resultType="java.lang.Boolean">
+        select count(1) > 0 from golf_contest_entries
+        where contest_id = #{contestId} and user_id = #{userId}
+    </select>
+    <select id="findPicksByContestAndUser" resultMap="golfPickData">
+        <include refid="selectPick"/>
+        where P.contest_id = #{contestId} and P.user_id = #{userId}
+        order by T.starts_at, T.id
+    </select>
+    <select id="findPickById" resultMap="golfPickData">
+        <include refid="selectPick"/>
+        where P.id = #{id}
+    </select>
+
+    <resultMap id="golfPickData" type="io.spring.application.data.GolfPickData">
+        <id column="pickId" property="id"/>
+        <result column="pickContestId" property="contestId"/>
+        <result column="pickCreatedAt" property="createdAt"/>
+        <result column="tournamentId" property="tournamentId"/>
+        <result column="tournamentName" property="tournamentName"/>
+        <result column="tournamentStartsAt" property="tournamentStartsAt"/>
+        <result column="tournamentEndsAt" property="tournamentEndsAt"/>
+        <result column="hasResults" property="hasResults"/>
+        <result column="finishPosition" property="finishPosition"/>
+        <result column="prizeMoney" property="prizeMoney"/>
+        <association property="golfer" javaType="io.spring.application.data.GolferData">
+            <id column="golferId" property="id"/>
+            <result column="golferName" property="name"/>
+            <result column="golferCountry" property="country"/>
+        </association>
+    </resultMap>
+</mapper>

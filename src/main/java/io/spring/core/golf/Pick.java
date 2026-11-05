@@ -35,4 +35,8 @@ public class Pick {
     this.golferId = golferId;
     this.createdAt = createdAt;
   }
+
+  public void changeGolfer(String golferId) {
+    this.golferId = golferId;
+  }
 }
