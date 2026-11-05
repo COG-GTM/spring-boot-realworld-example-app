@@ -74,7 +74,7 @@ public class GolfQueryService {
             pick.getTournamentStartsAt(), pick.getTournamentEndsAt(), pick.isHasResults(), now);
     pick.setTournamentStatus(status);
     if (status == TournamentStatus.COMPLETED) {
-      if (pick.getPrizeMoney() == null) {
+      if (pick.isHasResults() && pick.getPrizeMoney() == null) {
         pick.setPrizeMoney(0L);
       }
     } else {

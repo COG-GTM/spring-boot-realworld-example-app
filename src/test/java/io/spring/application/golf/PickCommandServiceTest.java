@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 
 public class PickCommandServiceTest {
   private ContestEntryRepository contestEntryRepository;
@@ -57,6 +59,16 @@ public class PickCommandServiceTest {
     when(contestEntryRepository.exists(eq(contest.getId()), eq(user.getId()))).thenReturn(true);
     service.joinContest(contest, user);
     verify(contestEntryRepository, never()).save(any());
+  }
+
+  @Test
+  public void should_treat_concurrent_duplicate_join_as_success() {
+    when(contestEntryRepository.exists(eq(contest.getId()), eq(user.getId())))
+        .thenReturn(false, true);
+    doThrow(new DataIntegrityViolationException("duplicate"))
+        .when(contestEntryRepository)
+        .save(any());
+    service.joinContest(contest, user);
   }
 
   @Test

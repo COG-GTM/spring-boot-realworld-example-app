@@ -6,6 +6,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import javax.validation.ConstraintViolationException;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(GolfApi.class)
@@ -196,6 +199,22 @@ public class GolfApiTest extends TestWithCurrentUser {
         .body("pick.tournamentId", equalTo(tournament.getId()))
         .body("pick.golfer.id", equalTo(golfer.getId()))
         .body("pick.tournamentStatus", equalTo("upcoming"));
+  }
+
+  @Test
+  public void should_revalidate_pick_after_concurrent_unique_key_conflict() {
+    when(pickCommandService.submitPick(any()))
+        .thenThrow(new DataIntegrityViolationException("unique"))
+        .thenThrow(new ConstraintViolationException("golfer already used", Collections.emptySet()));
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(pickParam(tournament.getId(), golfer.getId()))
+        .when()
+        .post("/golf/contests/{id}/picks", contest.getId())
+        .then()
+        .statusCode(422);
+    verify(pickCommandService, times(2)).submitPick(any());
   }
 
   @Test

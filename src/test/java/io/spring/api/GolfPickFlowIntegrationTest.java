@@ -7,8 +7,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import io.spring.core.golf.Pick;
+import io.spring.core.golf.PickRepository;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -39,6 +43,7 @@ public class GolfPickFlowIntegrationTest {
   @Autowired private MockMvc mvc;
   @Autowired private UserRepository userRepository;
   @Autowired private JwtService jwtService;
+  @Autowired private PickRepository pickRepository;
 
   private String demoToken;
 
@@ -148,6 +153,12 @@ public class GolfPickFlowIntegrationTest {
     }
 
     pick(token, UPCOMING, "golfer-scheffler").then().statusCode(200);
+  }
+
+  @Test
+  public void should_surface_unique_key_conflicts_as_data_integrity_violations() {
+    Pick duplicate = new Pick(CONTEST, COMPLETED, "user-golfdemo1", "golfer-rahm");
+    assertThrows(DataIntegrityViolationException.class, () -> pickRepository.save(duplicate));
   }
 
   @Test

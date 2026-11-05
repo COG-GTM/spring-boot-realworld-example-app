@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,8 +77,14 @@ public class GolfApi {
         golferRepository
             .findById(newPickParam.getGolferId())
             .orElseThrow(ResourceNotFoundException::new);
-    Pick pick =
-        pickCommandService.submitPick(new SubmitPickCommand(user, contest, tournament, golfer));
+    SubmitPickCommand command = new SubmitPickCommand(user, contest, tournament, golfer);
+    Pick pick;
+    try {
+      pick = pickCommandService.submitPick(command);
+    } catch (DataIntegrityViolationException e) {
+      // a concurrent pick won the unique-key race; re-validating now reports it as a 422
+      pick = pickCommandService.submitPick(command);
+    }
     return ResponseEntity.ok(response("pick", golfQueryService.findPick(pick.getId()).get()));
   }
 
