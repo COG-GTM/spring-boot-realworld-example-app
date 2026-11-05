@@ -9,7 +9,6 @@ import io.spring.core.user.User;
 import java.util.Optional;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -22,15 +21,8 @@ public class PickCommandService {
   private PickRepository pickRepository;
 
   public void joinContest(GolfContest contest, User user) {
-    if (contestEntryRepository.exists(contest.getId(), user.getId())) {
-      return;
-    }
-    try {
+    if (!contestEntryRepository.exists(contest.getId(), user.getId())) {
       contestEntryRepository.save(new ContestEntry(contest.getId(), user.getId()));
-    } catch (DataIntegrityViolationException e) {
-      if (!contestEntryRepository.exists(contest.getId(), user.getId())) {
-        throw e;
-      }
     }
   }
 
