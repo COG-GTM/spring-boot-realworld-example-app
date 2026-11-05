@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.ContestEntryMapper">
+    <insert id="insert">
+        insert into golf_contest_entries (contest_id, user_id, created_at)
+        values (#{entry.contestId}, #{entry.userId}, #{entry.createdAt})
+    </insert>
+    <sql id="selectEntry">
+        select
+          CE.contest_id entryContestId,
+          CE.user_id entryUserId,
+          CE.created_at entryCreatedAt
+        from golf_contest_entries CE
+    </sql>
+    <select id="find" resultMap="contestEntry">
+        <include refid="selectEntry"/>
+        where CE.contest_id = #{contestId} and CE.user_id = #{userId}
+    </select>
+    <select id="findByContestId" resultMap="contestEntry">
+        <include refid="selectEntry"/>
+        where CE.contest_id = #{contestId}
+        order by CE.created_at, CE.user_id
+    </select>
+    <resultMap id="contestEntry" type="io.spring.core.golf.ContestEntry">
+        <result column="entryContestId" property="contestId"/>
+        <result column="entryUserId" property="userId"/>
+        <result column="entryCreatedAt" property="createdAt"/>
+    </resultMap>
+</mapper>

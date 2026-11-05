@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.GolferMapper">
+    <insert id="insert">
+        insert into golf_golfers (id, name, country) values (#{golfer.id}, #{golfer.name}, #{golfer.country})
+    </insert>
+    <update id="update">
+        update golf_golfers set name = #{golfer.name}, country = #{golfer.country} where id = #{golfer.id}
+    </update>
+    <sql id="selectGolfer">
+        select
+          GG.id golferId,
+          GG.name golferName,
+          GG.country golferCountry
+        from golf_golfers GG
+    </sql>
+    <select id="findById" resultMap="golfer">
+        <include refid="selectGolfer"/>
+        where GG.id = #{id}
+    </select>
+    <select id="findAll" resultMap="golfer">
+        <include refid="selectGolfer"/>
+        order by GG.name
+    </select>
+    <resultMap id="golfer" type="io.spring.core.golf.Golfer">
+        <id column="golferId" property="id"/>
+        <result column="golferName" property="name"/>
+        <result column="golferCountry" property="country"/>
+    </resultMap>
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.GolfContestMapper">
+    <insert id="insert">
+        insert into golf_contests (id, name, season, created_at)
+        values (#{contest.id}, #{contest.name}, #{contest.season}, #{contest.createdAt})
+    </insert>
+    <update id="update">
+        update golf_contests set name = #{contest.name}, season = #{contest.season} where id = #{contest.id}
+    </update>
+    <sql id="selectContest">
+        select
+          GC.id golfContestId,
+          GC.name golfContestName,
+          GC.season golfContestSeason,
+          GC.created_at golfContestCreatedAt
+        from golf_contests GC
+    </sql>
+    <select id="findById" resultMap="golfContest">
+        <include refid="selectContest"/>
+        where GC.id = #{id}
+    </select>
+    <select id="findAll" resultMap="golfContest">
+        <include refid="selectContest"/>
+        order by GC.created_at desc, GC.id
+    </select>
+    <resultMap id="golfContest" type="io.spring.core.golf.GolfContest">
+        <id column="golfContestId" property="id"/>
+        <result column="golfContestName" property="name"/>
+        <result column="golfContestSeason" property="season"/>
+        <result column="golfContestCreatedAt" property="createdAt"/>
+    </resultMap>
+</mapper>
