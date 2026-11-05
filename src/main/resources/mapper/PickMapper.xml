@@ -2,14 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.spring.infrastructure.mybatis.mapper.PickMapper">
     <insert id="insert">
-        insert into golf_picks (id, contest_id, tournament_id, user_id, golfer_id, created_at)
+        insert into golf_picks (id, contest_id, tournament_id, user_id, golfer_id, created_at, prize_money)
         values (
           #{pick.id},
           #{pick.contestId},
           #{pick.tournamentId},
           #{pick.userId},
           #{pick.golferId},
-          #{pick.createdAt}
+          #{pick.createdAt},
+          case when exists (select 1 from golf_tournament_results R where R.tournament_id = #{pick.tournamentId})
+            then coalesce((select R.prize_money from golf_tournament_results R
+              where R.tournament_id = #{pick.tournamentId} and R.golfer_id = #{pick.golferId}), 0)
+          end
         )
     </insert>
     <update id="update">
@@ -17,8 +21,18 @@
           contest_id = #{pick.contestId},
           tournament_id = #{pick.tournamentId},
           user_id = #{pick.userId},
-          golfer_id = #{pick.golferId}
+          golfer_id = #{pick.golferId},
+          prize_money = case when exists (select 1 from golf_tournament_results R where R.tournament_id = #{pick.tournamentId})
+            then coalesce((select R.prize_money from golf_tournament_results R
+              where R.tournament_id = #{pick.tournamentId} and R.golfer_id = #{pick.golferId}), 0)
+          end
         where id = #{pick.id}
+    </update>
+    <update id="applyTournamentResults">
+        update golf_picks set prize_money = coalesce(
+          (select R.prize_money from golf_tournament_results R
+            where R.tournament_id = golf_picks.tournament_id and R.golfer_id = golf_picks.golfer_id), 0)
+        where tournament_id = #{tournamentId}
     </update>
     <sql id="selectPick">
         select
@@ -27,7 +41,8 @@
           GP.tournament_id pickTournamentId,
           GP.user_id pickUserId,
           GP.golfer_id pickGolferId,
-          GP.created_at pickCreatedAt
+          GP.created_at pickCreatedAt,
+          GP.prize_money pickPrizeMoney
         from golf_picks GP
     </sql>
     <select id="findById" resultMap="pick">
@@ -61,5 +76,6 @@
         <result column="pickUserId" property="userId"/>
         <result column="pickGolferId" property="golferId"/>
         <result column="pickCreatedAt" property="createdAt"/>
+        <result column="pickPrizeMoney" property="prizeMoney"/>
     </resultMap>
 </mapper>

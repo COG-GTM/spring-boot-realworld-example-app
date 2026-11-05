@@ -16,6 +16,7 @@ public class Pick {
   private String userId;
   private String golferId;
   private DateTime createdAt;
+  private Long prizeMoney;
 
   public Pick(String contestId, String tournamentId, String userId, String golferId) {
     this(UUID.randomUUID().toString(), contestId, tournamentId, userId, golferId, new DateTime());

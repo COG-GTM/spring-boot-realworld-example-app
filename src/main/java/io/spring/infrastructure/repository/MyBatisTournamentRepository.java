@@ -7,6 +7,7 @@ import io.spring.infrastructure.mybatis.mapper.TournamentMapper;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class MyBatisTournamentRepository implements TournamentRepository {
@@ -47,5 +48,14 @@ public class MyBatisTournamentRepository implements TournamentRepository {
   @Override
   public List<TournamentResult> findResultsByTournamentId(String tournamentId) {
     return mapper.findResultsByTournamentId(tournamentId);
+  }
+
+  @Override
+  @Transactional
+  public void replaceResults(String tournamentId, List<TournamentResult> results) {
+    mapper.deleteResultsByTournamentId(tournamentId);
+    for (TournamentResult result : results) {
+      mapper.insertResult(result);
+    }
   }
 }

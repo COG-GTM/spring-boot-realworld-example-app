@@ -27,4 +27,6 @@ public interface PickMapper {
       @Param("golferId") String golferId);
 
   List<Pick> findByContest(@Param("contestId") String contestId);
+
+  int applyTournamentResults(@Param("tournamentId") String tournamentId);
 }

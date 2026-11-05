@@ -13,4 +13,7 @@ public interface TournamentRepository {
   void saveResult(TournamentResult result);
 
   List<TournamentResult> findResultsByTournamentId(String tournamentId);
+
+  /** Replaces all results of the tournament with the given ones. */
+  void replaceResults(String tournamentId, List<TournamentResult> results);
 }

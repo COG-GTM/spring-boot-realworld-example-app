@@ -31,6 +31,9 @@
           prize_money = #{result.prizeMoney}
         where tournament_id = #{result.tournamentId} and golfer_id = #{result.golferId}
     </update>
+    <delete id="deleteResultsByTournamentId">
+        delete from golf_tournament_results where tournament_id = #{tournamentId}
+    </delete>
     <sql id="selectTournament">
         select
           GT.id tournamentId,
