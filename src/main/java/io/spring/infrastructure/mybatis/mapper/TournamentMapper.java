@@ -20,6 +20,8 @@ public interface TournamentMapper {
 
   void updateResult(@Param("result") TournamentResult result);
 
+  void deleteResultsByTournamentId(@Param("tournamentId") String tournamentId);
+
   TournamentResult findResult(
       @Param("tournamentId") String tournamentId, @Param("golferId") String golferId);
 

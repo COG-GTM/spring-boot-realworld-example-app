@@ -20,6 +20,12 @@
           golfer_id = #{pick.golferId}
         where id = #{pick.id}
     </update>
+    <update id="applyTournamentResults">
+        update golf_picks set prize_money = coalesce(
+          (select R.prize_money from golf_tournament_results R
+            where R.tournament_id = golf_picks.tournament_id and R.golfer_id = golf_picks.golfer_id), 0)
+        where tournament_id = #{tournamentId}
+    </update>
     <sql id="selectPick">
         select
           GP.id pickId,
@@ -27,7 +33,8 @@
           GP.tournament_id pickTournamentId,
           GP.user_id pickUserId,
           GP.golfer_id pickGolferId,
-          GP.created_at pickCreatedAt
+          GP.created_at pickCreatedAt,
+          GP.prize_money pickPrizeMoney
         from golf_picks GP
     </sql>
     <select id="findById" resultMap="pick">
@@ -61,5 +68,6 @@
         <result column="pickUserId" property="userId"/>
         <result column="pickGolferId" property="golferId"/>
         <result column="pickCreatedAt" property="createdAt"/>
+        <result column="pickPrizeMoney" property="prizeMoney"/>
     </resultMap>
 </mapper>

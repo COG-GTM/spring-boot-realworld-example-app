@@ -16,4 +16,7 @@ public interface PickRepository {
   boolean existsByContestUserAndGolfer(String contestId, String userId, String golferId);
 
   List<Pick> findByContest(String contestId);
+
+  /** Credits every pick in the tournament with its golfer's recorded prize money (0 if none). */
+  int applyTournamentResults(String tournamentId);
 }

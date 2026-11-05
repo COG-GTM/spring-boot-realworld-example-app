@@ -50,4 +50,9 @@ public class MyBatisPickRepository implements PickRepository {
   public List<Pick> findByContest(String contestId) {
     return mapper.findByContest(contestId);
   }
+
+  @Override
+  public int applyTournamentResults(String tournamentId) {
+    return mapper.applyTournamentResults(tournamentId);
+  }
 }
