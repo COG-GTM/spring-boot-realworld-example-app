@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.readservice.GolfStandingsReadService">
+    <resultMap id="golfStandingPickData" type="io.spring.application.data.GolfStandingPickData">
+        <id column="pickId"/>
+        <result column="pickTournamentId" property="tournamentId"/>
+        <result column="pickTournamentName" property="tournamentName"/>
+        <result column="pickGolferId" property="golferId"/>
+        <result column="pickGolferName" property="golferName"/>
+        <result column="pickPrizeMoney" property="prizeMoney" javaType="long"/>
+    </resultMap>
+
+    <resultMap id="golfStandingData" type="io.spring.application.data.GolfStandingData">
+        <id column="userId" property="userId"/>
+        <result column="userUsername" property="username"/>
+        <result column="userImage" property="image"/>
+        <result column="totalPrizeMoney" property="totalPrizeMoney"/>
+        <result column="picksMade" property="picksMade"/>
+        <collection property="picks" ofType="io.spring.application.data.GolfStandingPickData"
+                    resultMap="golfStandingPickData" notNullColumn="pickId"/>
+    </resultMap>
+
+    <select id="findContestById" resultType="io.spring.application.data.GolfContestData">
+        select id, name, season from golf_contests where id = #{contestId}
+    </select>
+
+    <!-- A pick in a tournament without any results yet has a null prize (pending) and adds 0. -->
+    <select id="findStandings" resultMap="golfStandingData">
+        select
+          U.id userId,
+          U.username userUsername,
+          U.image userImage,
+          (select coalesce(sum(R2.prize_money), 0)
+             from golf_picks P2
+             join golf_tournament_results R2
+               on R2.tournament_id = P2.tournament_id and R2.golfer_id = P2.golfer_id
+            where P2.contest_id = E.contest_id and P2.user_id = E.user_id) totalPrizeMoney,
+          (select count(*)
+             from golf_picks P3
+            where P3.contest_id = E.contest_id and P3.user_id = E.user_id) picksMade,
+          P.id pickId,
+          T.id pickTournamentId,
+          T.name pickTournamentName,
+          G.id pickGolferId,
+          G.name pickGolferName,
+          case
+            when exists (select 1 from golf_tournament_results R3 where R3.tournament_id = P.tournament_id)
+            then coalesce(R.prize_money, 0)
+          end pickPrizeMoney
+        from golf_contest_entries E
+        join users U on U.id = E.user_id
+        left join golf_picks P on P.contest_id = E.contest_id and P.user_id = E.user_id
+        left join golf_tournaments T on T.id = P.tournament_id
+        left join golf_golfers G on G.id = P.golfer_id
+        left join golf_tournament_results R
+          on R.tournament_id = P.tournament_id and R.golfer_id = P.golfer_id
+        where E.contest_id = #{contestId}
+        order by totalPrizeMoney desc, U.username asc, T.starts_at asc
+    </select>
+</mapper>
