@@ -56,6 +56,12 @@ dependencies {
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
 }
 
+dependencyManagement {
+    dependencies {
+        dependency 'com.graphql-java:graphql-java:17.6'
+    }
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
