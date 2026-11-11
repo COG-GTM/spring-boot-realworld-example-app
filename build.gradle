@@ -24,6 +24,8 @@ repositories {
     mavenCentral()
 }
 
+ext['jackson-bom.version'] = '2.13.5'
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
