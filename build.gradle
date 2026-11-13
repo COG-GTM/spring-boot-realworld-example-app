@@ -8,6 +8,11 @@ plugins {
 
 version = '0.0.1-SNAPSHOT'
 
+// Patch releases newer than the Spring Boot 3.5.16 BOM, for known CVEs.
+ext['jackson-bom.version'] = '2.21.8'
+ext['tomcat.version'] = '10.1.61'
+ext['log4j2.version'] = '2.25.5'
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
