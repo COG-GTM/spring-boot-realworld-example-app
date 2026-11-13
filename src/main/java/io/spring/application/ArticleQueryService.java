@@ -137,12 +137,11 @@ public class ArticleQueryService {
             articles.stream()
                 .map(articleData1 -> articleData1.getProfileData().getId())
                 .collect(toList()));
-    articles.forEach(
-        articleData -> {
-          if (followingAuthors.contains(articleData.getProfileData().getId())) {
-            articleData.getProfileData().setFollowing(true);
-          }
-        });
+    articles.forEach(articleData -> {
+      if (followingAuthors.contains(articleData.getProfileData().getId())) {
+        articleData.getProfileData().setFollowing(true);
+      }
+    });
   }
 
   private void setFavoriteCount(List<ArticleData> articles) {
@@ -150,10 +149,9 @@ public class ArticleQueryService {
         articleFavoritesReadService.articlesFavoriteCount(
             articles.stream().map(ArticleData::getId).collect(toList()));
     Map<String, Integer> countMap = new HashMap<>();
-    favoritesCounts.forEach(
-        item -> {
-          countMap.put(item.getId(), item.getCount());
-        });
+    favoritesCounts.forEach(item -> {
+      countMap.put(item.getId(), item.getCount());
+    });
     articles.forEach(
         articleData -> articleData.setFavoritesCount(countMap.get(articleData.getId())));
   }
@@ -164,12 +162,11 @@ public class ArticleQueryService {
             articles.stream().map(articleData -> articleData.getId()).collect(toList()),
             currentUser);
 
-    articles.forEach(
-        articleData -> {
-          if (favoritedArticles.contains(articleData.getId())) {
-            articleData.setFavorited(true);
-          }
-        });
+    articles.forEach(articleData -> {
+      if (favoritedArticles.contains(articleData.getId())) {
+        articleData.setFavorited(true);
+      }
+    });
   }
 
   private void fillExtraInfo(String id, User user, ArticleData articleData) {

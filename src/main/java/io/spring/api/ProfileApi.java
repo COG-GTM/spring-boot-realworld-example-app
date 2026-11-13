@@ -39,12 +39,11 @@ public class ProfileApi {
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
     return userRepository
         .findByUsername(username)
-        .map(
-            target -> {
-              FollowRelation followRelation = new FollowRelation(user.getId(), target.getId());
-              userRepository.saveRelation(followRelation);
-              return profileResponse(profileQueryService.findByUsername(username, user).get());
-            })
+        .map(target -> {
+          FollowRelation followRelation = new FollowRelation(user.getId(), target.getId());
+          userRepository.saveRelation(followRelation);
+          return profileResponse(profileQueryService.findByUsername(username, user).get());
+        })
         .orElseThrow(ResourceNotFoundException::new);
   }
 
@@ -56,11 +55,10 @@ public class ProfileApi {
       User target = userOptional.get();
       return userRepository
           .findRelation(user.getId(), target.getId())
-          .map(
-              relation -> {
-                userRepository.removeRelation(relation);
-                return profileResponse(profileQueryService.findByUsername(username, user).get());
-              })
+          .map(relation -> {
+            userRepository.removeRelation(relation);
+            return profileResponse(profileQueryService.findByUsername(username, user).get());
+          })
           .orElseThrow(ResourceNotFoundException::new);
     } else {
       throw new ResourceNotFoundException();

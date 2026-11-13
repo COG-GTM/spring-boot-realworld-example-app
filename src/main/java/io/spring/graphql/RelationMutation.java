@@ -27,13 +27,12 @@ public class RelationMutation {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     return userRepository
         .findByUsername(username)
-        .map(
-            target -> {
-              FollowRelation followRelation = new FollowRelation(user.getId(), target.getId());
-              userRepository.saveRelation(followRelation);
-              Profile profile = buildProfile(username, user);
-              return ProfilePayload.newBuilder().profile(profile).build();
-            })
+        .map(target -> {
+          FollowRelation followRelation = new FollowRelation(user.getId(), target.getId());
+          userRepository.saveRelation(followRelation);
+          Profile profile = buildProfile(username, user);
+          return ProfilePayload.newBuilder().profile(profile).build();
+        })
         .orElseThrow(ResourceNotFoundException::new);
   }
 
@@ -44,12 +43,11 @@ public class RelationMutation {
         userRepository.findByUsername(username).orElseThrow(ResourceNotFoundException::new);
     return userRepository
         .findRelation(user.getId(), target.getId())
-        .map(
-            relation -> {
-              userRepository.removeRelation(relation);
-              Profile profile = buildProfile(username, user);
-              return ProfilePayload.newBuilder().profile(profile).build();
-            })
+        .map(relation -> {
+          userRepository.removeRelation(relation);
+          Profile profile = buildProfile(username, user);
+          return ProfilePayload.newBuilder().profile(profile).build();
+        })
         .orElseThrow(ResourceNotFoundException::new);
   }
 

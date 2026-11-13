@@ -26,14 +26,13 @@ public class ErrorResourceSerializer extends JsonSerializer<ErrorResource> {
     for (Map.Entry<String, List<String>> pair : json.entrySet()) {
       gen.writeArrayFieldStart(pair.getKey());
       pair.getValue()
-          .forEach(
-              content -> {
-                try {
-                  gen.writeString(content);
-                } catch (IOException e) {
-                  e.printStackTrace();
-                }
-              });
+          .forEach(content -> {
+            try {
+              gen.writeString(content);
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          });
       gen.writeEndArray();
     }
     gen.writeEndObject();

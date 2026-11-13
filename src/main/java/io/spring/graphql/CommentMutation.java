@@ -55,14 +55,13 @@ public class CommentMutation {
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
     return commentRepository
         .findById(article.getId(), commentId)
-        .map(
-            comment -> {
-              if (!AuthorizationService.canWriteComment(user, article, comment)) {
-                throw new NoAuthorizationException();
-              }
-              commentRepository.remove(comment);
-              return DeletionStatus.newBuilder().success(true).build();
-            })
+        .map(comment -> {
+          if (!AuthorizationService.canWriteComment(user, article, comment)) {
+            throw new NoAuthorizationException();
+          }
+          commentRepository.remove(comment);
+          return DeletionStatus.newBuilder().success(true).build();
+        })
         .orElseThrow(ResourceNotFoundException::new);
   }
 }
