@@ -82,3 +82,58 @@ Other callers of `ArticleQueryService` that therefore transitively return favori
 `ArticleApi.java:38-41,58-60`, `ArticlesApi.java:35,45,56-58`, `ArticleDatafetcher.java:58,63,108,113,155,163,209,217,264,272,306-308,327-329,346`,
 and `DuplicatedArticleValidator.java:16` (passes `user = null`, so it does not hit favorites queries for single reads).
 
+## 5. REST API
+
+| Endpoint | Ref | Coupling |
+| --- | --- | --- |
+| `POST /articles/{slug}/favorite` | `src/main/java/io/spring/api/ArticleFavoriteApi.java:29-37` | Resolves slug via `ArticleRepository.findBySlug` (articles), user via `@AuthenticationPrincipal User` (users), writes `ArticleFavorite`, responds with `ArticleQueryService.findBySlug(...).get()`. |
+| `DELETE /articles/{slug}/favorite` | `ArticleFavoriteApi.java:39-51` | Same dependencies; no-op if not favorited. |
+| `GET /articles?favorited={username}` | `src/main/java/io/spring/api/ArticlesApi.java:48-59` (param at `:53`) | Query param is named `favorited` but bound to `favoritedBy`; value is a **username**, not an id. |
+| `GET /articles`, `GET /articles/feed`, `GET/PUT /articles/{slug}`, `POST /articles` | `ArticlesApi.java:28-59`, `ArticleApi.java:35-63` | Response bodies include `favorited` / `favoritesCount` from `ArticleData`. |
+| Security | `src/main/java/io/spring/api/security/WebSecurityConfig.java:59-62` | Favorite POST/DELETE fall through to `anyRequest().authenticated()`; `GET /articles/**` is public. |
+
+## 6. GraphQL API (Netflix DGS)
+
+| Element | Ref | Coupling |
+| --- | --- | --- |
+| Schema – mutations | `src/main/resources/schema/schema.graphqls:32-33` | `favoriteArticle(slug)`, `unfavoriteArticle(slug)` return `ArticlePayload`. |
+| Schema – fields | `schema.graphqls:53-54` | `Article.favorited`, `Article.favoritesCount` (both non-null). |
+| Schema – filters | `schema.graphqls:10`, `:109` | `Query.articles(favoritedBy:)`, `Profile.favorites(...)` connection. |
+| Codegen | `build.gradle:5`, `:69-72` | `DgsConstants.MUTATION.FavoriteArticle/UnfavoriteArticle`, `PROFILE.Favorites` and `types.Article` are generated from the schema; renaming schema fields breaks Java compilation. |
+| Mutations | `src/main/java/io/spring/graphql/ArticleMutation.java:32` (field), `:72-83`, `:85-100` | Same pattern as REST: `SecurityUtil.getCurrentUser()` (users) + `ArticleRepository.findBySlug` (articles) + `ArticleFavoriteRepository`. Returns empty `ArticlePayload` with the core `Article` in `localContext`. |
+| Payload resolution | `src/main/java/io/spring/graphql/ArticleDatafetcher.java:300-319` | `ArticlePayload.article` re-reads via `ArticleQueryService.findById` to get fresh `favorited`/`favoritesCount`. |
+| `Profile.favorites` | `ArticleDatafetcher.java:138-190` | Uses `profile.getUsername()` (`:158`, `:166`) as `favoritedBy`. |
+| `Query.articles(favoritedBy)` | `ArticleDatafetcher.java:245-298` (arg `:252`, use `:267`, `:275`) | Pass-through to `ArticleQueryService`. |
+| Mapping to GraphQL type | `ArticleDatafetcher.java:371-383` (`:376-377`) | Copies `favorited` / `favoritesCount`. |
+| Security | `WebSecurityConfig.java:53-54` | `/graphql` is `permitAll`; auth enforced inside the mutation via `AuthenticationException`. |
+
+## 7. Tests
+
+| Test | Ref | What it covers |
+| --- | --- | --- |
+| `ArticleFavoriteApiTest` | `src/test/java/io/spring/api/ArticleFavoriteApiTest.java:33-103` | `@WebMvcTest` of REST favorite/unfavorite with mocked `ArticleFavoriteRepository`, `ArticleRepository`, `ArticleQueryService`; asserts `save` (`:86`) and `remove` with an equal `ArticleFavorite` (`:101`). |
+| `MyBatisArticleFavoriteRepositoryTest` | `src/test/java/io/spring/infrastructure/favorite/MyBatisArticleFavoriteRepositoryTest.java:12-34` | Real DB: save/find (`:20-25`) and remove (`:28-33`). Uses the mapper directly (`:17`). |
+| `ArticleQueryServiceTest` | `src/test/java/io/spring/application/article/ArticleQueryServiceTest.java` | Wires `MyBatisArticleFavoriteRepository` (`:35`, `:44`); favorite count/flag on single read (`:65-66`, `:73-84`); `favoritedBy` filter (`:161-181`). |
+| `ArticlesApiTest` | `src/test/java/io/spring/api/ArticlesApiTest.java:88-90` | Asserts `article.favorited == false`, `article.favoritesCount == 0` in create-article response. |
+| `ArticleApiTest`, `ListArticleApiTest` | `src/test/java/io/spring/api/ArticleApiTest.java`, `ListArticleApiTest.java` | Indirect: mock `ArticleQueryService` and build `ArticleData` instances with the `favorited`/`favoritesCount` constructor args. |
+
+**Gaps:** no tests for `ArticleMutation.favoriteArticle` / `unfavoriteArticle`, `Profile.favorites`,
+`Query.articles(favoritedBy:)`, the REST `?favorited=` query param end-to-end, or orphan rows after article deletion.
+
+## 8. Coupling summary
+
+```
+            users (id, username)                     articles (id, slug, ...)
+                 ^       ^                                  ^        ^
+   AFU.username  |       | User.id               A.id joins |        | ArticleRepository.findBySlug
+  (ArticleRead-  |       | (@AuthenticationPrincipal,       |        | (ArticleFavoriteApi, ArticleMutation)
+   Service.xml)  |       |  SecurityUtil, userFavorites)    |        |
+                 +----- article_favorites (article_id, user_id) -----+
+                                   ^
+        ArticleFavoriteMapper(.xml) / ArticleFavoritesReadService(.xml) / TransferData.xml
+                                   ^
+                 ArticleQueryService -> ArticleData.favorited / favoritesCount
+                                   ^
+        REST: ArticleFavoriteApi, ArticlesApi, ArticleApi    GraphQL: ArticleMutation, ArticleDatafetcher, schema.graphqls
+```
+
