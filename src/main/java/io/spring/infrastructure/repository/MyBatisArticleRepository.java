@@ -30,11 +30,10 @@ public class MyBatisArticleRepository implements ArticleRepository {
     for (Tag tag : article.getTags()) {
       Tag targetTag =
           Optional.ofNullable(articleMapper.findTag(tag.getName()))
-              .orElseGet(
-                  () -> {
-                    articleMapper.insertTag(tag);
-                    return tag;
-                  });
+              .orElseGet(() -> {
+                articleMapper.insertTag(tag);
+                return tag;
+              });
       articleMapper.insertArticleTagRelation(article.getId(), targetTag.getId());
     }
     articleMapper.insert(article);

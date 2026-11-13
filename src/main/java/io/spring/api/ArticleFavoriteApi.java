@@ -43,10 +43,9 @@ public class ArticleFavoriteApi {
         articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
     articleFavoriteRepository
         .find(article.getId(), user.getId())
-        .ifPresent(
-            favorite -> {
-              articleFavoriteRepository.remove(favorite);
-            });
+        .ifPresent(favorite -> {
+          articleFavoriteRepository.remove(favorite);
+        });
     return responseArticleData(articleQueryService.findBySlug(slug, user).get());
   }
 

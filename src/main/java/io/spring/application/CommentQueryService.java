@@ -43,12 +43,11 @@ public class CommentQueryService {
               comments.stream()
                   .map(commentData -> commentData.getProfileData().getId())
                   .collect(Collectors.toList()));
-      comments.forEach(
-          commentData -> {
-            if (followingAuthors.contains(commentData.getProfileData().getId())) {
-              commentData.getProfileData().setFollowing(true);
-            }
-          });
+      comments.forEach(commentData -> {
+        if (followingAuthors.contains(commentData.getProfileData().getId())) {
+          commentData.getProfileData().setFollowing(true);
+        }
+      });
     }
     return comments;
   }
@@ -66,12 +65,11 @@ public class CommentQueryService {
               comments.stream()
                   .map(commentData -> commentData.getProfileData().getId())
                   .collect(Collectors.toList()));
-      comments.forEach(
-          commentData -> {
-            if (followingAuthors.contains(commentData.getProfileData().getId())) {
-              commentData.getProfileData().setFollowing(true);
-            }
-          });
+      comments.forEach(commentData -> {
+        if (followingAuthors.contains(commentData.getProfileData().getId())) {
+          commentData.getProfileData().setFollowing(true);
+        }
+      });
     }
     boolean hasExtra = comments.size() > page.getLimit();
     if (hasExtra) {

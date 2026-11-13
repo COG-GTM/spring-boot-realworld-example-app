@@ -10,9 +10,9 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.User;
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
-import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,17 +48,15 @@ public class ArticleApi {
       @Valid @RequestBody UpdateArticleParam updateArticleParam) {
     return articleRepository
         .findBySlug(slug)
-        .map(
-            article -> {
-              if (!AuthorizationService.canWriteArticle(user, article)) {
-                throw new NoAuthorizationException();
-              }
-              Article updatedArticle =
-                  articleCommandService.updateArticle(article, updateArticleParam);
-              return ResponseEntity.ok(
-                  articleResponse(
-                      articleQueryService.findBySlug(updatedArticle.getSlug(), user).get()));
-            })
+        .map(article -> {
+          if (!AuthorizationService.canWriteArticle(user, article)) {
+            throw new NoAuthorizationException();
+          }
+          Article updatedArticle = articleCommandService.updateArticle(article, updateArticleParam);
+          return ResponseEntity.ok(
+              articleResponse(
+                  articleQueryService.findBySlug(updatedArticle.getSlug(), user).get()));
+        })
         .orElseThrow(ResourceNotFoundException::new);
   }
 
@@ -67,14 +65,13 @@ public class ArticleApi {
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     return articleRepository
         .findBySlug(slug)
-        .map(
-            article -> {
-              if (!AuthorizationService.canWriteArticle(user, article)) {
-                throw new NoAuthorizationException();
-              }
-              articleRepository.remove(article);
-              return ResponseEntity.noContent().build();
-            })
+        .map(article -> {
+          if (!AuthorizationService.canWriteArticle(user, article)) {
+            throw new NoAuthorizationException();
+          }
+          articleRepository.remove(article);
+          return ResponseEntity.noContent().build();
+        })
         .orElseThrow(ResourceNotFoundException::new);
   }
 
