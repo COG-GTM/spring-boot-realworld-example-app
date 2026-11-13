@@ -137,3 +137,36 @@ and `DuplicatedArticleValidator.java:16` (passes `user = null`, so it does not h
         REST: ArticleFavoriteApi, ArticlesApi, ArticleApi    GraphQL: ArticleMutation, ArticleDatafetcher, schema.graphqls
 ```
 
+## 9. What would break if we extracted this
+
+Assuming "extract" means moving favorites into its own module/service with its own storage, so that
+`article_favorites` is no longer joinable from the articles queries:
+
+1. **Article list filtering by favoriter** – `queryArticles`, `countArticle` and `findArticlesWithCursor`
+   (`ArticleReadService.xml:34,36,56-58,70,72,80-82,116-118`) would fail at SQL level. Affects
+   `GET /articles?favorited=`, GraphQL `articles(favoritedBy:)` and `Profile.favorites`. These need to become
+   "ask favorites for article ids favorited by user X, then fetch articles by id" – which also changes how
+   offset/cursor pagination and the total `articlesCount` are computed.
+2. **Favorite counts / flags on every article response** – `articlesFavoriteCount` and `userFavorites`
+   (`ArticleFavoritesReadService.xml:10-29`) join `articles`; `ArticleQueryService` (`:28`, `:148-177`) calls the
+   mapper in-process. Every REST and GraphQL article payload would lose `favorited`/`favoritesCount` (GraphQL
+   declares them non-null, so queries would error) unless replaced by a client call or a batch API.
+3. **Username vs. id** – the filter is by `users.username` (`AFU.username`). An extracted service that only
+   stores ids needs a username→id lookup from users first.
+4. **Domain type leakage** – `ArticleFavoritesReadService.userFavorites` takes `io.spring.core.user.User`
+   (`:18`, XML `:28`); `ArticleFavoriteMapper.xml:17` and `TransferData.xml:4` hard-code class FQNs. Moving packages
+   breaks these at runtime (MyBatis XML is not checked by the compiler) – only DB tests would catch it.
+5. **Write endpoints** – `ArticleFavoriteApi` and `ArticleMutation` resolve slugs through `ArticleRepository` and
+   re-read through `ArticleQueryService`; an extracted favorites service needs an article lookup (slug→id) and the
+   APIs need to keep returning the full article payload to stay contract-compatible.
+6. **Referential integrity** – there are no FKs today and `ArticleMapper.xml:32-34` deletes articles without
+   touching favorites, so orphan rows can already occur; `isUserFavorite` / `articleFavoriteCount` don't join `articles`
+   and would still count them. An extraction must define delete-propagation (event, cascade or tolerated orphans).
+7. **Transactions** – favoriting and reading the updated article happen in one request/DB; after extraction the
+   immediate re-read (`ArticleFavoriteApi.java:36,50`, `ArticleDatafetcher.java:306-308`) may be eventually consistent.
+8. **Tests** – `ArticleQueryServiceTest` (`:35`, `:44`, `:73-84`, `:161-181`) seeds favorites through
+   `MyBatisArticleFavoriteRepository` in the same DB and would need a fake/stub; `ArticleFavoriteApiTest` would need
+   to mock the new client instead of the repository. GraphQL paths are untested, so regressions there would go unnoticed
+   – adding tests before extraction is recommended.
+9. **Behavioural quirk to preserve or fix deliberately** – anonymous single-article reads return
+   `favoritesCount = 0` (`ArticleQueryService.java:35,47`), while list reads return the real count.
