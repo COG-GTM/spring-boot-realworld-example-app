@@ -75,6 +75,7 @@ Observed in the current code:
 - **Article cursors mix columns**: `ArticleData.getCursor()` uses `updatedAt`, while the cursor SQL filters and sorts on `created_at`.
 - **`updated_at` is never written on update**: `ArticleMapper.update` does not set it, so `updatedAt` stays equal to `createdAt` after `PUT /articles/{slug}`.
 - **Joined-row limits**: `findArticlesOfAuthors` (REST feed) and `findArticlesOfAuthorsWithCursor` apply `limit` to rows joined with tags, so articles with several tags take several slots; `findArticlesOfAuthors` also has no `ORDER BY`. `CommentReadService.findByArticleId` (REST comments) has no `ORDER BY` either.
+- **REST create without `tagList`** fails with `500`: `NewArticleParam.tagList` stays `null` and `new Article(...)` calls `new HashSet<>(tagList)`. GraphQL `ArticleMutation` substitutes an empty list.
 - **Updating a title** regenerates the slug without the duplicate check used on create; a clash hits the `articles.slug` unique constraint.
 - **Deleting an article** leaves its comments, favorites and `article_tags` rows behind, and `GET /tags` keeps returning orphaned tags.
 - **Comment `updatedAt`** is mapped from `created_at` (`TransferData.xml`); `Comment` has no `updatedAt` field.

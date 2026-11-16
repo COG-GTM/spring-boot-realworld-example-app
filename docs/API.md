@@ -78,7 +78,7 @@ Validation (`RegisterParam`, `LoginParam`, `UpdateUserParam`, `UpdateUserCommand
 | --- | --- | --- | --- |
 | GET | `/articles` | optional | Query params: `tag`, `author` (username), `favorited` (username), `offset` (default 0), `limit` (default 20, capped at 100). Newest first. Returns `{"articles":[...],"articlesCount":n}` where `articlesCount` is the total number of matches |
 | GET | `/articles/feed` | yes | Articles by users you follow; `offset`, `limit`. Empty list and `articlesCount: 0` if you follow nobody |
-| POST | `/articles` | yes | `{"article":{"title","description","body","tagList"?}}`; `title`, `description`, `body` required; a title whose slug already exists is rejected with `"article name exists"`. Returns `200` |
+| POST | `/articles` | yes | `{"article":{"title","description","body","tagList"}}`; `title`, `description`, `body` must be non-blank. Always send `tagList` (use `[]` for no tags): if it is omitted, the `Article` constructor throws a `NullPointerException` and the request fails with `500`. a title whose slug already exists is rejected with `"article name exists"`. Returns `200` |
 | GET | `/articles/{slug}` | optional | `{"article":{...}}` |
 | PUT | `/articles/{slug}` | author | `{"article":{"title"?,"description"?,"body"?}}`; only non-empty fields change; a new title regenerates the slug. Tags cannot be changed |
 | DELETE | `/articles/{slug}` | author | `204` |
@@ -196,3 +196,4 @@ See [ARCHITECTURE.md#known-issues](ARCHITECTURE.md#known-issues). The ones most 
 - `me` without an `Authorization` header returns an `INTERNAL` error ("Required header 'Authorization' was not provided") instead of `null`.
 - Omitting both `first` and `last` returns an error whose message is in Chinese (`first 和 last 必须只存在一个`).
 - `Article.comments` ignores the page size.
+- REST `POST /articles` without `tagList` fails with `500` (GraphQL `createArticle` defaults it to an empty list).
