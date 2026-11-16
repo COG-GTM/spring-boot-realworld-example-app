@@ -167,7 +167,7 @@ req security.comment.create.no-auth 401 POST "/articles/$SLUG/comments" '{"comme
 req security.comment.delete.no-auth 401 DELETE "/articles/$SLUG/comments/1"
 req security.follow.no-auth 401 POST "/profiles/$B/follow"
 req security.bad-token 401 GET /user "" "not-a-jwt"
-req security.articles.list.anonymous 200 GET /articles
+req security.articles.list.anonymous 200 GET "/articles?author=$A"
 req security.tags.anonymous 200 GET /tags
 
 echo "== Security: CORS preflight"
