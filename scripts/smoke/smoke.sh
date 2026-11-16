@@ -17,6 +17,7 @@ HEADERS=$(mktemp)
 trap 'rm -f "$BODY" "$HEADERS"' EXIT
 
 FAILURES=0
+redact() { sed -E 's/"token" *: *"[^"]*"/"token":"<redacted>"/g'; }
 STATUS=
 LAST=
 
@@ -50,7 +51,7 @@ req() {
   LAST=$(cat "$BODY")
   record "$name"
   if [ "$STATUS" != "$expected" ]; then
-    echo "FAIL $name: expected HTTP $expected, got $STATUS: $LAST"
+    echo "FAIL $name: expected HTTP $expected, got $STATUS: $(redact <<<"$LAST")"
     FAILURES=$((FAILURES + 1))
   else
     echo "ok   $name ($STATUS)"
@@ -71,7 +72,7 @@ check() {
   if jq -e "$filter" <<<"$LAST" >/dev/null 2>&1; then
     echo "ok     - $desc"
   else
-    echo "FAIL   - $desc: $LAST"
+    echo "FAIL   - $desc: $(redact <<<"$LAST")"
     FAILURES=$((FAILURES + 1))
   fi
 }
