@@ -78,7 +78,7 @@ check() {
 
 user_json() { jq -cn --arg u "$1" --arg e "$2" --arg p "$3" '{user: {username: $u, email: $e, password: $p}}'; }
 
-PASSWORD=smoke-pass-123
+PASSWORD=${SMOKE_PASSWORD:-smoke-$(od -An -tx1 -N12 /dev/urandom | tr -d ' \n')}
 A=smokea$RUN_ID
 B=smokeb$RUN_ID
 C=smokec$RUN_ID
@@ -199,14 +199,14 @@ CREATE_USER='mutation($input: CreateUserInput) { createUser(input: $input) {
   __typename
   ... on UserPayload { user { email username token profile { username bio image following } } }
   ... on Error { message errors { key value } } } }'
-gql graphql.createUser "$CREATE_USER" "$(jq -cn --arg u "$GA" '{input: {username: $u, email: ($u + "@example.com"), password: "smoke-pass-123"}}')"
+gql graphql.createUser "$CREATE_USER" "$(jq -cn --arg u "$GA" --arg p "$PASSWORD" '{input: {username: $u, email: ($u + "@example.com"), password: $p}}')"
 check "createUser returns UserPayload" '.data.createUser.__typename == "UserPayload" and (.data.createUser.user.token | length > 0)'
-gql graphql.createUser.b "$CREATE_USER" "$(jq -cn --arg u "$GB" '{input: {username: $u, email: ($u + "@example.com"), password: "smoke-pass-123"}}')"
+gql graphql.createUser.b "$CREATE_USER" "$(jq -cn --arg u "$GB" --arg p "$PASSWORD" '{input: {username: $u, email: ($u + "@example.com"), password: $p}}')"
 GTOKEN_B=$(jq -r .data.createUser.user.token <<<"$LAST")
-gql graphql.createUser.duplicate "$CREATE_USER" "$(jq -cn --arg u "$GA" '{input: {username: $u, email: ($u + "@example.com"), password: "smoke-pass-123"}}')"
+gql graphql.createUser.duplicate "$CREATE_USER" "$(jq -cn --arg u "$GA" --arg p "$PASSWORD" '{input: {username: $u, email: ($u + "@example.com"), password: $p}}')"
 check "duplicate createUser returns Error" '.data.createUser.__typename == "Error"'
 gql graphql.login 'mutation($email: String!, $password: String!) { login(email: $email, password: $password) { user { email username token } } }' \
-  "$(jq -cn --arg e "$GA@example.com" '{email: $e, password: "smoke-pass-123"}')"
+  "$(jq -cn --arg e "$GA@example.com" --arg p "$PASSWORD" '{email: $e, password: $p}')"
 GTOKEN_A=$(jq -r .data.login.user.token <<<"$LAST")
 check "login returns token" '.data.login.user.token | length > 0'
 gql graphql.login.bad-password 'mutation($email: String!, $password: String!) { login(email: $email, password: $password) { user { token } } }' \
