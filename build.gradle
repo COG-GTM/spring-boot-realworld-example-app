@@ -28,6 +28,7 @@ repositories {
 }
 
 ext['graphql-java.version'] = '19.11'
+ext['tomcat.version'] = '9.0.124'
 
 dependencyManagement {
     dependencies {
