@@ -70,6 +70,22 @@ The repository contains a lot of test cases to cover both api test and repositor
 
     ./gradlew test
 
+# API smoke check
+
+`scripts/smoke/run.sh` boots the app with `./gradlew bootRun` (SQLite `dev.db`, Flyway
+migrations) and runs `scripts/smoke/smoke.sh`, a curl + jq walk through the REST and GraphQL
+APIs (users, profiles, articles, feed, favorites, comments, tags), the 401s required by
+`WebSecurityConfig` and CORS preflight. Every call is recorded as its status code and response
+shape (JSON types only, so ids, tokens and timestamps are ignored) and compared with
+`scripts/smoke/baseline.jsonl`, captured on Java 11 / Spring Boot 2.6.3.
+
+    scripts/smoke/run.sh                    # boot, check, diff against the baseline
+    scripts/smoke/run.sh --update-baseline  # re-capture the baseline after an intended change
+    BASE_URL=http://localhost:8080 scripts/smoke/run.sh  # use an already running app
+
+Needs `curl` and `jq`. Results go to `build/smoke/` (`actual.jsonl`, `baseline.diff`, `app.log`).
+CI runs it as the `smoke` job.
+
 # Code format
 
 Use spotless for code format.
