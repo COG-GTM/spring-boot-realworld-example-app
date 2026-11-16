@@ -4,6 +4,7 @@
 # timestamps are ignored) to $OUT, and semantic assertions are checked along the way.
 #
 # Usage: BASE_URL=http://localhost:8080 OUT=build/smoke/actual.jsonl scripts/smoke/smoke.sh
+# SMOKE_PASSWORD sets the password of the accounts it creates (default: random per run).
 set -euo pipefail
 
 BASE_URL=${BASE_URL:-http://localhost:8080}
