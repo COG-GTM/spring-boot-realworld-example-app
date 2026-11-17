@@ -48,10 +48,14 @@ public class WebSecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                    // Spring Security 6 also authorizes ERROR/ASYNC dispatches; permit them so
-                    // error responses (e.g. 404 from sendError) are not rewritten to 401, matching
-                    // the Spring Security 5 behavior where only the initial request was checked.
-                    .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.ASYNC)
+                    // Spring Security 6 authorizes every dispatch, not just the initial request.
+                    // Permit internal FORWARD/INCLUDE/ERROR/ASYNC dispatches (e.g. the /graphiql
+                    // forward, sendError 404s) so they are not rewritten to 401, as in Security 5.
+                    .dispatcherTypeMatchers(
+                        DispatcherType.FORWARD,
+                        DispatcherType.INCLUDE,
+                        DispatcherType.ERROR,
+                        DispatcherType.ASYNC)
                     .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()
