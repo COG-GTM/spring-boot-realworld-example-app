@@ -8,6 +8,7 @@ import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.DbTestBase;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -48,5 +49,44 @@ public class ProfileQueryServiceTest extends DbTestBase {
     Assertions.assertTrue(profiles.get("f").isFollowing());
     Assertions.assertEquals("bio", profiles.get("f").getBio());
     Assertions.assertFalse(profiles.get("o").isFollowing());
+  }
+
+  @Test
+  public void should_return_empty_map_for_empty_usernames() {
+    User currentUser = new User("a@test.com", "a", "123", "", "");
+    userRepository.save(currentUser);
+
+    Map<String, ProfileData> profiles =
+        profileQueryService.findByUsernames(Collections.emptyList(), currentUser);
+
+    Assertions.assertTrue(profiles.isEmpty());
+  }
+
+  @Test
+  public void should_fetch_profiles_in_batch_for_anonymous_user() {
+    User followed = new User("f@test.com", "f", "123", "bio", "img");
+    User follower = new User("o@test.com", "o", "123", "", "");
+    userRepository.save(followed);
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), followed.getId()));
+
+    Map<String, ProfileData> profiles =
+        profileQueryService.findByUsernames(Arrays.asList("f", "o"), null);
+
+    Assertions.assertEquals(2, profiles.size());
+    Assertions.assertFalse(profiles.get("f").isFollowing());
+    Assertions.assertFalse(profiles.get("o").isFollowing());
+    Assertions.assertEquals("img", profiles.get("f").getImage());
+  }
+
+  @Test
+  public void should_return_empty_map_when_no_usernames_exist() {
+    User currentUser = new User("a@test.com", "a", "123", "", "");
+    userRepository.save(currentUser);
+
+    Map<String, ProfileData> profiles =
+        profileQueryService.findByUsernames(Arrays.asList("x", "y"), currentUser);
+
+    Assertions.assertTrue(profiles.isEmpty());
   }
 }
