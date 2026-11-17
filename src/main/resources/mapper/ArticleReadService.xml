@@ -24,6 +24,30 @@
         left join tags T on T.id = AT.tag_id
         left join users U on U.id = A.user_id
     </sql>
+    <!-- Hydrates the page of article ids in CTE FA. Tag rows are read in one pass and
+         ordered by rowid, instead of scanning article_tags once per article. -->
+    <sql id="selectPageArticleData">
+        select
+        A.id articleId,
+        A.slug articleSlug,
+        A.title articleTitle,
+        A.description articleDescription,
+        A.body articleBody,
+        A.created_at articleCreatedAt,
+        A.updated_at articleUpdatedAt,
+        T.name tagName,
+        <include refid="profileColumns"/>
+        from
+        articles A
+        left join (
+            select rowid tagSeq, article_id, tag_id from article_tags
+            where article_id in (select id from FA)
+            order by rowid limit -1
+        ) AT on A.id = AT.article_id
+        left join tags T on T.id = AT.tag_id
+        left join users U on U.id = A.user_id
+        where A.id in (select id from FA)
+    </sql>
     <sql id="selectArticleIds">
         select
         DISTINCT(A.id) articleId, A.created_at
@@ -91,18 +115,16 @@
         order by A.created_at desc
     </select>
     <select id="findArticlesOfAuthors" resultMap="transfer.data.articleData">
-        <include refid="selectArticleData"/>
-        where A.id in (
-            select FA.id from (
-                select id from articles where user_id in
-                <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
-                    #{id}
-                </foreach>
-                order by created_at desc
-                limit #{page.offset}, #{page.limit}
-            ) FA
+        with FA as (
+            select id from articles where user_id in
+            <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            order by created_at desc
+            limit #{page.offset}, #{page.limit}
         )
-        order by A.created_at desc
+        <include refid="selectPageArticleData"/>
+        order by A.created_at desc, AT.tagSeq
     </select>
     <select id="countFeedSize" resultType="java.lang.Integer">
         select count(1) from articles A where A.user_id in
@@ -138,36 +160,34 @@
         limit #{page.queryLimit}
     </select>
     <select id="findArticlesOfAuthorsWithCursor" resultMap="transfer.data.articleData">
-        <include refid="selectArticleData"/>
-        where A.id in (
-            select FA.id from (
-                select id from articles
-                <where>
-                user_id in
-                <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
-                    #{id}
-                </foreach>
-                <if test='page.cursor != null and page.direction.name() == "NEXT"'>
-                    AND created_at &lt; #{page.cursor}
-                </if>
-                <if test='page.cursor != null and page.direction.name() == "PREV"'>
-                    AND created_at > #{page.cursor}
-                </if>
-                </where>
-                <if test='page.direction.name() == "NEXT"'>
-                    order by created_at desc
-                </if>
-                <if test='page.direction.name() == "PREV"'>
-                    order by created_at asc
-                </if>
-                limit #{page.queryLimit}
-            ) FA
+        with FA as (
+            select id from articles
+            <where>
+            user_id in
+            <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            <if test='page.cursor != null and page.direction.name() == "NEXT"'>
+                AND created_at &lt; #{page.cursor}
+            </if>
+            <if test='page.cursor != null and page.direction.name() == "PREV"'>
+                AND created_at > #{page.cursor}
+            </if>
+            </where>
+            <if test='page.direction.name() == "NEXT"'>
+                order by created_at desc
+            </if>
+            <if test='page.direction.name() == "PREV"'>
+                order by created_at asc
+            </if>
+            limit #{page.queryLimit}
         )
+        <include refid="selectPageArticleData"/>
         <if test='page.direction.name() == "NEXT"'>
-            order by A.created_at desc
+            order by A.created_at desc, AT.tagSeq
         </if>
         <if test='page.direction.name() == "PREV"'>
-            order by A.created_at asc
+            order by A.created_at asc, AT.tagSeq
         </if>
     </select>
 
