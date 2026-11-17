@@ -56,7 +56,7 @@ public class GraphQLRawQueryFilter extends OncePerRequestFilter {
     String query = StreamUtils.copyToString(request.getInputStream(), charset);
     if (query.isEmpty()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
       response.getWriter().write("Invalid GraphQL request - no request body was provided");
       return;
     }
