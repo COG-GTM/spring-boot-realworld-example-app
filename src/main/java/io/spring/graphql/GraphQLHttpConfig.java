@@ -30,7 +30,7 @@ public class GraphQLHttpConfig {
   public FilterRegistrationBean<GraphQLRawQueryFilter> graphQlRawQueryFilter() {
     FilterRegistrationBean<GraphQLRawQueryFilter> registration =
         new FilterRegistrationBean<>(new GraphQLRawQueryFilter());
-    registration.addUrlPatterns("/graphql");
+    registration.addUrlPatterns("/graphql", "/graphql/");
     return registration;
   }
 }

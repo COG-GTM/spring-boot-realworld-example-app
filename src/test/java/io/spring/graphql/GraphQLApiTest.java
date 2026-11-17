@@ -104,6 +104,42 @@ public class GraphQLApiTest {
         .body("errors[0].locations", hasSize(0));
   }
 
+  @Test
+  public void should_execute_raw_application_graphql_body_with_trailing_slash() {
+    String username = "rawslash" + System.nanoTime();
+    String token =
+        given()
+            .port(port)
+            .contentType("application/json")
+            .body(
+                Map.of(
+                    "user",
+                    Map.of(
+                        "username",
+                        username,
+                        "email",
+                        username + "@example.com",
+                        "password",
+                        "password")))
+            .when()
+            .post("/users")
+            .then()
+            .statusCode(201)
+            .extract()
+            .path("user.token");
+
+    given()
+        .port(port)
+        .header("Authorization", "Token " + token)
+        .contentType("application/graphql")
+        .body(utf8("{ me { username } }"))
+        .when()
+        .post("/graphql/")
+        .then()
+        .statusCode(200)
+        .body("data.me.username", equalTo(username));
+  }
+
   private static byte[] utf8(String body) {
     return body.getBytes(StandardCharsets.UTF_8);
   }
