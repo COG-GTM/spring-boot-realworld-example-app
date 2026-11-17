@@ -254,4 +254,38 @@ public class ArticleQueryServiceTest extends DbTestBase {
     Assertions.assertEquals(1, lastPage.getArticleDatas().size());
     Assertions.assertEquals("test", lastPage.getArticleDatas().get(0).getTitle());
   }
+
+  @Test
+  public void should_cursor_page_user_feed_by_article() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+    for (int i = 1; i <= 4; i++) {
+      articleRepository.save(
+          new Article(
+              "feed " + i,
+              "desc",
+              "body",
+              Arrays.asList("java", "spring"),
+              user.getId(),
+              new DateTime().plusMinutes(i)));
+    }
+
+    CursorPager<ArticleData> firstPage =
+        queryService.findUserFeedWithCursor(
+            follower, new CursorPageParameter<>(null, 2, Direction.NEXT));
+    Assertions.assertEquals(2, firstPage.getData().size());
+    Assertions.assertTrue(firstPage.hasNext());
+    Assertions.assertEquals("feed 4", firstPage.getData().get(0).getTitle());
+    Assertions.assertEquals("feed 3", firstPage.getData().get(1).getTitle());
+
+    CursorPager<ArticleData> secondPage =
+        queryService.findUserFeedWithCursor(
+            follower,
+            new CursorPageParameter<>(
+                DateTimeCursor.parse(firstPage.getEndCursor().toString()), 2, Direction.NEXT));
+    Assertions.assertEquals(2, secondPage.getData().size());
+    Assertions.assertTrue(secondPage.hasNext());
+    Assertions.assertEquals("feed 2", secondPage.getData().get(0).getTitle());
+  }
 }
