@@ -227,4 +227,31 @@ public class ArticleQueryServiceTest extends DbTestBase {
     ArticleData articleData = anotherUserFeed.getArticleDatas().get(0);
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
   }
+
+  @Test
+  public void should_page_user_feed_by_article_newest_first() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+    for (int i = 1; i <= 4; i++) {
+      articleRepository.save(
+          new Article(
+              "feed " + i,
+              "desc",
+              "body",
+              Arrays.asList("java", "spring"),
+              user.getId(),
+              new DateTime().plusMinutes(i)));
+    }
+
+    ArticleDataList firstPage = queryService.findUserFeed(follower, new Page(0, 2));
+    Assertions.assertEquals(5, firstPage.getCount());
+    Assertions.assertEquals(2, firstPage.getArticleDatas().size());
+    Assertions.assertEquals("feed 4", firstPage.getArticleDatas().get(0).getTitle());
+    Assertions.assertEquals("feed 3", firstPage.getArticleDatas().get(1).getTitle());
+
+    ArticleDataList lastPage = queryService.findUserFeed(follower, new Page(4, 2));
+    Assertions.assertEquals(1, lastPage.getArticleDatas().size());
+    Assertions.assertEquals("test", lastPage.getArticleDatas().get(0).getTitle());
+  }
 }
