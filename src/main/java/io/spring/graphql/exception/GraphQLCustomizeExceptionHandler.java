@@ -15,6 +15,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
               .errorType(ErrorType.UNAUTHENTICATED)
               .message(handlerParameters.getException().getMessage())
               .path(handlerParameters.getPath())
+              .locations(Collections.emptyList())
               .build();
       return CompletableFuture.completedFuture(
           DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
@@ -61,13 +63,38 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
           TypedGraphQLError.newBadRequestBuilder()
               .message(handlerParameters.getException().getMessage())
               .path(handlerParameters.getPath())
+              .locations(Collections.emptyList())
               .extensions(errorsToMap(errors))
               .build();
       return CompletableFuture.completedFuture(
           DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build());
     } else {
-      return defaultHandler.handleException(handlerParameters);
+      return defaultHandler
+          .handleException(handlerParameters)
+          .thenApply(GraphQLCustomizeExceptionHandler::withEmptyLocations);
     }
+  }
+
+  /**
+   * Keeps the error shape clients got before DGS 10: an empty {@code locations} array. DGS 10's
+   * default handler adds the field's source location, and graphql-java 22+ drops the {@code
+   * locations} key when it is null.
+   */
+  private static DataFetcherExceptionHandlerResult withEmptyLocations(
+      DataFetcherExceptionHandlerResult result) {
+    List<GraphQLError> errors =
+        result.getErrors().stream()
+            .map(
+                error ->
+                    (GraphQLError)
+                        new TypedGraphQLError(
+                            error.getMessage(),
+                            Collections.emptyList(),
+                            error.getErrorType(),
+                            error.getPath(),
+                            error.getExtensions()))
+            .collect(Collectors.toList());
+    return DataFetcherExceptionHandlerResult.newResult().errors(errors).build();
   }
 
   public static Error getErrorsAsData(ConstraintViolationException cve) {

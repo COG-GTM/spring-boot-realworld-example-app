@@ -73,3 +73,9 @@
 {"graphqlErrorTypes":["INTERNAL"],"name":"graphql.me.no-auth","shape":{"data":{"me":"null"},"errors":[{"extensions":{"errorType":"string"},"locations":[],"message":"string","path":["string"]}]},"status":200}
 {"graphqlErrorTypes":["INTERNAL"],"name":"graphql.createArticle.no-auth","shape":{"data":{"createArticle":"null"},"errors":[{"extensions":{"errorType":"string"},"locations":[],"message":"string","path":["string"]}]},"status":200}
 {"graphqlErrorTypes":["INTERNAL"],"name":"graphql.feed.no-auth","shape":{"data":{"feed":"null"},"errors":[{"extensions":{"errorType":"string"},"locations":[],"message":"string","path":["string"]}]},"status":200}
+{"name":"graphql.tags.application-graphql","shape":{"data":{"tags":["string"]}},"status":200}
+{"name":"graphql.me.application-graphql","shape":{"data":{"me":{"username":"string"}}},"status":200}
+{"name":"rest.articles.list.trailing-slash","shape":{"articles":[],"articlesCount":"number"},"status":200}
+{"name":"rest.current-user.trailing-slash","shape":{"user":{"bio":"string","email":"string","image":"string","token":"string","username":"string"}},"status":200}
+{"name":"rest.profile.trailing-slash","shape":{"profile":{"bio":"string","following":"boolean","image":"string","username":"string"}},"status":200}
+{"name":"rest.tags.trailing-slash","shape":null,"status":401}
