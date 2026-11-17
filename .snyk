@@ -11,4 +11,76 @@ ignore:
           No 6.2.x fix exists; the fix needs Spring Framework 7.0.9 (Spring Boot 4).
         expires: 2027-02-15T00:00:00.000Z
         created: 2026-11-17T00:00:00.000Z
+  SNYK-JAVA-ORGSPRINGFRAMEWORKGRAPHQL-19267447:
+    - '*':
+        reason: >-
+          CVE-2026-59286 in org.springframework.graphql:spring-graphql 1.4.6 (GraphiQL loaded from a CDN). Time-boxed ignore approved by Joel O'Shea on 2026-11-17.
+          No fix on Boot 3.x; the fix needs Spring for GraphQL 2.0.5 (Spring Boot 4).
+          Exposure: YES, revisit. GraphiQL is enabled and public at /graphiql and loads its scripts from esm.sh.
+        expires: 2027-02-15T00:00:00.000Z
+        created: 2026-11-17T00:00:00.000Z
+  SNYK-JAVA-ORGSPRINGFRAMEWORKGRAPHQL-19267450:
+    - '*':
+        reason: >-
+          CVE-2026-59288 in org.springframework.graphql:spring-graphql 1.4.6 (CSRF via the GraphiQL page). Time-boxed ignore approved by Joel O'Shea on 2026-11-17.
+          No fix on Boot 3.x; the fix needs Spring for GraphQL 2.0.5 (Spring Boot 4).
+          Exposure: YES, revisit. GraphiQL is enabled and public at /graphiql.
+        expires: 2027-02-15T00:00:00.000Z
+        created: 2026-11-17T00:00:00.000Z
+  SNYK-JAVA-ORGSPRINGFRAMEWORKGRAPHQL-19267462:
+    - '*':
+        reason: >-
+          CVE-2026-59289 in org.springframework.graphql:spring-graphql 1.4.6 (unbounded Spring Data Connection fields). Time-boxed ignore approved by Joel O'Shea on 2026-11-17.
+          No fix on Boot 3.x; the fix needs Spring for GraphQL 2.0.5 (Spring Boot 4).
+          Exposure: no. No Spring Data, QueryByExampleDataFetcher or QuerydslDataFetcher; Connection fields are hand-written DGS fetchers over MyBatis.
+        expires: 2027-02-15T00:00:00.000Z
+        created: 2026-11-17T00:00:00.000Z
+  SNYK-JAVA-ORGSPRINGFRAMEWORKGRAPHQL-19267466:
+    - '*':
+        reason: >-
+          CVE-2026-59287 in org.springframework.graphql:spring-graphql 1.4.6 (WebSocketGraphQlClient keepAlive). Time-boxed ignore approved by Joel O'Shea on 2026-11-17.
+          No fix on Boot 3.x; the fix needs Spring for GraphQL 2.0.5 (Spring Boot 4).
+          Exposure: no. The app does not use WebSocketGraphQlClient or any GraphQL client.
+        expires: 2027-02-15T00:00:00.000Z
+        created: 2026-11-17T00:00:00.000Z
+  SNYK-JAVA-ORGSPRINGFRAMEWORK-19267077:
+    - '*':
+        reason: >-
+          CVE-2026-47885 in org.springframework:spring-web 6.2.19 (PartEventHttpMessageReader with maxInMemorySize -1). Time-boxed ignore approved by Joel O'Shea on 2026-11-17.
+          No fix on Spring 6.2.x; the fix needs Spring Framework 7.0.9 (Spring Boot 4).
+          Exposure: no. PartEventHttpMessageReader is WebFlux-only (not on the classpath) and maxInMemorySize is never set.
+        expires: 2027-02-15T00:00:00.000Z
+        created: 2026-11-17T00:00:00.000Z
+  SNYK-JAVA-ORGSPRINGFRAMEWORK-19267079:
+    - '*':
+        reason: >-
+          CVE-2026-47889 in org.springframework:spring-web 6.2.19 (JettyCoreServerHttpResponse cookies). Time-boxed ignore approved by Joel O'Shea on 2026-11-17.
+          No fix on Spring 6.2.x; the fix needs Spring Framework 7.0.9 (Spring Boot 4).
+          Exposure: no. The app runs on Tomcat, not Jetty, and sets no cookies (stateless JWT in the Authorization header).
+        expires: 2027-02-15T00:00:00.000Z
+        created: 2026-11-17T00:00:00.000Z
+  SNYK-JAVA-ORGSPRINGFRAMEWORK-19267433:
+    - '*':
+        reason: >-
+          CVE-2026-47883 in org.springframework:spring-webmvc 6.2.19 (open redirect in UrlHandlerFilter with broad patterns). Time-boxed ignore approved by Joel O'Shea on 2026-11-17.
+          No fix on Spring 6.2.x; the fix needs Spring Framework 7.0.9 (Spring Boot 4).
+          Exposure: UNCLEAR, revisit. TrailingSlashConfig registers UrlHandlerFilter on /** but in wrapRequest mode (no redirects); //host and /\host probes returned 400 with no Location.
+        expires: 2027-02-15T00:00:00.000Z
+        created: 2026-11-17T00:00:00.000Z
+  SNYK-JAVA-ORGSPRINGFRAMEWORKSECURITY-19267391:
+    - '*':
+        reason: >-
+          CVE-2026-47842 in org.springframework.security:spring-security-crypto 6.5.11 (AesBytesEncryptor CBC IV). Time-boxed ignore approved by Joel O'Shea on 2026-11-17.
+          No fix on Boot 3.x; the fix needs Spring Security 7.0.7 (Spring Boot 4).
+          Exposure: no. No AesBytesEncryptor or Encryptors; only BCryptPasswordEncoder is used.
+        expires: 2027-02-15T00:00:00.000Z
+        created: 2026-11-17T00:00:00.000Z
+  SNYK-JAVA-ORGSPRINGFRAMEWORKSECURITY-19267441:
+    - '*':
+        reason: >-
+          CVE-2026-59276 in org.springframework.security:spring-security-core 6.5.11 (non-constant-time comparisons). Time-boxed ignore approved by Joel O'Shea on 2026-11-17.
+          No fix on Boot 3.x; the fix needs Spring Security 7.0.7 (Spring Boot 4).
+          Exposure: no. None of the affected classes (DigestAuthenticationFilter, KeyBasedPersistenceTokenService, Password4j encoders, InMemoryOAuth2AuthorizationService) are used; BCrypt and JJWT only.
+        expires: 2027-02-15T00:00:00.000Z
+        created: 2026-11-17T00:00:00.000Z
 patch: {}
