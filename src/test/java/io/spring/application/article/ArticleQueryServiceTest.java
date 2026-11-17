@@ -254,4 +254,109 @@ public class ArticleQueryServiceTest extends DbTestBase {
     Assertions.assertEquals(1, lastPage.getArticleDatas().size());
     Assertions.assertEquals("test", lastPage.getArticleDatas().get(0).getTitle());
   }
+
+  @Test
+  public void should_page_user_feed_across_followed_authors_newest_first() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    User otherAuthor = new User("author2@email.com", "author2", "123", "", "");
+    userRepository.save(otherAuthor);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+    userRepository.saveRelation(new FollowRelation(follower.getId(), otherAuthor.getId()));
+    for (int i = 1; i <= 4; i++) {
+      String authorId = i % 2 == 0 ? user.getId() : otherAuthor.getId();
+      articleRepository.save(
+          new Article(
+              "mixed " + i,
+              "desc",
+              "body",
+              Arrays.asList("java"),
+              authorId,
+              new DateTime().plusMinutes(i)));
+    }
+
+    ArticleDataList firstPage = queryService.findUserFeed(follower, new Page(0, 3));
+    Assertions.assertEquals(5, firstPage.getCount());
+    Assertions.assertEquals(3, firstPage.getArticleDatas().size());
+    Assertions.assertEquals("mixed 4", firstPage.getArticleDatas().get(0).getTitle());
+    Assertions.assertEquals("mixed 3", firstPage.getArticleDatas().get(1).getTitle());
+    Assertions.assertEquals("mixed 2", firstPage.getArticleDatas().get(2).getTitle());
+
+    ArticleDataList secondPage = queryService.findUserFeed(follower, new Page(3, 3));
+    Assertions.assertEquals(2, secondPage.getArticleDatas().size());
+    Assertions.assertEquals("mixed 1", secondPage.getArticleDatas().get(0).getTitle());
+    Assertions.assertEquals("test", secondPage.getArticleDatas().get(1).getTitle());
+  }
+
+  @Test
+  public void should_page_user_feed_by_article_when_tag_counts_differ() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+    articleRepository.save(
+        new Article(
+            "no tags",
+            "desc",
+            "body",
+            Arrays.asList(),
+            user.getId(),
+            new DateTime().plusMinutes(1)));
+    articleRepository.save(
+        new Article(
+            "many tags",
+            "desc",
+            "body",
+            Arrays.asList("a", "b", "c", "d"),
+            user.getId(),
+            new DateTime().plusMinutes(2)));
+
+    ArticleDataList page = queryService.findUserFeed(follower, new Page(0, 2));
+    Assertions.assertEquals(3, page.getCount());
+    Assertions.assertEquals(2, page.getArticleDatas().size());
+    Assertions.assertEquals("many tags", page.getArticleDatas().get(0).getTitle());
+    Assertions.assertEquals(4, page.getArticleDatas().get(0).getTagList().size());
+    Assertions.assertEquals("no tags", page.getArticleDatas().get(1).getTitle());
+    Assertions.assertTrue(page.getArticleDatas().get(1).getTagList().isEmpty());
+  }
+
+  @Test
+  public void should_exclude_unfollowed_authors_from_user_feed_page() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    User stranger = new User("stranger@email.com", "stranger", "123", "", "");
+    userRepository.save(stranger);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+    articleRepository.save(
+        new Article(
+            "stranger article",
+            "desc",
+            "body",
+            Arrays.asList("java"),
+            stranger.getId(),
+            new DateTime().plusMinutes(1)));
+    articleRepository.save(
+        new Article(
+            "own article",
+            "desc",
+            "body",
+            Arrays.asList("java"),
+            follower.getId(),
+            new DateTime().plusMinutes(2)));
+
+    ArticleDataList feed = queryService.findUserFeed(follower, new Page(0, 10));
+    Assertions.assertEquals(1, feed.getCount());
+    Assertions.assertEquals(1, feed.getArticleDatas().size());
+    Assertions.assertEquals("test", feed.getArticleDatas().get(0).getTitle());
+  }
+
+  @Test
+  public void should_return_empty_user_feed_page_when_offset_past_end() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+
+    ArticleDataList feed = queryService.findUserFeed(follower, new Page(5, 2));
+    Assertions.assertEquals(1, feed.getCount());
+    Assertions.assertTrue(feed.getArticleDatas().isEmpty());
+  }
 }
