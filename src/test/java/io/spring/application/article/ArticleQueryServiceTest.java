@@ -227,4 +227,145 @@ public class ArticleQueryServiceTest extends DbTestBase {
     ArticleData articleData = anotherUserFeed.getArticleDatas().get(0);
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
   }
+
+  @Test
+  public void should_not_duplicate_articles_with_multiple_tags_and_favorites() {
+    User fan1 = new User("fan1@test.com", "fan1", "123", "", "");
+    User fan2 = new User("fan2@test.com", "fan2", "123", "", "");
+    userRepository.save(fan1);
+    userRepository.save(fan2);
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), fan1.getId()));
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), fan2.getId()));
+
+    ArticleDataList all = queryService.findRecentArticles(null, null, null, new Page(), user);
+    Assertions.assertEquals(1, all.getCount());
+    Assertions.assertEquals(1, all.getArticleDatas().size());
+
+    ArticleDataList byTag = queryService.findRecentArticles("java", null, null, new Page(), user);
+    Assertions.assertEquals(1, byTag.getCount());
+    Assertions.assertEquals(1, byTag.getArticleDatas().size());
+
+    ArticleDataList byFavorite =
+        queryService.findRecentArticles(null, null, fan1.getUsername(), new Page(), user);
+    Assertions.assertEquals(1, byFavorite.getCount());
+    Assertions.assertEquals(1, byFavorite.getArticleDatas().size());
+    Assertions.assertEquals(2, byFavorite.getArticleDatas().get(0).getFavoritesCount());
+
+    CursorPager<ArticleData> cursor =
+        queryService.findRecentArticlesWithCursor(
+            "spring", null, null, new CursorPageParameter<>(null, 20, Direction.NEXT), user);
+    Assertions.assertEquals(1, cursor.getData().size());
+  }
+
+  @Test
+  public void should_combine_tag_author_and_favorite_filters() {
+    User anotherUser = new User("other@email.com", "other", "123", "", "");
+    userRepository.save(anotherUser);
+    Article otherJava =
+        new Article("other java", "desc", "body", Arrays.asList("java"), anotherUser.getId());
+    Article ownJava =
+        new Article(
+            "own java",
+            "desc",
+            "body",
+            Arrays.asList("java"),
+            user.getId(),
+            new DateTime().minusHours(1));
+    articleRepository.save(otherJava);
+    articleRepository.save(ownJava);
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), anotherUser.getId()));
+    articleFavoriteRepository.save(new ArticleFavorite(otherJava.getId(), anotherUser.getId()));
+
+    ArticleDataList byTagAndAuthor =
+        queryService.findRecentArticles("java", user.getUsername(), null, new Page(), user);
+    Assertions.assertEquals(2, byTagAndAuthor.getCount());
+    Assertions.assertEquals(2, byTagAndAuthor.getArticleDatas().size());
+
+    ArticleDataList all =
+        queryService.findRecentArticles(
+            "java", user.getUsername(), anotherUser.getUsername(), new Page(), user);
+    Assertions.assertEquals(1, all.getCount());
+    Assertions.assertEquals(article.getId(), all.getArticleDatas().get(0).getId());
+
+    ArticleDataList noMatch =
+        queryService.findRecentArticles(
+            "spring", anotherUser.getUsername(), null, new Page(), user);
+    Assertions.assertEquals(0, noMatch.getCount());
+    Assertions.assertTrue(noMatch.getArticleDatas().isEmpty());
+
+    CursorPager<ArticleData> cursor =
+        queryService.findRecentArticlesWithCursor(
+            "java",
+            user.getUsername(),
+            anotherUser.getUsername(),
+            new CursorPageParameter<>(null, 20, Direction.NEXT),
+            user);
+    Assertions.assertEquals(1, cursor.getData().size());
+    Assertions.assertEquals(article.getId(), cursor.getData().get(0).getId());
+  }
+
+  @Test
+  public void should_return_nothing_for_unknown_author_or_favoriter() {
+    ArticleDataList byAuthor =
+        queryService.findRecentArticles(null, "nobody", null, new Page(), user);
+    Assertions.assertEquals(0, byAuthor.getCount());
+    Assertions.assertTrue(byAuthor.getArticleDatas().isEmpty());
+
+    ArticleDataList byFavorite =
+        queryService.findRecentArticles(null, null, "nobody", new Page(), user);
+    Assertions.assertEquals(0, byFavorite.getCount());
+    Assertions.assertTrue(byFavorite.getArticleDatas().isEmpty());
+  }
+
+  @Test
+  public void should_page_filtered_articles_by_cursor_in_both_directions() {
+    Article older =
+        new Article(
+            "older",
+            "desc",
+            "body",
+            Arrays.asList("java"),
+            user.getId(),
+            new DateTime().minusHours(1));
+    Article untagged =
+        new Article(
+            "untagged",
+            "desc",
+            "body",
+            Arrays.asList("other"),
+            user.getId(),
+            new DateTime().minusMinutes(30));
+    articleRepository.save(older);
+    articleRepository.save(untagged);
+
+    CursorPager<ArticleData> firstPage =
+        queryService.findRecentArticlesWithCursor(
+            "java", null, null, new CursorPageParameter<>(null, 1, Direction.NEXT), user);
+    Assertions.assertEquals(1, firstPage.getData().size());
+    Assertions.assertEquals(article.getId(), firstPage.getData().get(0).getId());
+    Assertions.assertTrue(firstPage.hasNext());
+
+    CursorPager<ArticleData> secondPage =
+        queryService.findRecentArticlesWithCursor(
+            "java",
+            null,
+            null,
+            new CursorPageParameter<>(
+                DateTimeCursor.parse(firstPage.getEndCursor().toString()), 1, Direction.NEXT),
+            user);
+    Assertions.assertEquals(1, secondPage.getData().size());
+    Assertions.assertEquals(older.getId(), secondPage.getData().get(0).getId());
+    Assertions.assertFalse(secondPage.hasNext());
+
+    CursorPager<ArticleData> previous =
+        queryService.findRecentArticlesWithCursor(
+            "java",
+            null,
+            null,
+            new CursorPageParameter<>(
+                DateTimeCursor.parse(secondPage.getStartCursor().toString()), 10, Direction.PREV),
+            user);
+    Assertions.assertEquals(1, previous.getData().size());
+    Assertions.assertEquals(article.getId(), previous.getData().get(0).getId());
+  }
 }
