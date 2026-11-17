@@ -39,4 +39,15 @@ public class DefaultJwtServiceTest {
         "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhaXNlbnNpeSIsImV4cCI6MTUwMjE2MTIwNH0.SJB-U60WzxLYNomqLo4G3v3LzFxJKuVrIud8D8Lz3-mgpo9pN1i7C8ikU_jQPJGm8HsC1CquGMI-rSuM7j6LDA";
     Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
   }
+
+  @Test
+  public void should_parse_hs512_token_issued_by_jjwt_0_11() {
+    // signed by jjwt 0.11.2 with a >= 64-byte secret (HS512, like jwt.secret), exp 2100-01-01
+    JwtService service =
+        new DefaultJwtService(
+            "123123123123123123123123123123123123123123123123123123123123123123123123", 3600);
+    String token =
+        "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyLWlkIiwiZXhwIjo0MTAyNDQ0ODAwfQ.Eil4DMOeaFtXhYo7Zi1I0TBkxgUtkq-1YF0x1j-MoOlj1HmX9LclnwFcI52vPhYFPAAqY7-CDcfjcbA4fS0_Ww";
+    Assertions.assertEquals(Optional.of("user-id"), service.getSubFromToken(token));
+  }
 }
