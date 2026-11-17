@@ -4,6 +4,12 @@
     <select id="findByUsername" resultType="io.spring.application.data.UserData">
         select * from users where username = #{username}
     </select>
+    <select id="findByUsernames" resultType="io.spring.application.data.UserData">
+        select * from users where username in
+        <foreach collection="usernames" item="username" open="(" close=")" separator=",">
+            #{username}
+        </foreach>
+    </select>
     <select id="findById" resultType="io.spring.application.data.UserData">
         select * from users where id = #{id}
     </select>

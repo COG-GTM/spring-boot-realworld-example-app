@@ -2,6 +2,7 @@ package io.spring.graphql;
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.ResourceNotFoundException;
@@ -19,6 +20,7 @@ import io.spring.graphql.types.Comment;
 import io.spring.graphql.types.Profile;
 import io.spring.graphql.types.ProfilePayload;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import lombok.AllArgsConstructor;
 
 @DgsComponent
@@ -35,10 +37,20 @@ public class ProfileDatafetcher {
   }
 
   @DgsData(parentType = ARTICLE.TYPE_NAME, field = ARTICLE.Author)
-  public Profile getAuthor(DataFetchingEnvironment dataFetchingEnvironment) {
+  public CompletableFuture<Profile> getAuthor(DgsDataFetchingEnvironment dataFetchingEnvironment) {
     Map<String, ArticleData> map = dataFetchingEnvironment.getLocalContext();
     Article article = dataFetchingEnvironment.getSource();
-    return queryProfile(map.get(article.getSlug()).getProfileData().getUsername());
+    String username = map.get(article.getSlug()).getProfileData().getUsername();
+    return dataFetchingEnvironment
+        .<String, Profile>getDataLoader(ProfileDataLoader.NAME)
+        .load(username)
+        .thenApply(
+            profile -> {
+              if (profile == null) {
+                throw new ResourceNotFoundException();
+              }
+              return profile;
+            });
   }
 
   @DgsData(parentType = COMMENT.TYPE_NAME, field = COMMENT.Author)
@@ -61,11 +73,6 @@ public class ProfileDatafetcher {
         profileQueryService
             .findByUsername(username, current)
             .orElseThrow(ResourceNotFoundException::new);
-    return Profile.newBuilder()
-        .username(profileData.getUsername())
-        .bio(profileData.getBio())
-        .image(profileData.getImage())
-        .following(profileData.isFollowing())
-        .build();
+    return ProfileDataLoader.toProfile(profileData);
   }
 }
