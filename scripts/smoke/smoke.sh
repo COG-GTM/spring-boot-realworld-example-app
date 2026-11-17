@@ -42,10 +42,10 @@ record() {
      + (if $errors == null then {} else {graphqlErrorTypes: $errors} end) + $extra' >>"$OUT"
 }
 
-# req NAME EXPECTED_STATUS METHOD PATH [BODY] [TOKEN]
+# req NAME EXPECTED_STATUS METHOD PATH [BODY] [TOKEN] — CONTENT_TYPE overrides application/json
 req() {
   local name=$1 expected=$2 method=$3 path=$4 data=${5:-} token=${6:-}
-  local args=(-s -o "$BODY" -w '%{http_code}' -X "$method" -H 'Content-Type: application/json')
+  local args=(-s -o "$BODY" -w '%{http_code}' -X "$method" -H "Content-Type: ${CONTENT_TYPE:-application/json}")
   [ -n "$token" ] && args+=(-H "Authorization: Token $token")
   [ -n "$data" ] && args+=(--data "$data")
   STATUS=$(curl "${args[@]}" "$BASE_URL$path")
@@ -281,6 +281,19 @@ check "me without token is null or error" '.data.me == null'
 gql graphql.createArticle.no-auth 'mutation { createArticle(input: {title: "x", description: "x", body: "x"}) { article { slug } } }'
 check "createArticle without token returns errors" '.errors | length > 0'
 gql graphql.feed.no-auth "query { feed(first: 1) { $CONN } }"
+
+echo "== GraphQL: raw application/graphql body"
+CONTENT_TYPE=application/graphql req graphql.tags.application-graphql 200 POST /graphql 'query { tags }'
+check "raw query returns tags" '.data.tags | index("smoke") != null'
+CONTENT_TYPE=application/graphql req graphql.me.application-graphql 200 POST /graphql '{ me { username } }' "$GTOKEN_A"
+check "raw query sees the token" ".data.me.username == \"$GA\""
+
+echo "== REST: trailing slashes"
+req rest.articles.list.trailing-slash 200 GET "/articles/?author=$B"
+req rest.current-user.trailing-slash 200 GET /user/ "" "$TOKEN_A"
+check "current user is A" ".user.username == \"$A\""
+req rest.profile.trailing-slash 200 GET "/profiles/$B/"
+req rest.tags.trailing-slash 401 GET /tags/
 
 echo
 if [ "$FAILURES" -gt 0 ]; then
