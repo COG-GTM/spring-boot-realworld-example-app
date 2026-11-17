@@ -3,6 +3,8 @@ package io.spring.api;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.spring.TestHelper.articleDataFixture;
 import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -14,6 +16,7 @@ import io.spring.application.Page;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleDataList;
 import io.spring.core.article.ArticleRepository;
+import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,5 +74,23 @@ public class ListArticleApiTest extends TestWithCurrentUser {
         .prettyPeek()
         .then()
         .statusCode(200);
+  }
+
+  @Test
+  public void should_get_empty_feed_page_past_the_last_page() throws Exception {
+    when(articleQueryService.findUserFeed(eq(user), eq(new Page(20, 20))))
+        .thenReturn(new ArticleDataList(new ArrayList<>(), 2));
+
+    given()
+        .header("Authorization", "Token " + token)
+        .queryParam("offset", 20)
+        .queryParam("limit", 20)
+        .when()
+        .get("/articles/feed")
+        .prettyPeek()
+        .then()
+        .statusCode(200)
+        .body("articles", hasSize(0))
+        .body("articlesCount", equalTo(2));
   }
 }

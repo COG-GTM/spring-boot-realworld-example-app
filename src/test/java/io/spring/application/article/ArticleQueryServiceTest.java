@@ -259,4 +259,44 @@ public class ArticleQueryServiceTest extends DbTestBase {
     Assertions.assertTrue(pastEnd.getData().isEmpty());
     Assertions.assertFalse(pastEnd.hasNext());
   }
+
+  @Test
+  public void should_return_empty_user_feed_when_followed_user_has_no_articles() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    User silentAuthor = new User("silent@email.com", "silent", "123", "", "");
+    userRepository.save(silentAuthor);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), silentAuthor.getId()));
+
+    ArticleDataList feed = queryService.findUserFeed(follower, new Page(0, 10));
+    Assertions.assertEquals(0, feed.getCount());
+    Assertions.assertTrue(feed.getArticleDatas().isEmpty());
+
+    CursorPager<ArticleData> cursorFeed =
+        queryService.findUserFeedWithCursor(
+            follower, new CursorPageParameter<>(null, 10, Direction.NEXT));
+    Assertions.assertTrue(cursorFeed.getData().isEmpty());
+    Assertions.assertFalse(cursorFeed.hasNext());
+    Assertions.assertFalse(cursorFeed.hasPrevious());
+  }
+
+  @Test
+  public void should_return_empty_user_feed_cursor_page_before_the_start() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+
+    CursorPager<ArticleData> onlyPage =
+        queryService.findUserFeedWithCursor(
+            follower, new CursorPageParameter<>(null, 10, Direction.NEXT));
+    Assertions.assertEquals(1, onlyPage.getData().size());
+
+    CursorPager<ArticleData> beforeStart =
+        queryService.findUserFeedWithCursor(
+            follower,
+            new CursorPageParameter<>(
+                DateTimeCursor.parse(onlyPage.getStartCursor().toString()), 10, Direction.PREV));
+    Assertions.assertTrue(beforeStart.getData().isEmpty());
+    Assertions.assertFalse(beforeStart.hasPrevious());
+  }
 }
