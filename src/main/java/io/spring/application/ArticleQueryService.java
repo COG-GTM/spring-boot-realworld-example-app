@@ -123,6 +123,9 @@ public class ArticleQueryService {
   }
 
   private void fillExtraInfo(List<ArticleData> articles, User currentUser) {
+    if (articles.isEmpty()) {
+      return;
+    }
     setFavoriteCount(articles);
     if (currentUser != null) {
       setIsFavorite(articles, currentUser);
