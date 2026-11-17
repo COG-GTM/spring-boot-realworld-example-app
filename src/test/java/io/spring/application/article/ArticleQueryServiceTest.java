@@ -288,4 +288,37 @@ public class ArticleQueryServiceTest extends DbTestBase {
     Assertions.assertTrue(secondPage.hasNext());
     Assertions.assertEquals("feed 2", secondPage.getData().get(0).getTitle());
   }
+
+  @Test
+  public void should_return_empty_user_feed_page_past_the_end() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+
+    ArticleDataList pastEnd = queryService.findUserFeed(follower, new Page(10, 10));
+    Assertions.assertEquals(1, pastEnd.getCount());
+    Assertions.assertTrue(pastEnd.getArticleDatas().isEmpty());
+  }
+
+  @Test
+  public void should_return_empty_user_feed_cursor_page_past_the_end() {
+    User follower = new User("follower@email.com", "follower", "123", "", "");
+    userRepository.save(follower);
+    userRepository.saveRelation(new FollowRelation(follower.getId(), user.getId()));
+
+    CursorPager<ArticleData> onlyPage =
+        queryService.findUserFeedWithCursor(
+            follower, new CursorPageParameter<>(null, 10, Direction.NEXT));
+    Assertions.assertEquals(1, onlyPage.getData().size());
+    Assertions.assertFalse(onlyPage.hasNext());
+
+    CursorPager<ArticleData> pastEnd =
+        queryService.findUserFeedWithCursor(
+            follower,
+            new CursorPageParameter<>(
+                DateTimeCursor.parse(onlyPage.getEndCursor().toString()), 10, Direction.NEXT));
+    Assertions.assertTrue(pastEnd.getData().isEmpty());
+    Assertions.assertFalse(pastEnd.hasNext());
+    Assertions.assertNull(pastEnd.getEndCursor());
+  }
 }
