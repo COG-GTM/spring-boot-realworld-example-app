@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 
 import io.spring.core.service.JwtService;
 import io.spring.core.user.UserRepository;
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -45,6 +46,8 @@ public class WebSecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
+                    .dispatcherTypeMatchers(DispatcherType.ERROR)
+                    .permitAll()
                     .requestMatchers(ant(HttpMethod.OPTIONS, "/**"))
                     .permitAll()
                     .requestMatchers(ant("/graphiql"), ant("/graphql"))

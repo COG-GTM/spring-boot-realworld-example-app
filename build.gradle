@@ -27,16 +27,6 @@ repositories {
     mavenCentral()
 }
 
-ext['graphql-java.version'] = '19.11'
-ext['tomcat.version'] = '9.0.124'
-
-dependencyManagement {
-    dependencies {
-        // DGS 5.x declares a [2.0, 2.2) range; pin it so Gradle can resolve the graph.
-        dependency 'com.apollographql.federation:federation-graphql-java-support:2.1.1'
-    }
-}
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -48,26 +38,25 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:5.6.2'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-graphql-starter:10.6.0'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
                 'io.jsonwebtoken:jjwt-jackson:0.11.2'
-    runtimeOnly "javax.xml.bind:jaxb-api:2.3.1"
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
+    implementation 'org.xerial:sqlite-jdbc:3.54.1.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:5.1.1'
-    testImplementation 'io.rest-assured:json-path:5.1.1'
-    testImplementation 'io.rest-assured:xml-path:5.1.1'
-    testImplementation 'io.rest-assured:spring-mock-mvc:5.1.1'
+    testImplementation 'io.rest-assured:rest-assured'
+    testImplementation 'io.rest-assured:json-path'
+    testImplementation 'io.rest-assured:xml-path'
+    testImplementation 'io.rest-assured:spring-mock-mvc'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
 }
 
 tasks.named('test') {
