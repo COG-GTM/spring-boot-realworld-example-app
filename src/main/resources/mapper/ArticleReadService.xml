@@ -92,11 +92,17 @@
     </select>
     <select id="findArticlesOfAuthors" resultMap="transfer.data.articleData">
         <include refid="selectArticleData"/>
-        where A.user_id in
-        <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-        limit #{page.offset}, #{page.limit}
+        where A.id in (
+            select FA.id from (
+                select id from articles where user_id in
+                <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+                order by created_at desc
+                limit #{page.offset}, #{page.limit}
+            ) FA
+        )
+        order by A.created_at desc
     </select>
     <select id="countFeedSize" resultType="java.lang.Integer">
         select count(1) from articles A where A.user_id in
@@ -133,25 +139,36 @@
     </select>
     <select id="findArticlesOfAuthorsWithCursor" resultMap="transfer.data.articleData">
         <include refid="selectArticleData"/>
-        <where>
-        A.user_id in
-        <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-        <if test='page.cursor != null and page.direction.name() == "NEXT"'>
-            AND A.created_at &lt; #{page.cursor}
-        </if>
-        <if test='page.cursor != null and page.direction.name() == "PREV"'>
-            AND A.created_at > #{page.cursor}
-        </if>
+        where A.id in (
+            select FA.id from (
+                select id from articles
+                <where>
+                user_id in
+                <foreach index="index" collection="authors" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+                <if test='page.cursor != null and page.direction.name() == "NEXT"'>
+                    AND created_at &lt; #{page.cursor}
+                </if>
+                <if test='page.cursor != null and page.direction.name() == "PREV"'>
+                    AND created_at > #{page.cursor}
+                </if>
+                </where>
+                <if test='page.direction.name() == "NEXT"'>
+                    order by created_at desc
+                </if>
+                <if test='page.direction.name() == "PREV"'>
+                    order by created_at asc
+                </if>
+                limit #{page.queryLimit}
+            ) FA
+        )
         <if test='page.direction.name() == "NEXT"'>
             order by A.created_at desc
         </if>
         <if test='page.direction.name() == "PREV"'>
             order by A.created_at asc
         </if>
-        </where>
-        limit #{page.queryLimit}
     </select>
 
     <resultMap id="articleId" type="string">
