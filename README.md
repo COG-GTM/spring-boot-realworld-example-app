@@ -1,7 +1,5 @@
 # ![RealWorld Example App using Kotlin and Spring](example-logo.png)
 
-[![Actions](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
-
 > ### Spring boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
 
 This codebase was created to demonstrate a fully fledged full-stack application built with Spring boot + Mybatis including CRUD operations, authentication, routing, pagination, and more.
@@ -19,7 +17,7 @@ The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-examp
 And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
 # How it works
 
-The application uses Spring Boot (Web, Mybatis).
+The application uses Java 21 and Spring Boot 3.5 (Web, Security 6, Validation with Jakarta EE), MyBatis 3, Netflix DGS 10, Flyway and jjwt 0.12.
 
 * Use the idea of Domain Driven Design to separate the business term and infrastructure term.
 * Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
@@ -52,6 +50,8 @@ To test that it works, open a browser tab at http://localhost:8080/tags .
 Alternatively, you can run
 
     curl http://localhost:8080/tags
+
+The GraphQL endpoint is http://localhost:8080/graphql and GraphiQL is available at http://localhost:8080/graphiql .
 
 # Try it out with [Docker](https://www.docker.com/)
 
