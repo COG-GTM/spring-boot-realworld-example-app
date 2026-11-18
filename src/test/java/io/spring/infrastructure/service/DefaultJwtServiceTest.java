@@ -2,6 +2,9 @@ package io.spring.infrastructure.service;
 
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
+import io.jsonwebtoken.security.WeakKeyException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,5 +52,51 @@ public class DefaultJwtServiceTest {
     String token =
         "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyLWlkIiwiZXhwIjo0MTAyNDQ0ODAwfQ.Eil4DMOeaFtXhYo7Zi1I0TBkxgUtkq-1YF0x1j-MoOlj1HmX9LclnwFcI52vPhYFPAAqY7-CDcfjcbA4fS0_Ww";
     Assertions.assertEquals(Optional.of("user-id"), service.getSubFromToken(token));
+  }
+
+  private static String headerOf(String token) {
+    return new String(
+        Base64.getUrlDecoder().decode(token.split("\\.")[0]), StandardCharsets.UTF_8);
+  }
+
+  @Test
+  public void should_sign_with_hs512_when_secret_is_at_least_64_bytes() {
+    JwtService service =
+        new DefaultJwtService(
+            "nRvyYC4soFxBdZ-F-5Nnzz5USXstR1YylsTd-mA0aKtI9HUlriGrtkf-TiuDapkLiUCogO3JOK7kwZisrHp6wA",
+            3600);
+    String token = service.toToken(new User("email@email.com", "username", "123", "", ""));
+    Assertions.assertTrue(headerOf(token).contains("\"HS512\""), headerOf(token));
+  }
+
+  @Test
+  public void should_pick_hmac_algorithm_from_secret_length() {
+    String token = jwtService.toToken(new User("email@email.com", "username", "123", "", ""));
+    // 60-byte secret: jjwt 0.12 selects HS384 (jjwt 0.11 config always used HS512)
+    Assertions.assertTrue(headerOf(token).contains("\"HS384\""), headerOf(token));
+  }
+
+  @Test
+  public void should_reject_secret_shorter_than_256_bits() {
+    Assertions.assertThrows(
+        WeakKeyException.class, () -> new DefaultJwtService("too-short-secret", 3600));
+  }
+
+  @Test
+  public void should_reject_token_signed_with_another_secret() {
+    JwtService other =
+        new DefaultJwtService(
+            "456456456456456456456456456456456456456456456456456456456456", 3600);
+    String token = other.toToken(new User("email@email.com", "username", "123", "", ""));
+    Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
+  }
+
+  @Test
+  public void should_reject_token_issued_with_expired_session_time() {
+    JwtService expiring =
+        new DefaultJwtService(
+            "123123123123123123123123123123123123123123123123123123123123", -60);
+    String token = expiring.toToken(new User("email@email.com", "username", "123", "", ""));
+    Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
   }
 }
