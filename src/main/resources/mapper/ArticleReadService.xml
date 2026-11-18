@@ -62,23 +62,26 @@
     </select>
     <select id="countArticle" resultType="java.lang.Integer">
         select
-        count(DISTINCT A.id)
+        count(1)
         from
         articles A
-        left join article_tags AT on A.id = AT.article_id
-        left join tags T on T.id = AT.tag_id
-        left join article_favorites AF on AF.article_id = A.id
-        left join users AU on AU.id = A.user_id
-        left join users AFU on AFU.id = AF.user_id
         <where>
             <if test="tag != null">
-                T.name = #{tag}
+                exists (
+                select 1 from article_tags AT
+                join tags T on T.id = AT.tag_id
+                where AT.article_id = A.id and T.name = #{tag})
             </if>
             <if test="author != null">
-                AND AU.username = #{author}
+                AND exists (
+                select 1 from users AU
+                where AU.id = A.user_id and AU.username = #{author})
             </if>
             <if test="favoritedBy != null">
-                AND AFU.username = #{favoritedBy}
+                AND exists (
+                select 1 from article_favorites AF
+                join users AFU on AFU.id = AF.user_id
+                where AF.article_id = A.id and AFU.username = #{favoritedBy})
             </if>
         </where>
     </select>
