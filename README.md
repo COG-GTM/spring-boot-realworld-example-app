@@ -42,6 +42,8 @@ The secret key is stored in `application.properties`.
 
 It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
 
+Flyway 8.2+ ships MySQL/MariaDB, SQL Server and Firebird support as separate modules. When switching to one of them, add `org.flywaydb:flyway-mysql`, `flyway-sqlserver` or `flyway-firebird` (versions are managed by Spring Boot) next to the JDBC driver.
+
 # Getting started
 
 You'll need Java 11 installed.
