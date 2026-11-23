@@ -36,7 +36,7 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The secret key is stored in `application.properties` (`jwt.secret`). It must be at least 32 bytes: the app fails to start with a shorter one. Tokens are signed with HS256, HS384 or HS512 depending on the secret length (32, 48 or 64+ bytes).
+The secret key is stored in `application.properties` (`jwt.secret`). It must be at least 32 bytes: the app fails to start with a shorter one. The secret length picks the signing algorithm: 32–47 bytes HS256, 48–63 bytes HS384, 64 bytes or more HS512.
 
 # Database
 
