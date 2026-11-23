@@ -38,4 +38,15 @@ public class DefaultJwtServiceTest {
         "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhaXNlbnNpeSIsImV4cCI6MTUwMjE2MTIwNH0.SJB-U60WzxLYNomqLo4G3v3LzFxJKuVrIud8D8Lz3-mgpo9pN1i7C8ikU_jQPJGm8HsC1CquGMI-rSuM7j6LDA";
     Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
   }
+
+  @Test
+  public void should_accept_hs512_token_issued_before_jjwt_upgrade() {
+    // Issued by jjwt 0.11.2 (HS512, 64-byte secret, expires 2100-01-01).
+    String legacyToken =
+        "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJsZWdhY3ktdXNlci1pZCIsImV4cCI6NDEwMjQ0NDgwMH0.pziqg4gVU3s2dF0f8EKPASx-ZZSR8fmoLZZgxj_N6m_jF4i8ynyLKg_U2kYtlCwXpZCG94xttuERn777lFacIw";
+    JwtService service =
+        new DefaultJwtService(
+            "1231231231231231231231231231231231231231231231231231231231231231", 3600);
+    Assertions.assertEquals(Optional.of("legacy-user-id"), service.getSubFromToken(legacyToken));
+  }
 }
