@@ -91,6 +91,31 @@ public class CommentsApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_get_404_when_create_comment_on_missing_article() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "comment",
+                new HashMap<String, Object>() {
+                  {
+                    put("body", "comment content");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .post("/articles/{slug}/comments", "not-exists")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
   public void should_get_422_with_empty_body() throws Exception {
     Map<String, Object> param =
         new HashMap<String, Object>() {
