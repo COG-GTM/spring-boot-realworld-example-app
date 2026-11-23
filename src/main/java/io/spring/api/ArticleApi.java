@@ -1,5 +1,6 @@
 package io.spring.api;
 
+import com.fasterxml.jackson.annotation.JsonRootName;
 import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
@@ -13,11 +14,15 @@ import io.spring.core.user.User;
 import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -62,6 +67,25 @@ public class ArticleApi {
         .orElseThrow(ResourceNotFoundException::new);
   }
 
+  @PatchMapping(path = "/title")
+  public ResponseEntity<?> updateArticleTitle(
+      @PathVariable("slug") String slug,
+      @AuthenticationPrincipal User user,
+      @Valid @RequestBody UpdateArticleTitleParam param) {
+    return articleRepository
+        .findBySlug(slug)
+        .map(
+            article -> {
+              Article updatedArticle =
+                  articleCommandService.updateArticle(
+                      article, new UpdateArticleParam(param.getTitle(), "", ""));
+              return ResponseEntity.ok(
+                  articleResponse(
+                      articleQueryService.findBySlug(updatedArticle.getSlug(), user).get()));
+            })
+        .orElseThrow(ResourceNotFoundException::new);
+  }
+
   @DeleteMapping
   public ResponseEntity deleteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
@@ -84,5 +108,13 @@ public class ArticleApi {
         put("article", articleData);
       }
     };
+  }
+
+  @Getter
+  @NoArgsConstructor
+  @JsonRootName("article")
+  static class UpdateArticleTitleParam {
+    @NotBlank(message = "can't be empty")
+    private String title;
   }
 }
