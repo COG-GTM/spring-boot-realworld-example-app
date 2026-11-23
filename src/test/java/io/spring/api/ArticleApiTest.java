@@ -119,6 +119,20 @@ public class ArticleApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_404_if_update_article_not_found() throws Exception {
+    when(articleRepository.findBySlug(anyString())).thenReturn(Optional.empty());
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(prepareUpdateParam("new title", "new body", "new description"))
+        .when()
+        .put("/articles/{slug}", "not-exists")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
   public void should_get_403_if_not_author_to_update_article() throws Exception {
     String title = "new-title";
     String body = "new body";
