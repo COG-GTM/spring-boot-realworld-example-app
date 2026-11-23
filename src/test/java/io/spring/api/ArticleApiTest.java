@@ -119,6 +119,39 @@ public class ArticleApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_update_article_title_success() throws Exception {
+    List<String> tagList = Arrays.asList("java", "spring", "jpg");
+
+    Article originalArticle = new Article("old title", "desc", "body", tagList, user.getId());
+    Article updatedArticle = new Article("new title", "desc", "body", tagList, user.getId());
+    ArticleData updatedArticleData =
+        TestHelper.getArticleDataFromArticleAndUser(updatedArticle, user);
+
+    when(articleRepository.findBySlug(eq(originalArticle.getSlug())))
+        .thenReturn(Optional.of(originalArticle));
+    when(articleCommandService.updateArticle(eq(originalArticle), any()))
+        .thenReturn(updatedArticle);
+    when(articleQueryService.findBySlug(eq(updatedArticle.getSlug()), eq(user)))
+        .thenReturn(Optional.of(updatedArticleData));
+
+    Map<String, Object> title = new HashMap<>();
+    title.put("title", "new title");
+    Map<String, Object> param = new HashMap<>();
+    param.put("article", title);
+
+    given()
+        .contentType("application/json")
+        .header("Authorization", "Token " + token)
+        .body(param)
+        .when()
+        .patch("/articles/{slug}/title", originalArticle.getSlug())
+        .then()
+        .statusCode(200)
+        .body("article.slug", equalTo(updatedArticleData.getSlug()))
+        .body("article.title", equalTo("new title"));
+  }
+
+  @Test
   public void should_get_403_if_not_author_to_update_article() throws Exception {
     String title = "new-title";
     String body = "new body";
