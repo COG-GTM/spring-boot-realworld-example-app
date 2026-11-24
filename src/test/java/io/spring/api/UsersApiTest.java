@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -108,6 +110,23 @@ public class UsersApiTest {
         .then()
         .statusCode(422)
         .body("errors.username[0]", equalTo("can't be empty"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {73, 37})
+  public void should_show_error_message_for_password_over_72_bytes(int length) throws Exception {
+    Map<String, Object> param = prepareRegisterParameter("john@jacob.com", "johnjacob");
+    String unit = length == 37 ? "\u00e9" : "a";
+    ((Map<String, Object>) param.get("user")).put("password", unit.repeat(length));
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.password[0]", equalTo("must be at most 72 bytes"));
   }
 
   @Test
