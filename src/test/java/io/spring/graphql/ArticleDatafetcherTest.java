@@ -4,22 +4,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.jayway.jsonpath.DocumentContext;
 import graphql.ExecutionResult;
 import io.spring.TestHelper;
+import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.CommentData;
 import io.spring.application.data.ProfileData;
+import io.spring.core.user.User;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -106,7 +110,11 @@ public class ArticleDatafetcherTest extends GraphQLTestBase {
   public void should_list_articles_with_first() {
     ArticleData another = TestHelper.articleDataFixture("2", user);
     when(articleQueryService.findRecentArticlesWithCursor(
-            eq("java"), eq(user.getUsername()), isNull(), any(), isNull()))
+            eq("java"),
+            eq(user.getUsername()),
+            isNull(),
+            eq(new CursorPageParameter<DateTime>(null, 2, Direction.NEXT)),
+            isNull()))
         .thenReturn(new CursorPager<>(Arrays.asList(articleData, another), Direction.NEXT, true));
 
     DocumentContext context =
@@ -130,7 +138,13 @@ public class ArticleDatafetcherTest extends GraphQLTestBase {
   public void should_list_articles_with_last_and_before() {
     long before = new DateTime().getMillis();
     when(articleQueryService.findRecentArticlesWithCursor(
-            isNull(), isNull(), eq(user.getUsername()), any(), isNull()))
+            isNull(),
+            isNull(),
+            eq(user.getUsername()),
+            eq(
+                new CursorPageParameter<>(
+                    new DateTime(before, DateTimeZone.UTC), 1, Direction.PREV)),
+            isNull()))
         .thenReturn(
             new CursorPager<>(Collections.singletonList(articleData), Direction.PREV, true));
 
@@ -191,34 +205,51 @@ public class ArticleDatafetcherTest extends GraphQLTestBase {
   @Test
   public void should_query_profile_articles_favorites_and_feed() {
     loginAs(user);
-    when(userRepository.findByUsername(eq(user.getUsername()))).thenReturn(Optional.of(user));
+    User owner = new User("jane@doe.com", "janedoe", "123", "", "");
+    when(profileQueryService.findByUsername(eq(owner.getUsername()), any()))
+        .thenReturn(
+            Optional.of(
+                new ProfileData(
+                    owner.getId(), owner.getUsername(), owner.getBio(), owner.getImage(), false)));
+    when(userRepository.findByUsername(eq(owner.getUsername()))).thenReturn(Optional.of(owner));
     ArticleData authored = TestHelper.articleDataFixture("authored", user);
     ArticleData favorited = TestHelper.articleDataFixture("favorited", user);
     ArticleData feed = TestHelper.articleDataFixture("feed", user);
     when(articleQueryService.findRecentArticlesWithCursor(
-            isNull(), eq(user.getUsername()), isNull(), any(), eq(user)))
+            isNull(),
+            eq(owner.getUsername()),
+            isNull(),
+            eq(new CursorPageParameter<DateTime>(null, 5, Direction.NEXT)),
+            eq(user)))
         .thenReturn(new CursorPager<>(Collections.singletonList(authored), Direction.NEXT, false));
     when(articleQueryService.findRecentArticlesWithCursor(
-            isNull(), isNull(), eq(user.getUsername()), any(), eq(user)))
+            isNull(),
+            isNull(),
+            eq(owner.getUsername()),
+            eq(new CursorPageParameter<DateTime>(null, 5, Direction.PREV)),
+            eq(user)))
         .thenReturn(new CursorPager<>(Collections.singletonList(favorited), Direction.PREV, false));
-    when(articleQueryService.findUserFeedWithCursor(eq(user), any()))
+    when(articleQueryService.findUserFeedWithCursor(
+            eq(owner), eq(new CursorPageParameter<DateTime>(null, 5, Direction.NEXT))))
         .thenReturn(new CursorPager<>(Collections.singletonList(feed), Direction.NEXT, false));
 
     DocumentContext context =
         dgsQueryExecutor.executeAndGetDocumentContext(
             "{ profile(username: \""
-                + user.getUsername()
+                + owner.getUsername()
                 + "\") { profile { username"
                 + " articles(first: 5) { edges { node { slug } } }"
                 + " favorites(last: 5) { edges { node { slug } } }"
                 + " feed(first: 5) { edges { node { slug } } } } } }");
 
-    assertThat(context.<String>read("data.profile.profile.username")).isEqualTo(user.getUsername());
+    assertThat(context.<String>read("data.profile.profile.username"))
+        .isEqualTo(owner.getUsername());
     assertThat(context.<String>read("data.profile.profile.articles.edges[0].node.slug"))
         .isEqualTo(authored.getSlug());
     assertThat(context.<String>read("data.profile.profile.favorites.edges[0].node.slug"))
         .isEqualTo(favorited.getSlug());
     assertThat(context.<String>read("data.profile.profile.feed.edges[0].node.slug"))
         .isEqualTo(feed.getSlug());
+    verify(articleQueryService, never()).findUserFeedWithCursor(eq(user), any());
   }
 }
