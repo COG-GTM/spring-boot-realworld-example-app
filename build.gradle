@@ -14,6 +14,8 @@ targetCompatibility = '11'
 ext['graphql-java.version'] = '19.11'
 // Boot 2.7 manages rest-assured 4.5.1, which would downgrade its transitive modules
 ext['rest-assured.version'] = '5.4.0'
+// Latest Tomcat 9.0.x patch release; Boot 2.7.18 ships 9.0.83
+ext['tomcat.version'] = '9.0.124'
 
 spotless {
     java {
