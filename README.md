@@ -40,7 +40,7 @@ The secret key is stored in `application.properties`.
 
 # Database
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
+It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed in the `application.properties` for any other database. Flyway 10+ also needs that database's Flyway module on the classpath (e.g. `org.flywaydb:flyway-database-postgresql` or `org.flywaydb:flyway-mysql`) besides the JDBC driver.
 
 # Getting started
 
