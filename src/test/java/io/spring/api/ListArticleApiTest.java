@@ -3,6 +3,7 @@ package io.spring.api;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.spring.TestHelper.articleDataFixture;
 import static java.util.Arrays.asList;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -78,7 +79,11 @@ public class ListArticleApiTest extends TestWithCurrentUser {
     when(articleQueryService.findRecentArticles(
             eq(null), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
         .thenReturn(new ArticleDataList(asList(articleDataFixture("1", user)), 1));
-    RestAssuredMockMvc.when().get("/articles/").then().statusCode(200);
+    RestAssuredMockMvc.when()
+        .get("/articles/")
+        .then()
+        .statusCode(200)
+        .body("articlesCount", equalTo(1));
   }
 
   @Test
@@ -91,6 +96,7 @@ public class ListArticleApiTest extends TestWithCurrentUser {
         .when()
         .get("/articles/feed/")
         .then()
-        .statusCode(200);
+        .statusCode(200)
+        .body("articlesCount", equalTo(1));
   }
 }
