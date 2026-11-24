@@ -111,6 +111,21 @@ public class UsersApiTest {
   }
 
   @Test
+  public void should_show_error_message_for_too_long_password() throws Exception {
+    Map<String, Object> param = prepareRegisterParameter("john@jacob.com", "johnjacob");
+    ((Map<String, Object>) param.get("user")).put("password", "a".repeat(73));
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.password[0]", equalTo("must be at most 72 characters"));
+  }
+
+  @Test
   public void should_show_error_message_for_invalid_email() throws Exception {
     String email = "johnxjacob.com";
     String username = "johnjacob";
