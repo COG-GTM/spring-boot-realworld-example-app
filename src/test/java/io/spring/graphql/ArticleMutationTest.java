@@ -80,10 +80,13 @@ public class ArticleMutationTest extends GraphQLTestBase {
     loginAs(user);
     when(articleCommandService.createArticle(any(), eq(user))).thenReturn(article);
 
-    dgsQueryExecutor.execute(
-        "mutation { createArticle(input: {title: \"t\", description: \"d\", body: \"b\"}) {"
-            + " article { slug } } }");
+    DocumentContext context =
+        dgsQueryExecutor.executeAndGetDocumentContext(
+            "mutation { createArticle(input: {title: \"t\", description: \"d\", body: \"b\"})"
+                + " { article { slug tagList } } }");
 
+    assertThat(context.<String>read("data.createArticle.article.slug"))
+        .isEqualTo(article.getSlug());
     ArgumentCaptor<NewArticleParam> captor = ArgumentCaptor.forClass(NewArticleParam.class);
     verify(articleCommandService).createArticle(captor.capture(), eq(user));
     assertThat(captor.getValue().getTagList()).isEmpty();
