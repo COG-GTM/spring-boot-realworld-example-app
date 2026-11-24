@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(ArticlesApi.class)
-@Import({WebSecurityConfig.class, JacksonCustomizations.class})
+@Import({WebSecurityConfig.class, JacksonCustomizations.class, TrailingSlashConfig.class})
 public class ListArticleApiTest extends TestWithCurrentUser {
   @MockBean private ArticleRepository articleRepository;
 
@@ -69,6 +69,27 @@ public class ListArticleApiTest extends TestWithCurrentUser {
         .when()
         .get("/articles/feed")
         .prettyPeek()
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  public void should_get_article_list_with_trailing_slash() throws Exception {
+    when(articleQueryService.findRecentArticles(
+            eq(null), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
+        .thenReturn(new ArticleDataList(asList(articleDataFixture("1", user)), 1));
+    RestAssuredMockMvc.when().get("/articles/").then().statusCode(200);
+  }
+
+  @Test
+  public void should_get_feeds_with_trailing_slash() throws Exception {
+    when(articleQueryService.findUserFeed(eq(user), eq(new Page(0, 20))))
+        .thenReturn(new ArticleDataList(asList(articleDataFixture("1", user)), 1));
+    RestAssuredMockMvc.when().get("/articles/feed/").then().statusCode(401);
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .get("/articles/feed/")
         .then()
         .statusCode(200);
   }
