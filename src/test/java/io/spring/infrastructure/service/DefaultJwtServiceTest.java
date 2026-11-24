@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Optional;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ import org.junit.jupiter.api.Test;
 public class DefaultJwtServiceTest {
 
   private static final String SECRET =
-      "123123123123123123123123123123123123123123123123123123123123";
+      "123123123123123123123123123123123123123123123123123123123123123123";
 
   private JwtService jwtService;
 
@@ -107,5 +108,16 @@ public class DefaultJwtServiceTest {
 
   private static String longSecret() {
     return "nRvyYC4soFxBdZ-F-5Nnzz5USXstR1YylsTd-mA0aKtI9HUlriGrtkf-TiuDapkLiUCogO3JOK7kwZisrHp6wA";
+  }
+
+  @Test
+  public void should_parse_token_signed_with_legacy_hs512_key() {
+    String token =
+        Jwts.builder()
+            .subject("legacy-user")
+            .expiration(new Date(System.currentTimeMillis() + 60_000))
+            .signWith(new SecretKeySpec(SECRET.getBytes(), "HmacSHA512"), Jwts.SIG.HS512)
+            .compact();
+    Assertions.assertEquals(Optional.of("legacy-user"), jwtService.getSubFromToken(token));
   }
 }
