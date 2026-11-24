@@ -3,7 +3,6 @@ package io.spring.application.user;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +22,6 @@ public class RegisterParam {
   private String username;
 
   @NotBlank(message = "can't be empty")
-  @Size(max = 72, message = "must be at most 72 characters")
+  @PasswordLengthConstraint
   private String password;
 }
