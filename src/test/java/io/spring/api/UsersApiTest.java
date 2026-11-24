@@ -92,6 +92,26 @@ public class UsersApiTest {
   }
 
   @Test
+  public void should_show_error_message_for_password_longer_than_72_bytes() throws Exception {
+    String email = "john@jacob.com";
+    String username = "johnjacob";
+    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+
+    Map<String, Object> param = prepareRegisterParameter(email, username);
+    ((Map<String, Object>) param.get("user")).put("password", "\u00e9".repeat(37));
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.password[0]", equalTo("is too long (maximum is 72 bytes)"));
+  }
+
+  @Test
   public void should_show_error_message_for_blank_username() throws Exception {
 
     String email = "john@jacob.com";
