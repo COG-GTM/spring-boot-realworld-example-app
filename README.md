@@ -19,7 +19,7 @@ The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-examp
 And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
 # How it works
 
-The application uses Spring Boot (Web, Mybatis).
+The application uses Java 21 and Spring Boot 3.5 (Web, Security 6, Jakarta Validation), MyBatis 3, Netflix DGS 10, Flyway and jjwt 0.12.
 
 * Use the idea of Domain Driven Design to separate the business term and infrastructure term.
 * Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
@@ -40,11 +40,11 @@ The secret key is stored in `application.properties`.
 
 # Database
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
+It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed in the `application.properties` for any other database. Flyway 10+ also needs that database's Flyway module on the classpath (e.g. `org.flywaydb:flyway-database-postgresql` or `org.flywaydb:flyway-mysql`) besides the JDBC driver.
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 21 installed.
 
     ./gradlew bootRun
 
