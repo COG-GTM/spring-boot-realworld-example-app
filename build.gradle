@@ -102,6 +102,12 @@ tasks.named('jacocoTestCoverageVerification') {
     }
 }
 
+// Lombok reads lombok.config (addLombokGeneratedAnnotation keeps generated code out of coverage),
+// but Gradle does not track it, so declare it as a compile input.
+tasks.withType(JavaCompile).configureEach {
+    inputs.file('lombok.config').withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 tasks.named('check') {
     dependsOn jacocoTestCoverageVerification
 }
