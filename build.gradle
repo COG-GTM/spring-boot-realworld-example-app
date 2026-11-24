@@ -4,6 +4,7 @@ plugins {
     id 'java'
     id "com.netflix.dgs.codegen" version "5.0.6"
     id "com.diffplug.spotless" version "6.2.1"
+    id 'jacoco'
 }
 
 version = '0.0.1-SNAPSHOT'
@@ -57,7 +58,52 @@ dependencies {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+// DGS codegen output (io.spring.graphql.types.*, DgsConstants) is generated from the schema and
+// would only dilute coverage metrics, so it is excluded from reports and verification.
+def jacocoExcludes = [
+    'io/spring/graphql/types/**',
+    'io/spring/graphql/DgsConstants*',
+    'io/spring/graphql/client/**'
+]
+
+def jacocoClassDirectories = files(sourceSets.main.output.classesDirs.files.collect {
+    fileTree(dir: it, exclude: jacocoExcludes)
+})
+
+tasks.named('jacocoTestReport') {
+    dependsOn test
+    classDirectories.setFrom(jacocoClassDirectories)
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn test
+    classDirectories.setFrom(jacocoClassDirectories)
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.60
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn jacocoTestCoverageVerification
 }
 
 tasks.named('clean') {
