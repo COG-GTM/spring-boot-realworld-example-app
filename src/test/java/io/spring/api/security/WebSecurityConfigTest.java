@@ -4,6 +4,7 @@ import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -89,6 +90,7 @@ public class WebSecurityConfigTest {
         .then()
         .statusCode(200)
         .body("articlesCount", equalTo(0));
+    verify(articleQueryService).findUserFeed(eq(user), any());
   }
 
   @Test
