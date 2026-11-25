@@ -49,10 +49,7 @@ public class DefaultJwtServiceTest {
 
   @Test
   public void should_sign_with_hs512_when_secret_is_at_least_512_bits() {
-    JwtService service =
-        new DefaultJwtService(
-            HS512_SECRET,
-            3600);
+    JwtService service = new DefaultJwtService(HS512_SECRET, 3600);
     User user = new User("email@email.com", "username", "123", "", "");
     String token = service.toToken(user);
     String header =
@@ -117,6 +114,7 @@ public class DefaultJwtServiceTest {
 
     JwtService service = new DefaultJwtService(HS512_SECRET, 3600);
     Assertions.assertEquals(
-        Optional.of("legacy-user"), service.getSubFromToken(header + "." + payload + "." + signature));
+        Optional.of("legacy-user"),
+        service.getSubFromToken(header + "." + payload + "." + signature));
   }
 }
