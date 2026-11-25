@@ -18,6 +18,7 @@ import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.graphql.types.Error;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.Email;
@@ -26,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -66,6 +68,23 @@ public class GraphQLCustomizeExceptionHandlerTest {
       this.email = email;
       this.username = username;
     }
+  }
+
+  private static class SignUpService {
+    @SuppressWarnings("unused")
+    public void createUser(@Valid SignUp registerParam) {}
+  }
+
+  private ConstraintViolationException invalidMethodParam() throws Exception {
+    SignUpService service = new SignUpService();
+    Set<ConstraintViolation<SignUpService>> violations =
+        validator
+            .forExecutables()
+            .validateParameters(
+                service,
+                SignUpService.class.getMethod("createUser", SignUp.class),
+                new Object[] {new SignUp("not-an-email", "")});
+    return new ConstraintViolationException(violations);
   }
 
   private ConstraintViolationException invalidRegisterParam() {
@@ -126,5 +145,21 @@ public class GraphQLCustomizeExceptionHandlerTest {
             .findFirst()
             .orElse(List.of())
             .isEmpty());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void should_strip_method_and_parameter_prefix_from_field_names() throws Exception {
+    ConstraintViolationException exception = invalidMethodParam();
+
+    DataFetcherExceptionHandlerResult result = handler.handleException(params(exception)).get();
+    Map<String, Object> extensions = result.getErrors().get(0).getExtensions();
+    assertEquals(Arrays.asList("should be an email"), extensions.get("email"));
+    assertEquals(Arrays.asList("can't be empty"), extensions.get("username"));
+
+    Error error = GraphQLCustomizeExceptionHandler.getErrorsAsData(exception);
+    assertEquals(
+        Set.of("email", "username"),
+        error.getErrors().stream().map(item -> item.getKey()).collect(Collectors.toSet()));
   }
 }
