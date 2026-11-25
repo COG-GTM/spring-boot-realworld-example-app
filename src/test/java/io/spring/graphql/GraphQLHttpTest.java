@@ -45,6 +45,9 @@ public class GraphQLHttpTest {
   @Test
   public void should_serve_rest_routes_with_trailing_slash() {
     assertEquals(HttpStatus.OK, restTemplate.getForEntity("/tags/", String.class).getStatusCode());
+    assertEquals(
+        HttpStatus.UNAUTHORIZED,
+        restTemplate.getForEntity("/articles/feed/", String.class).getStatusCode());
   }
 
   private ResponseEntity<String> post(String query, String token) {
