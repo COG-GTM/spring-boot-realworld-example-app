@@ -36,11 +36,11 @@ And the code is organized as this:
 
 Integration with Spring Security and add other filter for jwt token process.
 
-The secret key is stored in `application.properties`.
+The secret key is stored in `application.properties` (`jwt.secret`). It must be at least 32 bytes (256 bits); the app fails to start with a shorter key.
 
 # Database
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
+It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database. Flyway 10+ ships database support as separate modules, so also add the matching one (e.g. `org.flywaydb:flyway-mysql` or `org.flywaydb:flyway-database-postgresql`) alongside the JDBC driver.
 
 # Getting started
 
