@@ -21,6 +21,12 @@ spotless {
     }
 }
 
+// Patched versions for transitive CVEs flagged by Snyk on the Boot 3.5 line
+ext['tomcat.version'] = '10.1.61'
+ext['jackson-bom.version'] = '2.21.8'
+ext['logback.version'] = '1.5.36'
+ext['commons-lang3.version'] = '3.18.0'
+
 repositories {
     mavenCentral()
 }
