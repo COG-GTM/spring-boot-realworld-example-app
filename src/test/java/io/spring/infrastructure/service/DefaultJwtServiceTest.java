@@ -6,11 +6,15 @@ import io.spring.core.user.User;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DefaultJwtServiceTest {
+  private static final String HS512_SECRET =
+      "test-only-secret-that-is-longer-than-sixty-four-bytes-for-hs512-signing-0123456789";
 
   private JwtService jwtService;
 
@@ -47,7 +51,7 @@ public class DefaultJwtServiceTest {
   public void should_sign_with_hs512_when_secret_is_at_least_512_bits() {
     JwtService service =
         new DefaultJwtService(
-            "nRvyYC4soFxBdZ-F-5Nnzz5USXstR1YylsTd-mA0aKtI9HUlriGrtkf-TiuDapkLiUCogO3JOK7kwZisrHp6wA",
+            HS512_SECRET,
             3600);
     User user = new User("email@email.com", "username", "123", "", "");
     String token = service.toToken(user);
@@ -95,5 +99,24 @@ public class DefaultJwtServiceTest {
   @Test
   public void should_reject_secret_shorter_than_256_bits() {
     Assertions.assertThrows(WeakKeyException.class, () -> new DefaultJwtService("too-short", 3600));
+  }
+
+  @Test
+  public void should_accept_hs512_token_signed_with_raw_secret_bytes() throws Exception {
+    // Same HMAC-SHA512 over the raw secret bytes that jjwt 0.11 produced before the upgrade.
+    Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
+    String header = encoder.encodeToString("{\"alg\":\"HS512\"}".getBytes(StandardCharsets.UTF_8));
+    String payload =
+        encoder.encodeToString(
+            "{\"sub\":\"legacy-user\",\"exp\":4102444800}".getBytes(StandardCharsets.UTF_8));
+    Mac mac = Mac.getInstance("HmacSHA512");
+    mac.init(new SecretKeySpec(HS512_SECRET.getBytes(), "HmacSHA512"));
+    String signature =
+        encoder.encodeToString(
+            mac.doFinal((header + "." + payload).getBytes(StandardCharsets.US_ASCII)));
+
+    JwtService service = new DefaultJwtService(HS512_SECRET, 3600);
+    Assertions.assertEquals(
+        Optional.of("legacy-user"), service.getSubFromToken(header + "." + payload + "." + signature));
   }
 }
