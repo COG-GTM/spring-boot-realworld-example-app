@@ -9,7 +9,9 @@ import graphql.Scalars;
 import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
 import graphql.execution.ExecutionStepInfo;
+import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
+import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingEnvironmentImpl;
 import io.spring.api.exception.InvalidAuthenticationException;
@@ -40,6 +42,7 @@ public class GraphQLCustomizeExceptionHandlerTest {
   private DataFetcherExceptionHandlerParameters params(Throwable exception) {
     DataFetchingEnvironment env =
         DataFetchingEnvironmentImpl.newDataFetchingEnvironment()
+            .mergedField(MergedField.newMergedField(Field.newField("createUser").build()).build())
             .executionStepInfo(
                 ExecutionStepInfo.newExecutionStepInfo()
                     .type(Scalars.GraphQLString)
