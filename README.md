@@ -1,81 +1,126 @@
-# ![RealWorld Example App using Kotlin and Spring](example-logo.png)
+# ![RealWorld Example App using Spring Boot](example-logo.png)
 
-[![Actions](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
+> Spring Boot + MyBatis backend for the [RealWorld](https://github.com/gothinkster/realworld) spec, with a REST API and a GraphQL API on the same domain model.
 
-> ### Spring boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
+It implements Conduit, a Medium-style blogging platform: users, profiles, follows, articles, comments, favorites, tags, and paginated feeds.
 
-This codebase was created to demonstrate a fully fledged full-stack application built with Spring boot + Mybatis including CRUD operations, authentication, routing, pagination, and more.
+## Tech stack
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
+| Area | Technology |
+|---|---|
+| Language | Java 17 (Gradle toolchain) |
+| Framework | Spring Boot 3.5, Spring Security 6 |
+| GraphQL | [Netflix DGS](https://github.com/Netflix/dgs-framework) 10 on Spring for GraphQL, with DGS codegen |
+| Persistence | MyBatis 3, SQLite, Flyway migrations |
+| Auth | Stateless JWT (jjwt 0.12) |
+| Build | Gradle 8.14 wrapper, Spotless with google-java-format |
+| Tests | JUnit 5, Rest-Assured 5, Spring Boot Test |
 
-# *NEW* GraphQL Support  
+## Getting started
 
-Following some DDD principles. REST or GraphQL is just a kind of adapter. And the domain layer will be consistent all the time. So this repository implement GraphQL and REST at the same time.
+You need Java 17. The Gradle wrapper downloads Gradle itself.
 
-The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-example-app/blob/master/src/main/resources/schema/schema.graphqls and the visualization looks like below.
+```bash
+./gradlew bootRun
+```
 
-![](graphql-schema.png)
+The app starts on http://localhost:8080. Check it with:
 
-And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
-# How it works
+```bash
+curl http://localhost:8080/tags
+```
 
-The application uses Spring Boot (Web, Mybatis).
+The API is served at the root (`http://localhost:8080`), **not** under `/api` as some RealWorld frontend docs suggest.
 
-* Use the idea of Domain Driven Design to separate the business term and infrastructure term.
-* Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
-* Use [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern to separate the read model and write model.
+### Docker
 
-And the code is organized as this:
+```bash
+./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
+docker run -p 8081:8080 spring-boot-realworld-example-app
+```
 
-1. `api` is the web layer implemented by Spring MVC
-2. `core` is the business model including entities and services
-3. `application` is the high-level services for querying the data transfer objects
-4. `infrastructure`  contains all the implementation classes as the technique details
+## APIs
 
-# Security
+### REST
 
-Integration with Spring Security and add other filter for jwt token process.
+Follows the [RealWorld API spec](https://realworld-docs.netlify.app/specifications/backend/endpoints/). Send the token as `Authorization: Token <jwt>`.
 
-The secret key is stored in `application.properties` (`jwt.secret`). It must be at least 32 bytes (256 bits); the app fails to start with a shorter key.
+| Endpoint | Auth |
+|---|---|
+| `POST /users`, `POST /users/login` | Public |
+| `GET /user`, `PUT /user` | Required |
+| `GET /profiles/{username}` | Public |
+| `POST`/`DELETE /profiles/{username}/follow` | Required |
+| `GET /articles`, `GET /articles/{slug}` | Public |
+| `GET /articles/feed` | Required |
+| `POST /articles`, `PUT`/`DELETE /articles/{slug}` | Required |
+| `GET /articles/{slug}/comments` | Public |
+| `POST /articles/{slug}/comments`, `DELETE /articles/{slug}/comments/{id}` | Required |
+| `POST`/`DELETE /articles/{slug}/favorite` | Required |
+| `GET /tags` | Public |
 
-# Database
+Trailing slashes are accepted (e.g. `/tags/`).
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database. Flyway 10+ ships database support as separate modules, so also add the matching one (e.g. `org.flywaydb:flyway-mysql` or `org.flywaydb:flyway-database-postgresql`) alongside the JDBC driver.
+### GraphQL
 
-# Getting started
+- Endpoint: `POST /graphql` with a JSON body (`{"query": "...", "variables": {...}}`).
+- GraphiQL: http://localhost:8080/graphiql
+- Schema: [`src/main/resources/schema/schema.graphqls`](src/main/resources/schema/schema.graphqls)
 
-You'll need Java 17 installed.
+Authenticated queries and mutations (e.g. `me`, `feed`, `createArticle`) use the same `Authorization: Token <jwt>` header. Tokens issued by REST work in GraphQL and the other way round.
 
-    ./gradlew bootRun
+![GraphQL schema](graphql-schema.png)
 
-To test that it works, open a browser tab at http://localhost:8080/tags .  
-Alternatively, you can run
+Java types for the schema are generated into `build/generated` by `./gradlew generateJava`, which runs automatically before compilation.
 
-    curl http://localhost:8080/tags
+## Architecture
 
-# Try it out with [Docker](https://www.docker.com/)
+The code follows Domain-Driven Design and CQRS. REST and GraphQL are thin adapters over the same domain layer.
 
-You'll need Docker installed.
-	
-    ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+| Package | Role |
+|---|---|
+| `io.spring.api` | REST controllers, security config, JWT filter |
+| `io.spring.graphql` | DGS data fetchers, mutations, GraphQL error handling |
+| `io.spring.application` | Query services and command services that return DTOs |
+| `io.spring.core` | Domain entities and repository interfaces |
+| `io.spring.infrastructure` | MyBatis mappers, repository implementations, JWT service |
 
-# Try it out with a RealWorld frontend
+- MyBatis implements the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern; SQL lives in `src/main/resources/mapper/*.xml`.
+- [CQRS](https://martinfowler.com/bliki/CQRS.html) separates read models (`*QueryService`, read services) from write models (repositories).
 
-The entry point address of the backend API is at http://localhost:8080, **not** http://localhost:8080/api as some of the frontend documentation suggests.
+## Configuration
 
-# Run test
+Settings live in `src/main/resources/application.properties`.
 
-The repository contains a lot of test cases to cover both api test and repository test.
+| Property | Purpose |
+|---|---|
+| `spring.datasource.url` | Database URL (default `jdbc:sqlite:dev.db`) |
+| `jwt.secret` | HMAC signing key. Must be at least 32 bytes (256 bits) or the app fails to start. Override it outside local development, e.g. with the `JWT_SECRET` environment variable. |
+| `jwt.sessionTime` | Token lifetime in seconds (default 86400) |
 
-    ./gradlew test
+### Database
 
-# Code format
+By default the app uses a SQLite file, `dev.db`, in the working directory, so data survives restarts. Flyway applies the migrations in `src/main/resources/db/migration` on startup.
 
-Use spotless for code format.
+To switch databases, change the datasource properties and add the JDBC driver. Flyway 10+ ships database support as separate modules, so also add the matching one (e.g. `org.flywaydb:flyway-mysql` or `org.flywaydb:flyway-database-postgresql`).
 
-    ./gradlew spotlessJavaApply
+Tests and `bootRun` share `dev.db`. Don't run `./gradlew clean build` or `test` while the app is running, or the app may fail with `SQLITE_READONLY_DBMOVED`.
 
-# Help
+## Development
 
-Please fork and PR to improve the project.
+| Task | Command |
+|---|---|
+| Run tests | `./gradlew test` |
+| Full build (format check, compile, tests) | `./gradlew build` |
+| Format code | `./gradlew spotlessJavaApply` |
+| Regenerate GraphQL types | `./gradlew generateJava` |
+
+The build fails if code isn't formatted, so run `spotlessJavaApply` before committing.
+
+## Contributing
+
+Fork the repo and open a PR.
+
+## License
+
+See [LICENSE](LICENSE).
